@@ -6,8 +6,7 @@
 /// <param name="argc">Number of arguments passed to the application</param>
 /// <param name="argv">Array containg string arguments passed to the application</param>
 /// <return>Status code on application exit.</return>
-int main(int argc, char ** argv)
-{
+int main(int argc, char ** argv) {
 	SDL_Init(SDL_INIT_VIDEO);
 
 	//open opengl and window

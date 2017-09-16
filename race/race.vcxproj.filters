@@ -22,15 +22,63 @@
     <Filter Include="Resource Files\Shaders">
       <UniqueIdentifier>{86d8cf8b-c506-4765-9cf1-f0b2259b94d2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game Engine">
+      <UniqueIdentifier>{ef3396c9-151d-408a-ae07-e429429c2aac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Engine\Source Files">
+      <UniqueIdentifier>{e905a36d-022e-475f-9de0-1281f114a409}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game Engine\Header Files">
+      <UniqueIdentifier>{f3822c0e-42e6-44cf-b217-c4be2da2c624}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source Files\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MainComponent.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\Source Files\Window.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\Source Files\Input.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\Source Files\MainComponent.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\Source Files\Model.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\Source Files\Physics.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\Source Files\Render.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header Files\main.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\Input.h">
+      <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\MainComponent.h">
+      <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\Model.h">
+      <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\Physics.h">
+      <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\Render.h">
+      <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\Window.h">
+      <Filter>Game Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

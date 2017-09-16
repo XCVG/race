@@ -134,9 +134,22 @@ xcopy /y  "$(ProjectDir)Resource Files\Libraries\glew\dll\*.dll" "$(OutDir)"</Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameEngine\Source Files\Input.cpp" />
+    <ClCompile Include="GameEngine\Source Files\MainComponent.cpp" />
+    <ClCompile Include="GameEngine\Source Files\Model.cpp" />
+    <ClCompile Include="GameEngine\Source Files\Physics.cpp" />
+    <ClCompile Include="GameEngine\Source Files\Render.cpp" />
+    <ClCompile Include="GameEngine\Source Files\Window.cpp" />
+    <ClCompile Include="MainComponent.cpp" />
     <ClCompile Include="Source Files\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameEngine\HeaderFiles\Input.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\MainComponent.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\Model.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\Physics.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\Render.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\Window.h" />
     <ClInclude Include="Header Files\main.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
