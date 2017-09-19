@@ -2,14 +2,10 @@
 
 std::string FileHelper::loadFileFromString(std::string path)
 {
-	std::string basePath = std::string(SDL_GetBasePath());
-	std::string fullPath = basePath + path;
-
-	SDL_RWops *rwop_p = SDL_RWFromFile(fullPath.c_str(), "r");
+	SDL_RWops *rwop_p = SDL_RWFromFile(path.c_str(), "r");
 
 	if (rwop_p == NULL)
 	{
-		//SDL_Log(SDL_GetError());
 		throw FileNotFoundException();
 	}
 
@@ -21,7 +17,6 @@ std::string FileHelper::loadFileFromString(std::string path)
 		return std::string();
 	}
 
-	//char* buffer_p = (char*)malloc(bufferSize);
 	char* buffer_p = (char*)calloc(bufferSize+1, sizeof(char));
 	SDL_RWread(rwop_p, buffer_p, sizeof(char), bufferSize);
 
@@ -31,5 +26,13 @@ std::string FileHelper::loadFileFromString(std::string path)
 	free(buffer_p);
 
 	return str;
+}
+
+std::string FileHelper::loadFileFromStringRelative(std::string relativePath)
+{
+	std::string basePath = std::string(SDL_GetBasePath());
+	std::string fullPath = basePath + relativePath;
+
+	return loadFileFromString(fullPath);
 }
 

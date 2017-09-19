@@ -1,11 +1,5 @@
 #include "main.h" 
 
-void testFileHelper()
-{
-	std::string str = FileHelper::loadFileFromString("test.txt");
-	SDL_Log(str.c_str());
-}
-
 /// <summary>
 /// Application entry point
 /// </summary>
@@ -26,7 +20,6 @@ int main(int argc, char ** argv) {
 	glewInit();
 
 	// game code eventually goes here
-	testFileHelper();
 
 	//make it all blue and swap to screen
 	glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
