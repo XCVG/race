@@ -21,9 +21,10 @@ std::string FileHelper::loadFileFromString(std::string path)
 		return std::string();
 	}
 
-	char* buffer_p = (char*)malloc(bufferSize);
+	//char* buffer_p = (char*)malloc(bufferSize);
+	char* buffer_p = (char*)calloc(bufferSize+1, sizeof(char));
 	SDL_RWread(rwop_p, buffer_p, sizeof(char), bufferSize);
-	
+
 	std::string str(buffer_p);
 
 	SDL_RWclose(rwop_p);
