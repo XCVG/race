@@ -57,6 +57,9 @@
     <ClCompile Include="GameEngine\Source Files\Render.cpp">
       <Filter>Game Engine\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameEngine\Source Files\FileHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header Files\main.h">
@@ -79,6 +82,9 @@
     </ClInclude>
     <ClInclude Include="GameEngine\HeaderFiles\Window.h">
       <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\FileHelper.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

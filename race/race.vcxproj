@@ -134,6 +134,7 @@ xcopy /y  "$(ProjectDir)Resource Files\Libraries\glew\dll\*.dll" "$(OutDir)"</Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="GameEngine\Source Files\FileHelper.cpp" />
     <ClCompile Include="GameEngine\Source Files\Input.cpp" />
     <ClCompile Include="GameEngine\Source Files\MainComponent.cpp" />
     <ClCompile Include="GameEngine\Source Files\Model.cpp" />
@@ -144,6 +145,7 @@ xcopy /y  "$(ProjectDir)Resource Files\Libraries\glew\dll\*.dll" "$(OutDir)"</Co
     <ClCompile Include="Source Files\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="GameEngine\HeaderFiles\FileHelper.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Input.h" />
     <ClInclude Include="GameEngine\HeaderFiles\MainComponent.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Model.h" />
