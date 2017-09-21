@@ -5,10 +5,13 @@
 #include <SDL2/SDL.h>
 #include <GLUT/glut.h>
 #include <GLFW/glfw3.h>
+#include "../GameEngine/HeaderFiles/FileHelper.h"
 #elif defined _WIN32 || defined _WIN64
+#include <glew.h>
 #include <SDL.h>
-#include <GL/glut.h>
-#include <GL/GL.h>
+#include <SDL_mixer.h>
+#include <SDL_opengl.h>
+#include "..\GameEngine\HeaderFiles\FileHelper.h"
 #endif 
 #include <stdio.h>
 #include <string.h>
