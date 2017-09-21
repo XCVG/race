@@ -1,8 +1,8 @@
 /*===================================================================================*//**
-	BaseMessage
+	MessagingSystem
 	
-	The base class for all messages to be sent by the MessagingSystem.
-	Specific message classes should inherit from this one.
+	Singleton for sending messages to objects that have subscribed to particular event 
+    types.
     
     Copyright 2017 Erick Fernandez de Arteaga. All rights reserved.
         https://www.linkedin.com/in/erick-fda
@@ -12,76 +12,68 @@
 	@version 0.0.0
 	@file
 	
-	@see BaseMessage
-	@see BaseMessage.cpp
+	@see MessagingSystem
+	@see MessagingSystem.cpp
 	
 *//*====================================================================================*/
 
-#ifndef BASE_MESSAGE_H
-#define BASE_MESSAGE_H
+#ifndef MESSAGING_SYSTEM_H
+#define MESSAGING_SYSTEM_H
 
 /*========================================================================================
 	Dependencies
 ========================================================================================*/
+#include <algorithm>
+#include <functional>
+#include <map>
+#include <queue>
+#include <vector>
+#include "BaseMessage.h"
 using namespace std;
+using Subscriber = function<bool(BaseMessage&)>&;
+using SubscriberGroup = vector<Subscriber>;
 
 /*========================================================================================
-	Enums
+	MessagingSystem	
 ========================================================================================*/
 /**
-	List of all message types.
+	Singleton for sending messages to objects that have subscribed to particular event 
+    types.
 	
-	Each type should correspond to [existing subclass of BaseMessage] + "Type".
-	
-	Each subclass of BaseMessage should redeclare the static const MessageType _type 
-	field and set it to the type that corresponds with its class type.
-
-	This seems redundant, but allows the other messsaging classes to avoid the inherent 
-	difficulties of using type detection to differentiate between messages.
+	@see MessagingSystem
+	@see MessagingSystem.cpp
 */
-enum MESSAGE_TYPE
+class MessagingSystem
 {
-	BaseMessageType
-};
+    /*------------------------------------------------------------------------------------
+		Singleton
+    ------------------------------------------------------------------------------------*/
+    public:
+        /* Ensure constructor and assignment operator for singleton are not implemented. */
+		MessagingSystem(MessagingSystem const&)   = delete;
+        void operator=(MessagingSystem const&)     = delete;
 
-/*========================================================================================
-	BaseMessage	
-========================================================================================*/
-/**
-	The base class for all messages to be sent by the MessagingSystem.
-	Specific message classes should inherit from this one.
-	
-	@see BaseMessage
-	@see BaseMessage.cpp
-*/
-class BaseMessage
-{
-	/*------------------------------------------------------------------------------------
-		Class Fields
-	------------------------------------------------------------------------------------*/
+        /**
+            Declares, instantiates, and returns the static instance.
+        */
+        static MessagingSystem& instance();
+
 	private:
-		static const MESSAGE_TYPE _type = BaseMessageType;
+		MessagingSystem();
 
     /*------------------------------------------------------------------------------------
 		Instance Fields
     ------------------------------------------------------------------------------------*/
     private:
-
+		map <MESSAGE_TYPE, SubscriberGroup> _subscriberGroups;
+		queue<BaseMessage&> _messageQueue;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
     ------------------------------------------------------------------------------------*/
     public:
-		BaseMessage();
 
-        ~BaseMessage();
 
-	/*------------------------------------------------------------------------------------
-		Instance Getter Methods
-    ------------------------------------------------------------------------------------*/
-    public:
-        
-    
 	/*------------------------------------------------------------------------------------
 		Instance Setter Methods
 	------------------------------------------------------------------------------------*/
@@ -92,7 +84,10 @@ class BaseMessage
 		Instance Methods
 	------------------------------------------------------------------------------------*/
     public:
-
+		void addSubscriber(MESSAGE_TYPE messageType, Subscriber messageHandler);
+		void removeSubscriber(MESSAGE_TYPE messageType, Subscriber messageHandler);
+		void queueMessage(BaseMessage& messageToQueue);
+		void triggerMessage(BaseMessage& messageToTrigger);
 
     private:
 

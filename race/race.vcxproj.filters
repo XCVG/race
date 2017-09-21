@@ -63,6 +63,9 @@
     <ClCompile Include="SubscriberGroup.cpp">
       <Filter>Game Engine\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MessagingSystem.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header Files\main.h">
@@ -90,6 +93,9 @@
       <Filter>Game Engine\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SubscriberGroup.h">
+      <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MessagingSystem.h">
       <Filter>Game Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
