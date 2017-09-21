@@ -1,5 +1,6 @@
 #pragma once
-#ifndef MAIN_H
-#define MAIN_H
 
-#endif
+#include <GL/glew.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <SDL2/SDL_opengl.h>
