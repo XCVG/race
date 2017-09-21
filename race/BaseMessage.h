@@ -39,7 +39,7 @@ using namespace std;
 	This seems redundant, but allows the other messsaging classes to avoid the inherent 
 	difficulties of using type detection to differentiate between messages.
 */
-enum MessageType
+enum MESSAGE_TYPE
 {
 	BaseMessageType
 };
@@ -60,7 +60,7 @@ class BaseMessage
 		Class Fields
 	------------------------------------------------------------------------------------*/
 	private:
-		static const MessageType _type = BaseMessageType;
+		static const MESSAGE_TYPE _type = BaseMessageType;
 
     /*------------------------------------------------------------------------------------
 		Instance Fields

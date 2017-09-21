@@ -23,7 +23,9 @@
 /*========================================================================================
 	Dependencies
 ========================================================================================*/
+#include <algorithm>
 #include <functional>
+#include <iostream>
 #include <vector>
 #include "BaseMessage.h"
 using namespace std;
@@ -44,15 +46,14 @@ class SubscriberGroup
 		Instance Fields
     ------------------------------------------------------------------------------------*/
     private:
-		MessageType _messageType;
+		MESSAGE_TYPE _messageType;
 		vector<function<bool(BaseMessage&)>> _subscribers;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
     ------------------------------------------------------------------------------------*/
     public:
-		/// <param name="type">The type of message subscribers in this group are listening for.</param>
-		SubscriberGroup(MessageType type);
+		SubscriberGroup(MESSAGE_TYPE type);
 
         ~SubscriberGroup();
 
@@ -60,7 +61,7 @@ class SubscriberGroup
 		Instance Getter Methods
     ------------------------------------------------------------------------------------*/
     public:
-		MessageType getMessageType();
+		MESSAGE_TYPE getMessageType();
     
 	/*------------------------------------------------------------------------------------
 		Instance Setter Methods
@@ -72,9 +73,9 @@ class SubscriberGroup
 		Instance Methods
 	------------------------------------------------------------------------------------*/
     public:
-		void addSubscriber(function<bool(BaseMessage&)>& subscriber);
+		void addSubscriber(function<bool(BaseMessage&)>& subscriberToAdd);
 
-		void removeSubscriber(function<bool(BaseMessage&)>& subscriber);
+		void removeSubscriber(function<bool(BaseMessage&)>& subscriberToRemove);
 
     private:
 
