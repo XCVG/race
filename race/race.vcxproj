@@ -134,6 +134,7 @@ xcopy /y  "$(ProjectDir)Resource Files\Libraries\glew\dll\*.dll" "$(OutDir)"</Co
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BaseMessage.cpp" />
     <ClCompile Include="GameEngine\Source Files\Input.cpp" />
     <ClCompile Include="GameEngine\Source Files\MainComponent.cpp" />
     <ClCompile Include="GameEngine\Source Files\Model.cpp" />
@@ -142,8 +143,10 @@ xcopy /y  "$(ProjectDir)Resource Files\Libraries\glew\dll\*.dll" "$(OutDir)"</Co
     <ClCompile Include="GameEngine\Source Files\Window.cpp" />
     <ClCompile Include="MainComponent.cpp" />
     <ClCompile Include="Source Files\main.cpp" />
+    <ClCompile Include="SubscriberGroup.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BaseMessage.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Input.h" />
     <ClInclude Include="GameEngine\HeaderFiles\MainComponent.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Model.h" />
@@ -151,6 +154,7 @@ xcopy /y  "$(ProjectDir)Resource Files\Libraries\glew\dll\*.dll" "$(OutDir)"</Co
     <ClInclude Include="GameEngine\HeaderFiles\Render.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Window.h" />
     <ClInclude Include="Header Files\main.h" />
+    <ClInclude Include="SubscriberGroup.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
