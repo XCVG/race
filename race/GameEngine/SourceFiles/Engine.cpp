@@ -29,7 +29,7 @@ void Engine::start() {
         _aiEngine->start();
         _inputEngine->start();
         _soundEngine->start();
-    } catch (Exception e) {
+    } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
 }
@@ -42,19 +42,14 @@ void Engine::loop() {
 
 }
 
-void Engine::cleanUp() {
-    _soundEngine->~SoundEngine();
-    _inputEngine->~InputEngine();
-    _aiEngine->~AIEngine();
-    _physicsEngine->~PhysicsEngine();
-    _renderEngine->~RenderEngine();
-    ~Engine();
-}
-
 Engine::Engine() {
 
 }
 
 Engine::~Engine() {
-
+    _soundEngine->~SoundEngine();
+    _inputEngine->~InputEngine();
+    _aiEngine->~AIEngine();
+    _physicsEngine->~PhysicsEngine();
+    _renderEngine->~RenderEngine();
 }

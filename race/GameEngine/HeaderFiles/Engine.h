@@ -23,7 +23,6 @@ public:
     void start();
     void update();
     void loop();
-    void cleanUp();
     Engine();
     ~Engine();
 private:
