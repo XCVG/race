@@ -1,7 +1,5 @@
 #pragma once
-#ifndef FILEHELPER_H
-#define FILEHELPER_H
-#ifdef __APPLE__
+#if defined __APPLE__
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_filesystem.h>
 #elif defined _WIN32 || defined _WIN64
@@ -14,8 +12,7 @@
 /// <summary>
 /// Static helper class that wraps some SDL file operations
 /// </summary>
-class FileHelper
-{
+class FileHelper {
 public:
 
 	/// <summary>
@@ -38,12 +35,8 @@ public:
 /// <summary>
 /// Exception thrown by FileHelper when it can't find a file
 /// </summary>
-class FileNotFoundException : public std::exception
-{
-	virtual const char* what() const throw()
-	{
+class FileNotFoundException : public std::exception {
+	virtual const char* what() const throw() {
 		return "Invalid file!";
 	}
 };
-
-#endif
