@@ -122,7 +122,8 @@
     <PostBuildEvent>
       <Command>xcopy /y  "$(ProjectDir)Libraries\sdl\dll\*.dll" "$(OutDir)"
 xcopy /y  "$(ProjectDir)Libraries\sdl_mixer\dll\*.dll" "$(OutDir)"
-xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"</Command>
+xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"
+xcopy /y /e /i "$(ProjectDir)ResourceFiles" "$(OutDir)ResourceFiles"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -156,7 +157,8 @@ xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"</Command>
     <PostBuildEvent>
       <Command>xcopy /y  "$(ProjectDir)Libraries\sdl\dll\*.dll" "$(OutDir)"
 xcopy /y  "$(ProjectDir)Libraries\sdl_mixer\dll\*.dll" "$(OutDir)"
-xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"</Command>
+xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"
+xcopy /y /e /i "$(ProjectDir)ResourceFiles" "$(OutDir)ResourceFiles"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
