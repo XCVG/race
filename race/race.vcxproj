@@ -38,6 +38,7 @@
     <ClInclude Include="GameEngine\HeaderFiles\FileHelper.h" />
     <ClInclude Include="GameEngine\HeaderFiles\InputEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\PhysicsEngine.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\RenderableTypes.h" />
     <ClInclude Include="GameEngine\HeaderFiles\RenderEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\SoundEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Window.h" />
@@ -96,10 +97,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

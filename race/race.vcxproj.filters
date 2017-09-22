@@ -101,5 +101,8 @@
     <ClInclude Include="GameEngine\HeaderFiles\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\RenderableTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
