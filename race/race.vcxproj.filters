@@ -33,52 +33,73 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source Files\main.cpp">
+    <ClCompile Include="SourceFiles\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MainComponent.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="SourceFiles\Object.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameEngine\Source Files\Window.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="GameEngine\SourceFiles\AIEngine.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameEngine\Source Files\Input.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="GameEngine\SourceFiles\Engine.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameEngine\Source Files\MainComponent.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="GameEngine\SourceFiles\ErrorHandler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameEngine\Source Files\Model.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="GameEngine\SourceFiles\FileHelper.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameEngine\Source Files\Physics.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="GameEngine\SourceFiles\InputEngine.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameEngine\Source Files\Render.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="GameEngine\SourceFiles\PhysicsEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\SourceFiles\RenderEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\SourceFiles\SoundEngine.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameEngine\SourceFiles\Window.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header Files\main.h">
+    <ClInclude Include="HeaderFiles\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\Input.h">
-      <Filter>Game Engine\Header Files</Filter>
+    <ClInclude Include="HeaderFiles\Object.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\MainComponent.h">
-      <Filter>Game Engine\Header Files</Filter>
+    <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\Model.h">
-      <Filter>Game Engine\Header Files</Filter>
+    <ClInclude Include="GameEngine\HeaderFiles\Engine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\Physics.h">
-      <Filter>Game Engine\Header Files</Filter>
+    <ClInclude Include="GameEngine\HeaderFiles\ErrorHandler.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\Render.h">
-      <Filter>Game Engine\Header Files</Filter>
+    <ClInclude Include="GameEngine\HeaderFiles\FileHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\InputEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\PhysicsEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\RenderEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\SoundEngine.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameEngine\HeaderFiles\Window.h">
-      <Filter>Game Engine\Header Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
