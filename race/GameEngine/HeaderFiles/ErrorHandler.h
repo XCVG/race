@@ -8,7 +8,7 @@ public:
         value = _value;
         message = _str;
 #ifdef _DEBUG
-        ErrorMap::iterator found = getErrorMap().find( value );
+        errorMap::iterator found = getErrorMap().find( value );
         if ( found != getErrorMap().end() )
             assert( found->second == message );
 #endif
