@@ -5,4 +5,6 @@ public:
     void update();
     RenderEngine();
     ~RenderEngine();
+private:
+    void loop();
 };

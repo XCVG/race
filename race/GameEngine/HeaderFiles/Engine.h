@@ -22,7 +22,6 @@ class Engine {
 public:
     void start();
     void update();
-    void loop();
     Engine();
     ~Engine();
 private:
@@ -31,4 +30,5 @@ private:
     AIEngine* _aiEngine;
     InputEngine* _inputEngine;
     SoundEngine* _soundEngine;
+    void loop();
 };

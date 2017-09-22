@@ -7,4 +7,6 @@ public:
     void cleanUp();
     AIEngine();
     ~AIEngine();
+private:
+    void loop();
 };

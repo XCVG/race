@@ -5,4 +5,6 @@ public:
     void update();
     PhysicsEngine();
     ~PhysicsEngine();
+private:
+    void loop();
 };
