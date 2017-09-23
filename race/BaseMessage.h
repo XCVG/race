@@ -33,11 +33,11 @@ using namespace std;
 	
 	Each type should correspond to [existing subclass of BaseMessage] + "Type".
 	
-	Each subclass of BaseMessage should redeclare the static const MessageType _type 
-	field and set it to the type that corresponds with its class type.
+	Each subclass of BaseMessage should initialize the message type to be that which 
+	corresponds with its class in its constructor.
 
-	This seems redundant, but allows the other messsaging classes to avoid the inherent 
-	difficulties of using type detection to differentiate between messages.
+	This seems redundant, but allows the other messsaging system classes to avoid the 
+	inherent difficulties of using type detection to differentiate between messages.
 */
 enum MESSAGE_TYPE
 {
@@ -60,7 +60,7 @@ class BaseMessage
 		Class Fields
 	------------------------------------------------------------------------------------*/
 	private:
-		static const MESSAGE_TYPE _type = BaseMessageType;
+		MESSAGE_TYPE _type;
 
     /*------------------------------------------------------------------------------------
 		Instance Fields
@@ -80,7 +80,7 @@ class BaseMessage
 		Instance Getter Methods
     ------------------------------------------------------------------------------------*/
     public:
-        
+		MESSAGE_TYPE getType();
     
 	/*------------------------------------------------------------------------------------
 		Instance Setter Methods

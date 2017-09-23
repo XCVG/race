@@ -83,7 +83,7 @@ void SubscriberGroup::removeSubscriber(function<bool(BaseMessage&)>& subscriberT
 	{
 		if (eachSubscriber.target == subscriberToRemove.target)
 		{
-			_subscribers.erase(remove(_subscribers.begin(), _subscribers.end(), eachSubscriber), _subscribers.end());
+			_subscribers.erase(remove(_subscribers.begin(), _subscribers.end(), subscriberToRemove), _subscribers.end());
 			return;
 		}
 	}

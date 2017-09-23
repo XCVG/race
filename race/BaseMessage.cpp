@@ -26,7 +26,8 @@ using namespace std;
 /*----------------------------------------------------------------------------------------
 	Constructors and Destructors
 ----------------------------------------------------------------------------------------*/
-BaseMessage::BaseMessage()
+BaseMessage::BaseMessage():
+	_type(BaseMessageType)
 {}
 
 BaseMessage::~BaseMessage()
@@ -35,7 +36,10 @@ BaseMessage::~BaseMessage()
 /*----------------------------------------------------------------------------------------
 	Instance Getter Methods
 ----------------------------------------------------------------------------------------*/
-
+MESSAGE_TYPE BaseMessage::getType()
+{
+	return _type;
+}
 
 /*----------------------------------------------------------------------------------------
 	Instance Setter Methods

@@ -26,11 +26,12 @@
 #include <algorithm>
 #include <functional>
 #include <map>
+#include <mutex>
 #include <queue>
 #include <vector>
 #include "BaseMessage.h"
 using namespace std;
-using Subscriber = function<bool(BaseMessage&)>&;
+using Subscriber = function<bool(BaseMessage)>&;
 using SubscriberGroup = vector<Subscriber>;
 
 /*========================================================================================
@@ -66,7 +67,9 @@ class MessagingSystem
     ------------------------------------------------------------------------------------*/
     private:
 		map <MESSAGE_TYPE, SubscriberGroup> _subscriberGroups;
-		queue<BaseMessage&> _messageQueue;
+		queue<BaseMessage> _messageQueue;
+		mutex _subscriberGroupsLock;
+		mutex _messageQueueLock;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -84,13 +87,15 @@ class MessagingSystem
 		Instance Methods
 	------------------------------------------------------------------------------------*/
     public:
-		void addSubscriber(MESSAGE_TYPE messageType, Subscriber messageHandler);
-		void removeSubscriber(MESSAGE_TYPE messageType, Subscriber messageHandler);
-		void queueMessage(BaseMessage& messageToQueue);
-		void triggerMessage(BaseMessage& messageToTrigger);
+		void start();
+		void subscribe(MESSAGE_TYPE messageType, Subscriber messageHandler);
+		void postMessage(BaseMessage messageToPost);
+		void postMessageImmediate(BaseMessage messageToPost);
+		void unsubscribe(MESSAGE_TYPE messageType, Subscriber messageHandler);
 
     private:
-
+		void loop();
+		void sendMessage(BaseMessage messageToSend);
 };
 
 #endif
