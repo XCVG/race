@@ -19,10 +19,12 @@ void RenderEngine::start()
 
 	//TODO subscribe to messaging
 
-	//spawn thread
+	//spawn thread (this doesn't work properly for some reason)
 	_isRunning = true;
-	std::thread rthread(&RenderEngine::loop, this);
-	_renderThread_p = &rthread;
+	//std::thread rthread(&RenderEngine::loop, this);
+	//std::thread rthread(&RenderEngine::loop);
+	//_renderThread_p = &rthread;
+	_renderThread_p = new std::thread(&RenderEngine::loop, this);
 }
 
 void RenderEngine::update()
@@ -52,6 +54,7 @@ void RenderEngine::loop()
 	while (_isRunning)
 	{
 		doRender(); //this should run really absurdly fast
+		
 	}
 
 	SDL_Log("RenderEngine thread halted!");
@@ -67,7 +70,10 @@ void RenderEngine::setupGLOnThread()
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	_context_p = SDL_GL_CreateContext(_window_p);
+	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+	//SDL_GL_CreateContext(_window_p);
+	_context_p = SDL_GL_CreateContext(_window_p); //crashes here, a threading issue
+	//SDL_GL_MakeCurrent(g_window_p, g_context);
 	glewExperimental = GL_TRUE;
 	glewInit();
 }

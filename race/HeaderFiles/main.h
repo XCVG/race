@@ -18,3 +18,4 @@
 #include <iostream>
 
 extern SDL_Window *g_window_p;
+extern SDL_GLContext g_context;
