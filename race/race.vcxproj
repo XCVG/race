@@ -24,6 +24,7 @@
     <ClCompile Include="GameEngine\SourceFiles\ErrorHandler.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\FileHelper.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\InputEngine.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\OBJImport.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\PhysicsEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\RenderEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\SoundEngine.cpp" />
@@ -40,6 +41,7 @@
     <ClInclude Include="GameEngine\HeaderFiles\ErrorHandler.h" />
     <ClInclude Include="GameEngine\HeaderFiles\FileHelper.h" />
     <ClInclude Include="GameEngine\HeaderFiles\InputEngine.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\OBJImport.h" />
     <ClInclude Include="GameEngine\HeaderFiles\PhysicsEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Quad.h" />
     <ClInclude Include="GameEngine\HeaderFiles\RenderableTypes.h" />

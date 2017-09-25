@@ -72,6 +72,9 @@
     <ClCompile Include="SourceFiles\MessagingSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GameEngine\SourceFiles\OBJImport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\main.h">
@@ -123,6 +126,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\MessagingSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\OBJImport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
