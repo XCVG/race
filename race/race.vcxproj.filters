@@ -57,9 +57,6 @@
     <ClCompile Include="GameEngine\SourceFiles\PhysicsEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GameEngine\SourceFiles\RenderEngine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameEngine\SourceFiles\SoundEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -72,7 +69,11 @@
     <ClCompile Include="SourceFiles\MessagingSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< Updated upstream
     <ClCompile Include="GameEngine\SourceFiles\OBJImport.cpp">
+=======
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderEngine.cpp">
+>>>>>>> Stashed changes
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -101,31 +102,31 @@
     <ClInclude Include="GameEngine\HeaderFiles\PhysicsEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\RenderEngine.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameEngine\HeaderFiles\SoundEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameEngine\HeaderFiles\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\RenderableTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\Cube.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\Quad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GameEngine\HeaderFiles\Shaders.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HeaderFiles\BaseMessage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="HeaderFiles\MessagingSystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderableTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Quad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Cube.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Shaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameEngine\HeaderFiles\OBJImport.h">
