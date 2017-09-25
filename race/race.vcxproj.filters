@@ -66,11 +66,11 @@
     <ClCompile Include="GameEngine\SourceFiles\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BaseMessage.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="SourceFiles\BaseMessage.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MessagingSystem.cpp">
-      <Filter>Game Engine\Source Files</Filter>
+    <ClCompile Include="SourceFiles\MessagingSystem.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -117,6 +117,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameEngine\HeaderFiles\Shaders.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\BaseMessage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HeaderFiles\MessagingSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
