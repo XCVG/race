@@ -13,17 +13,14 @@ void RenderEngine::start()
 {
 	//start: on engine thread
 
-	_window_p = g_window_p;
+	_window_p = g_window_p; //really ought to switch to dependency injection
 
 	_cubeAngle = 0;
 
 	//TODO subscribe to messaging
 
-	//spawn thread (this doesn't work properly for some reason)
+	//spawn thread
 	_isRunning = true;
-	//std::thread rthread(&RenderEngine::loop, this);
-	//std::thread rthread(&RenderEngine::loop);
-	//_renderThread_p = &rthread;
 	_renderThread_p = new std::thread(&RenderEngine::loop, this);
 }
 

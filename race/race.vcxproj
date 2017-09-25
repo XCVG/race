@@ -42,6 +42,7 @@
     <ClInclude Include="GameEngine\HeaderFiles\Quad.h" />
     <ClInclude Include="GameEngine\HeaderFiles\RenderableTypes.h" />
     <ClInclude Include="GameEngine\HeaderFiles\RenderEngine.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\RendererInternalTypes.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Shaders.h" />
     <ClInclude Include="GameEngine\HeaderFiles\SoundEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Window.h" />

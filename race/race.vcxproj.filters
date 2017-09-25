@@ -113,5 +113,8 @@
     <ClInclude Include="GameEngine\HeaderFiles\Shaders.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GameEngine\HeaderFiles\RendererInternalTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
