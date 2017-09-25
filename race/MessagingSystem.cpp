@@ -32,6 +32,11 @@ MessagingSystem& MessagingSystem::instance()
     return instance;
 }
 
+MessagingSystem::MessagingSystem()
+{
+
+}
+
 /*----------------------------------------------------------------------------------------
 	Instance Getter Methods
 ----------------------------------------------------------------------------------------*/
@@ -52,12 +57,12 @@ void MessagingSystem::loop()
 {
 	while (true)
 	{
-		_messageQueueLock.lock();
-		_subscriberGroupsLock.lock();
+		_messageQueueMutex.lock();
+		_subscriberGroupsMutex.lock();
 		sendMessage(_messageQueue.front());
-		_subscriberGroupsLock.unlock();
+		_subscriberGroupsMutex.unlock();
 		_messageQueue.pop();
-		_messageQueueLock.unlock();
+		_messageQueueMutex.unlock();
 	}
 }
 
@@ -67,9 +72,9 @@ void MessagingSystem::loop()
 ///
 void MessagingSystem::postMessage(BaseMessage messageToPost)
 {
-	_messageQueueLock.lock();
+	_messageQueueMutex.lock();
 	_messageQueue.push(messageToPost);
-	_messageQueueLock.unlock();
+	_messageQueueMutex.unlock();
 }
 
 ///
@@ -78,9 +83,9 @@ void MessagingSystem::postMessage(BaseMessage messageToPost)
 ///
 void MessagingSystem::postMessageImmediate(BaseMessage messageToPost)
 {
-	_subscriberGroupsLock.lock();
+	_subscriberGroupsMutex.lock();
 	sendMessage(messageToPost);
-	_subscriberGroupsLock.unlock();
+	_subscriberGroupsMutex.unlock();
 }
 
 ///
@@ -96,9 +101,9 @@ void MessagingSystem::sendMessage(BaseMessage messageToSend)
 	}
 
 	SubscriberGroup& subscribers = _subscriberGroups[messageToSend.getType()];
-	for each (Subscriber eachSubscriber in subscribers)
+	for (auto const& eachSubscriber : subscribers)
 	{
-		if (eachSubscriber(messageToSend))
+		if (eachSubscriber.second(messageToSend))
 		{
 			return;
 		}
@@ -118,37 +123,38 @@ void MessagingSystem::start()
 ///<param name="messageType">The type of message to subscribe to.</param>
 ///<param name="subscriberToAdd">The subscribing method to add.</param>
 ///
-void MessagingSystem::subscribe(MESSAGE_TYPE messageType, Subscriber subscriberToAdd)
+int MessagingSystem::subscribe(MESSAGE_TYPE messageType, Subscriber subscriberToAdd)
 {
-	_subscriberGroupsLock.lock();
+	_nextSubscriberIdMutex.lock();
+	_subscriberGroupsMutex.lock();
+
 	/* If there is no subscriber group for this message type yet, add one. */
 	if (_subscriberGroups.count(messageType) == 0)
 	{
 		_subscriberGroups.insert(pair<MESSAGE_TYPE, SubscriberGroup>(messageType,SubscriberGroup()));
 	}
 
-	/* If the given subscriber already exists, do nothing. */
+	/* Add the new subscriber, assign them a unique ID, and increment the unique ID counter. */
 	SubscriberGroup& subscribers = _subscriberGroups[messageType];
-	for each (Subscriber eachSubscriber in subscribers)
-	{
-		if (eachSubscriber.target == subscriberToAdd.target)
-		{
-			return;
-		}
-	}
+	subscribers.insert(pair<int, Subscriber>(_nextSubscriberId, subscriberToAdd));
+	int newSubscriberId = _nextSubscriberId;
+	_nextSubscriberId++;
 
-	subscribers.push_back(subscriberToAdd);
-	_subscriberGroupsLock.unlock();
+	_subscriberGroupsMutex.unlock();
+	_nextSubscriberIdMutex.unlock();
+
+	return newSubscriberId;
 }
 
 ///
-///<summary>Removes a subscriber to a particular type of message from the messaging system</summary>
+///<summary>Removes a subscriber to a particular type of message from the messaging system.</summary>
 ///<param name="messageType">The type of message to remove the subscriber from.</param>
-///<param name="subscriberToRemove">The subscribing method to remove.</param>
+///<param name="subscriberIdToRemove">The ID of the subscribing method to remove.</param>
 ///
-void MessagingSystem::unsubscribe(MESSAGE_TYPE messageType, Subscriber subscriberToRemove)
+void MessagingSystem::unsubscribe(MESSAGE_TYPE messageType, unsigned int subscriberIdToRemove)
 {
-	_subscriberGroupsLock.lock();
+	_subscriberGroupsMutex.lock();
+
 	/* If there are no subscribers to this message type, do nothing. */
 	if (_subscriberGroups.count(messageType) == 0)
 	{
@@ -157,13 +163,14 @@ void MessagingSystem::unsubscribe(MESSAGE_TYPE messageType, Subscriber subscribe
 	
 	/* Otherwise, look for the given subscriber and remove it if it exists. */
 	SubscriberGroup& subscribers = _subscriberGroups[messageType];
-	for each(Subscriber eachSubscriber in subscribers)
+	for (auto const& eachSubscriber : subscribers)
 	{
-		if (eachSubscriber.target == subscriberToRemove.target)
+		if (eachSubscriber.first == subscriberIdToRemove)
 		{
-			subscribers.erase(remove(subscribers.begin(), subscribers.end(), subscriberToRemove), subscribers.end());
+			subscribers.erase(subscriberIdToRemove);
 			return;
 		}
 	}
-	_subscriberGroupsLock.unlock();
+
+	_subscriberGroupsMutex.unlock();
 }

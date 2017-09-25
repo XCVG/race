@@ -69,9 +69,6 @@
     <ClCompile Include="BaseMessage.cpp">
       <Filter>Game Engine\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SubscriberGroup.cpp">
-      <Filter>Game Engine\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MessagingSystem.cpp">
       <Filter>Game Engine\Source Files</Filter>
     </ClCompile>
@@ -111,9 +108,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BaseMessage.h">
-      <Filter>Game Engine\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SubscriberGroup.h">
       <Filter>Game Engine\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MessagingSystem.h">

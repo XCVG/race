@@ -164,12 +164,10 @@ xcopy /y /e /i "$(ProjectDir)ResourceFiles" "$(OutDir)ResourceFiles"</Command>
   <ItemGroup>
     <ClCompile Include="BaseMessage.cpp" />
     <ClCompile Include="MessagingSystem.cpp" />
-    <ClCompile Include="SubscriberGroup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BaseMessage.h" />
     <ClInclude Include="MessagingSystem.h" />
-    <ClInclude Include="SubscriberGroup.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
