@@ -1,7 +1,13 @@
 #pragma once
-#include <iostream>
+
+#ifdef __APPLE__
+#include <GL/glew.h>
+#include <SDL2/SDL.h>
+#elif defined _WIN32 || defined _WIN64
 #include <glew.h>
 #include <SDL.h>
+#endif
+#include <iostream>
 
 //everything here is temporary, waiting for the better shader loader
 
@@ -63,7 +69,7 @@ GLuint LoadShaders()
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-		SDL_Log(infoLog);
+		SDL_Log("%s", infoLog);
 	}
 	// link shaders
 	GLuint shaderProgram = glCreateProgram();
@@ -75,7 +81,7 @@ GLuint LoadShaders()
 	if (!success) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-		SDL_Log(infoLog);
+		SDL_Log("%s", infoLog);
 	}
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
@@ -107,7 +113,7 @@ GLuint LoadShadersFBDraw()
 	{
 		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-		SDL_Log(infoLog);
+		SDL_Log("%s", infoLog);
 	}
 	// link shaders
 	GLuint shaderProgram = glCreateProgram();
@@ -119,7 +125,7 @@ GLuint LoadShadersFBDraw()
 	if (!success) {
 		glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-		SDL_Log(infoLog);
+		SDL_Log("%s", infoLog);
 	}
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
