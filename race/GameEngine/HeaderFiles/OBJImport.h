@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <stdlib.h>
 #include <glew.h>
 #include <SDL.h>
 #include <SDL_filesystem.h>

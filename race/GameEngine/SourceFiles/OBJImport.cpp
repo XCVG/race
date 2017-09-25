@@ -23,7 +23,7 @@ std::vector<GLfloat> OBJImport::importObjInfo(std::string string)
 				for (int i = 0; i < 3; i++)
 				{
 					std::getline(ss2, lines2, ' ');
-					vertexArray.push_back(atoi(lines2.c_str()));
+					vertexArray.push_back(strtof(lines2.c_str(), NULL));
 				}
 				
 			}
@@ -32,7 +32,7 @@ std::vector<GLfloat> OBJImport::importObjInfo(std::string string)
 				for (int i = 0; i < 2; i++)
 				{
 					std::getline(ss2, lines2, ' ');
-					textArray.push_back(atoi(lines2.c_str()));
+					textArray.push_back(strtof(lines2.c_str(), NULL));
 				}
 			}
 			if (strcmp(lines2.c_str(), "vn") == 0)
@@ -40,7 +40,7 @@ std::vector<GLfloat> OBJImport::importObjInfo(std::string string)
 				for (int i = 0; i < 3; i++)
 				{
 					std::getline(ss2, lines2, ' ');
-					normalArray.push_back(atoi(lines2.c_str()));
+					normalArray.push_back(strtof(lines2.c_str(), NULL));
 				}
 			}
 			if (strcmp(lines2.c_str(), "f") == 0)
