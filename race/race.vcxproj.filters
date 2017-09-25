@@ -66,6 +66,12 @@
     <ClCompile Include="GameEngine\SourceFiles\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BaseMessage.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MessagingSystem.cpp">
+      <Filter>Game Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HeaderFiles\main.h">
@@ -100,6 +106,12 @@
     </ClInclude>
     <ClInclude Include="GameEngine\HeaderFiles\Window.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseMessage.h">
+      <Filter>Game Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MessagingSystem.h">
+      <Filter>Game Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
