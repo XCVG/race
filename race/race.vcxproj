@@ -161,6 +161,14 @@ xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"
 xcopy /y /e /i "$(ProjectDir)ResourceFiles" "$(OutDir)ResourceFiles"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BaseMessage.cpp" />
+    <ClCompile Include="MessagingSystem.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BaseMessage.h" />
+    <ClInclude Include="MessagingSystem.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
