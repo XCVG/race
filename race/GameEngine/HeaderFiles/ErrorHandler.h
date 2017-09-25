@@ -1,7 +1,8 @@
 #pragma once
 #include <string>
 #include <map>
-#define	assert(e)	((void)0)
+#include <assert.h>
+
 class ErrorHandler {
 public:
     ErrorHandler(int _value, const std::string& _str) {
