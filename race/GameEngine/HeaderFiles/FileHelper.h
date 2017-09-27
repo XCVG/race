@@ -9,6 +9,7 @@
 #include <string>
 #include <exception>
 #include <vector>
+#include <memory>
 
 /// <summary>
 /// Static helper class that wraps some SDL file operations
@@ -52,8 +53,7 @@ public:
 /// <summary>
 /// Exception thrown by FileHelper when it can't find a file
 /// </summary>
-class FileNotFoundException : public std::exception {
-	virtual const char* what() const throw() {
-		return "Invalid file!";
-	}
+class FileNotFoundException : public std::runtime_error {
+public:
+	FileNotFoundException(const std::string& what_arg) : std::runtime_error(what_arg) {}
 };
