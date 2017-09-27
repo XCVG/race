@@ -12,6 +12,7 @@
 #endif
 #include <string>
 #include <iostream>
+#include "FileEngine.h"
 #include "RenderEngine.h"
 #include "PhysicsEngine.h"
 #include "AIEngine.h"
@@ -25,6 +26,7 @@ public:
     Engine();
     ~Engine();
 private:
+	FileEngine* _fileEngine;
     RenderEngine* _renderEngine;
     PhysicsEngine* _physicsEngine;
     AIEngine* _aiEngine;

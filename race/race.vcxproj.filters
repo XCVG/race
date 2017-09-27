@@ -15,6 +15,7 @@
     <ClCompile Include="SourceFiles\MessagingSystem.cpp" />
     <ClCompile Include="SourceFiles\Object.cpp" />
     <ClCompile Include="GameEngine\PhysicsEngine\SourceFiles\PhysicsEngine.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\FileEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
@@ -35,5 +36,6 @@
     <ClInclude Include="HeaderFiles\MessagingSystem.h" />
     <ClInclude Include="HeaderFiles\Object.h" />
     <ClInclude Include="GameEngine\PhysicsEngine\HeaderFiles\PhysicsEngine.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\FileEngine.h" />
   </ItemGroup>
 </Project>

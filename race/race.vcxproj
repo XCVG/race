@@ -22,6 +22,7 @@
     <ClCompile Include="GameEngine\SourceFiles\AIEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Engine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\ErrorHandler.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\FileEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\FileHelper.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\InputEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\OBJImport.cpp" />
@@ -36,6 +37,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\FileEngine.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Cube.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Engine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\ErrorHandler.h" />

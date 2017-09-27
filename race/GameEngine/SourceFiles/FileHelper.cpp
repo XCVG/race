@@ -1,4 +1,4 @@
-#include "../HeaderFiles/FileHelper.h"
+#include "FileHelper.h"
 
 std::string FileHelper::loadFileFromString(std::string path)
 {
@@ -28,11 +28,21 @@ std::string FileHelper::loadFileFromString(std::string path)
 	return str;
 }
 
+std::vector<uint8_t> FileHelper::loadBinaryFileFromString(std::string path)
+{
+	return std::vector<uint8_t>();
+}
+
 std::string FileHelper::loadFileFromStringRelative(std::string relativePath)
 {
 	std::string basePath = std::string(SDL_GetBasePath());
 	std::string fullPath = basePath + relativePath;
 
 	return loadFileFromString(fullPath);
+}
+
+std::vector<uint8_t> FileHelper::loadBinaryFileFromStringRelative(std::string relativePath)
+{
+	return std::vector<uint8_t>();
 }
 

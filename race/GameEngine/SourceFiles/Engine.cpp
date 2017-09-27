@@ -3,6 +3,10 @@
 
 void Engine::start() {
     // Create the other engines, or at least get pointer to them
+	_fileEngine = new FileEngine();
+	if (_fileEngine == nullptr) {
+		std::cout << ErrorHandler::getErrorString(1) << std::endl;
+	}
     _renderEngine = new RenderEngine();
     if (_renderEngine == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
@@ -24,6 +28,7 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
     try {
+		_fileEngine->start();
         _renderEngine->start();
         _physicsEngine->start();
         _aiEngine->start();
@@ -52,4 +57,5 @@ Engine::~Engine() {
     _aiEngine->~AIEngine();
     _physicsEngine->~PhysicsEngine();
     _renderEngine->~RenderEngine();
+	_fileEngine->~FileEngine();
 }
