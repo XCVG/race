@@ -11,14 +11,14 @@ struct RenderMessageData
 
 struct ModelData
 {
-	std::string name;
-	//GLuint vboID; //don't need this because we'll use it as the index
+	//std::string name; //don't need this, will be stored in hashtable
+	GLuint vboID;
 	GLuint numVerts;
 	GLfloat preScale;
 };
 
 struct TextureData
 {
-	std::string name;
-	//GLuint texID; //don't need this because we'll use it as the index
+	//std::string name; //don't need this, will be stored in hashtable
+	GLuint texID; 
 };

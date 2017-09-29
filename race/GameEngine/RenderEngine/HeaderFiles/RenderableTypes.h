@@ -21,10 +21,10 @@ struct RenderableObject
 	glm::vec3 rotation;
 	glm::vec3 scale;
 
-	GLuint modelID;
+	std::string modelName;
 
-	GLuint albedoID;
-	GLuint normalID;
+	std::string albedoName;
+	std::string normalName;
 	GLfloat smoothness;
 };
 
@@ -59,12 +59,28 @@ struct RenderableCamera
 };
 
 /// <summary>
+/// Model information sent to the RenderEngine to load
+/// </summary>
+struct RenderableModel
+{
+	std::string name;
+};
+
+/// <summary>
+/// Texture information sent to the RenderEngine to load
+/// </summary>
+struct RenderableTexture
+{
+	std::string name;
+};
+
+/// <summary>
 /// Data sent to RenderEngine on scene load
 /// </summary>
 struct RenderableSetupData
 {
-	std::map<std::string, GLuint> *models_p;
-	std::map<std::string, GLuint> *textures_p;
+	std::vector<std::string> *models_p;
+	std::vector<std::string> *textures_p;
 };
 
 /// <summary>
