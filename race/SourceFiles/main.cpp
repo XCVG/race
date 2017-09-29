@@ -1,5 +1,6 @@
 #include "main.h" 
 #include "Engine.h"
+#include <SDL_gamecontroller.h>
 
 uint32_t TICKS_TO_WAIT = 17;
 SDL_Window *g_window_p;
@@ -12,7 +13,30 @@ SDL_GLContext g_context;
 /// <param name="argv">Array containg string arguments passed to the application</param>
 /// <return>Status code on application exit.</return>
 int main(int argc, char ** argv) {
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+
+	// --->
+
+	/*SDL_Joystick *XboxController = SDL_JoystickOpen(0);
+
+	SDL_Log("Controller: %s", SDL_JoystickName(XboxController));
+	SDL_Log("Axes: %d", SDL_JoystickNumAxes(XboxController));
+	SDL_Log("Buttons: %d", SDL_JoystickNumButtons(XboxController));*/
+
+	// Checking if there is a controller and setting the joystick to the gamecontroller that we are going to use.
+
+	SDL_GameController *gameController = nullptr;
+
+	for (int x = 0; x < SDL_NumJoysticks(); x++)
+	{
+		if (SDL_IsGameController(x))
+		{
+			gameController = SDL_GameControllerOpen(x);
+			break;
+		}
+	}
+
+	// <---
 
 	//open opengl and window
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -47,6 +71,103 @@ int main(int argc, char ** argv) {
 			{
 				quit = true;
 			}
+			
+			else if (ev.type == SDL_CONTROLLERBUTTONDOWN)
+			{
+				if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_A)
+				{
+					SDL_Log("A BUTTON PRESSED");
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_B)
+				{
+					SDL_Log("B BUTTON PRESSED");
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_X)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_Y)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_DOWN)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_UP)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_LEFT)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSHOULDER)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_LEFTSTICK)
+				{
+					// Do Stuff
+				}
+
+				else if (ev.cbutton.button == SDL_CONTROLLER_BUTTON_RIGHTSTICK)
+				{
+					// Do Stuff
+				}
+			}
+
+			else if (ev.type == SDL_CONTROLLERAXISMOTION)
+			{
+				if (ev.caxis.axis == SDL_CONTROLLER_AXIS_LEFTX)
+				{
+					SDL_Log("LEFT AXIS X MOVED");
+				}
+
+				else if (ev.caxis.axis == SDL_CONTROLLER_AXIS_LEFTY)
+				{
+					SDL_Log("LEFT AXIS Y MOVED");
+				}
+
+				else if (ev.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTX)
+				{
+					SDL_Log("RIGHT AXIS X MOVED");
+				}
+
+				else if (ev.caxis.axis == SDL_CONTROLLER_AXIS_RIGHTY)
+				{
+					SDL_Log("RIGHT AXIS Y MOVED");
+				}
+
+				else if (ev.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERLEFT)
+				{
+					SDL_Log("LEFT TRIGGER PRESSED");
+				}
+
+				else if (ev.caxis.axis == SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+				{
+					SDL_Log("RIGHT TRIGGER PRESSED");
+				}
+			}
+
 		}
 
 		//run the renderer every tick
@@ -56,6 +177,19 @@ int main(int argc, char ** argv) {
 			e->update();
 		}
 	}
+
+	// --->
+
+	// Checking If there is no controller and setting controller value back to nullptr.
+
+	if (gameController != NULL)
+	{
+		SDL_GameControllerClose(gameController);
+	}
+
+	gameController = nullptr;
+
+	// <---
 
 	SDL_DestroyWindow(g_window_p);
 
