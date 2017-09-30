@@ -24,6 +24,7 @@
 	Dependencies
 ========================================================================================*/
 #include <functional>
+#include <thread>
 #include <map>
 #include <mutex>
 #include <queue>

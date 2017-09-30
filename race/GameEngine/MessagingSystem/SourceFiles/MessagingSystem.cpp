@@ -127,7 +127,7 @@ void MessagingSystem::sendMessage(std::shared_ptr<Message> messageToSend_p)
 
 	/* Get all subscribers for this message type and send the message to each of them. */
 	ReceiverGroup& receivers = _receiverGroups[messageToSend_p->getType()];
-	for each (MessageReceiver* const eachReceiver_p in receivers)
+	for (MessageReceiver* const eachReceiver_p : receivers)
 	{
 		eachReceiver_p->messageHandler(messageToSend_p);
 	}
@@ -166,7 +166,7 @@ void MessagingSystem::subscribe(MESSAGE_TYPE messageType, MessageReceiver* subsc
 
 	/* If the given subscriber is already subscribed to the given message type, return without doing anything. */
 	ReceiverGroup& receivers = _receiverGroups[messageType];
-	for each (MessageReceiver* eachReceiver_p in receivers)
+	for (MessageReceiver* eachReceiver_p : receivers)
 	{
 		if (eachReceiver_p == subscriberToAdd_p)
 		{
@@ -205,7 +205,7 @@ void MessagingSystem::unsubscribe(MESSAGE_TYPE messageType, MessageReceiver* sub
 	
 	/* If the given subscriber is subscribed to the given message type, unsubscribe it. */
 	ReceiverGroup& receivers = _receiverGroups[messageType];
-	for each (MessageReceiver* eachReceiver_p in receivers)
+	for (MessageReceiver* eachReceiver_p : receivers)
 	{
 		if (eachReceiver_p == subscriberToRemove_p)
 		{
