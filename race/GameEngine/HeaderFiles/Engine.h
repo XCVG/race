@@ -12,23 +12,28 @@
 #endif
 #include <string>
 #include <iostream>
+#include <thread>
 #include "RenderEngine.h"
 #include "PhysicsEngine.h"
 #include "AIEngine.h"
 #include "InputEngine.h"
 #include "SoundEngine.h"
-
 class Engine {
 public:
     void start();
     void update();
+    void stop();
     Engine();
     ~Engine();
+    std::thread *_engineThread_p;
 private:
-    RenderEngine* _renderEngine;
-    PhysicsEngine* _physicsEngine;
-    AIEngine* _aiEngine;
-    InputEngine* _inputEngine;
-    SoundEngine* _soundEngine;
+    RenderEngine *_renderEngine_p;
+    PhysicsEngine *_physicsEngine_p;
+    AIEngine *_aiEngine_p;
+    InputEngine *_inputEngine_p;
+    SoundEngine *_soundEngine_p;
+    std::thread *_physicsThread_p;
+    std::thread *_aiThread_p;
+    bool _running = false;
     void loop();
 };
