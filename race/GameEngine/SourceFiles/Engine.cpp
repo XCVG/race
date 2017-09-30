@@ -27,7 +27,6 @@ void Engine::start() {
         _renderEngine->start();
         _physicsEngine->start();
         _aiEngine->start();
-        _inputEngine->start();
         _soundEngine->start();
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
