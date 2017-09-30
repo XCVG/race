@@ -1,8 +1,7 @@
 /*===================================================================================*//**
-	BaseMessage
+	Message
 	
-	The base class for all messages to be sent by the MessagingSystem.
-	Specific message classes should inherit from this one.
+	A message to be sent by the MessagingSystem.
     
     Copyright 2017 Erick Fernandez de Arteaga. All rights reserved.
         https://www.linkedin.com/in/erick-fda
@@ -12,39 +11,73 @@
 	@version 0.0.0
 	@file
 	
-	@see BaseMessage
-	@see BaseMessage.h
+	@see Message
+	@see Message.h
 	
 *//*====================================================================================*/
 
 /*========================================================================================
 	Dependencies
 ========================================================================================*/
-#include "BaseMessage.h"
-using namespace std;
+#include "Message.h"
 
 /*----------------------------------------------------------------------------------------
 	Constructors and Destructors
 ----------------------------------------------------------------------------------------*/
-BaseMessage::BaseMessage():
-	_type(BaseMessageType)
+///
+///	Message constructor.
+///
+Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p):
+	_type(type), _isUrgent(isUrgent), _content_p(content_p)
 {}
 
-BaseMessage::~BaseMessage()
-{}
+///
+///	Default Message destructor.
+///
+Message::~Message()
+{
+	delete _content_p;
+}
 
 /*----------------------------------------------------------------------------------------
 	Instance Getter Methods
 ----------------------------------------------------------------------------------------*/
-MESSAGE_TYPE BaseMessage::getType()
+///
+///	Return the message's type.
+///
+MESSAGE_TYPE Message::getType()
 {
 	return _type;
+}
+
+///
+///	Return whether the message is urgent.
+///
+bool Message::getIsUrgent()
+{
+	return _isUrgent;
+}
+
+///
+///	Return a pointer to the message's content.
+///
+BaseMessageContent* Message::getContent()
+{
+	return _content_p;
 }
 
 /*----------------------------------------------------------------------------------------
 	Instance Setter Methods
 ----------------------------------------------------------------------------------------*/
-
+///
+///	Sets the message's content.
+/// This will delete the old content's memory!
+///
+void Message::setContent(BaseMessageContent* newContent)
+{
+	delete _content_p;
+	_content_p = newContent;
+}
 
 /*----------------------------------------------------------------------------------------
 	Instance Methods

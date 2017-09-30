@@ -1,7 +1,7 @@
 /*===================================================================================*//**
 	MessagingSystem
 	
-	Singleton for sending messages to objects that have subscribed to particular event 
+	Singleton for sending messages to objects that have subscribed to particular message 
     types.
     
     Copyright 2017 Erick Fernandez de Arteaga. All rights reserved.
@@ -23,21 +23,20 @@
 /*========================================================================================
 	Dependencies
 ========================================================================================*/
-#include <algorithm>
 #include <functional>
+#include <thread>
 #include <map>
 #include <mutex>
 #include <queue>
-#include "BaseMessage.h"
-using namespace std;
-using Subscriber = function<bool(BaseMessage)>;
-using SubscriberGroup = map<int, Subscriber>;
+#include "Message.h"
+#include "MessageReceiver.h"
+using ReceiverGroup = std::vector<MessageReceiver*>;
 
 /*========================================================================================
 	MessagingSystem	
 ========================================================================================*/
 /**
-	Singleton for sending messages to objects that have subscribed to particular event 
+	Singleton for sending messages to objects that have subscribed to particular message 
     types.
 	
 	@see MessagingSystem
@@ -49,13 +48,10 @@ class MessagingSystem
 		Singleton
     ------------------------------------------------------------------------------------*/
     public:
-        /* Ensure constructor and assignment operator for singleton are not implemented. */
-		MessagingSystem(MessagingSystem const&)   = delete;
-        void operator=(MessagingSystem const&)     = delete;
+        /* Ensure copy constructor and assignment operator for singleton are not implemented. */
+		MessagingSystem(MessagingSystem const&) = delete;
+        void operator=(MessagingSystem const&) = delete;
 
-        /**
-            Declares, instantiates, and returns the static instance.
-        */
         static MessagingSystem& instance();
 
 	private:
@@ -65,12 +61,11 @@ class MessagingSystem
 		Instance Fields
     ------------------------------------------------------------------------------------*/
     private:
-		unsigned int _nextSubscriberId;
-		map <MESSAGE_TYPE, SubscriberGroup> _subscriberGroups;
-		queue<BaseMessage> _messageQueue;
-		mutex _nextSubscriberIdMutex;
-		mutex _subscriberGroupsMutex;
-		mutex _messageQueueMutex;
+		bool _isDead;
+		std::map <MESSAGE_TYPE, ReceiverGroup> _receiverGroups;
+		std::queue<std::shared_ptr<Message>> _messageQueue;
+		std::mutex _receiverGroupsMutex;
+		std::mutex _messageQueueMutex;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -88,15 +83,15 @@ class MessagingSystem
 		Instance Methods
 	------------------------------------------------------------------------------------*/
     public:
-		void start();
-		int subscribe(MESSAGE_TYPE messageType, Subscriber subscriberToAdd);
-		void postMessage(BaseMessage messageToPost);
-		void postMessageImmediate(BaseMessage messageToPost);
-		void unsubscribe(MESSAGE_TYPE messageType, unsigned int subscriberIdToRemove);
+		std::thread* start();
+		void subscribe(MESSAGE_TYPE messageType, MessageReceiver* subscriberToAdd_p);
+		void unsubscribe(MESSAGE_TYPE messageType, MessageReceiver* subscriberToRemove_p);
+		void postMessage(std::shared_ptr<Message> messageToPost_p);
+		void kill();
 
     private:
 		void loop();
-		void sendMessage(BaseMessage messageToSend);
+		void sendMessage(std::shared_ptr<Message> messageToSend_p);
 };
 
 #endif
