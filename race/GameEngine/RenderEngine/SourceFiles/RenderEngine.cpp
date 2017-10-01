@@ -53,11 +53,15 @@ public:
 
 private:
 
+	//TODO: some should be std::atomic
+
 	//context and window
 	SDL_Window *_window_p;
 	SDL_GLContext _context_p;
 
-	//TODO message queue
+	//state data
+	RendererState _state;
+	RenderableScene *_lastScene_p;
 	std::queue<RenderMessageData> *_mq_p;
 
 	//resource lists
@@ -65,7 +69,7 @@ private:
 	std::vector<TextureData> *_textures_p;
 
 	//threading stuff
-	bool _isRunning;
+	bool _isRunning;	
 	std::thread *_renderThread_p;
 
 	//honestly not sure
@@ -99,11 +103,14 @@ private:
 		SDL_Log("RenderEngine thread started!");
 
 		setupGLOnThread();
-		setupTestSceneOnThread();
+		setupSceneOnThread();
 
 		//loop: on RenderEngine thread
 		while (_isRunning)
 		{
+			//TODO: state switching and stuff
+			//doLoad, doRender/doImmediateLoad, doUnload
+
 			doRender(); //this should run really absurdly fast
 
 		}
@@ -129,13 +136,50 @@ private:
 		glewInit();
 	}
 
-	void setupTestSceneOnThread()
+	void setupSceneOnThread()
 	{
 		setupProgram();
 		setupFramebuffers();
 		setupFramebufferDraw();
-		setupBaseMatrices();
-		setupCube();
+		setupBaseMatrices(); //will need to move/redo to deal with moving camera
+		setupCube(); //remove this
+	}
+
+	/// <summary>
+	/// Checks the queue and grabs new state information
+	/// </summary>
+	void checkQueue()
+	{
+		//lock mutex...
+
+		//needs to be sensitive to current state and prioritize certain messages
+
+		//if nothing is loaded, wait for a load call and ignore everything else
+
+		//if rendering:
+		//	if we have an unload message, ignore other messages, start unload and purge everything before unload
+		//	if we have a load message, push to "immediate load" queue and await that to render
+		//  if we don't have either, simply do a render
+
+		//if currently loading or unloading, ignore messages
+
+		//unlock mutexs
+	}
+
+	/// <summary>
+	/// Loads stuff
+	/// </summary>
+	void doLoad()
+	{
+		//loads stuff
+	}
+
+	/// <summary>
+	/// Unloads stuff
+	/// </summary>
+	void doUnload()
+	{
+
 	}
 
 	/// <summary>
@@ -143,14 +187,15 @@ private:
 	/// </summary>
 	void doRender()
 	{
+		//temporary
 		updateCube();
-
-		//cycleBackground();
-		//glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+		
 		drawCube();
-		drawFramebuffer();
+
+		//will remain in final
+		drawObjects();
+		drawLighting();
+		drawOverlay();
 
 		SDL_GL_SwapWindow(_window_p);
 	}
@@ -264,7 +309,17 @@ private:
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void drawFramebuffer()
+	void drawObjects()
+	{
+		//TODO draw objects
+	}
+
+	void drawObject()
+	{
+		//TODO draw one object
+	}
+
+	void drawLighting()
 	{
 		//setup framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -292,6 +347,11 @@ private:
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(0);
 
+	}
+
+	void drawOverlay()
+	{
+		//TODO draw overlay
 	}
 
 	void updateCube()

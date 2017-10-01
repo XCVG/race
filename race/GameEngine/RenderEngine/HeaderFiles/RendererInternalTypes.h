@@ -3,6 +3,11 @@
 #include <glm.hpp>
 #include <vector>
 
+enum class RendererState
+{
+	idle, loading, rendering, unloading
+};
+
 struct RenderMessageData
 {
 	//TODO make this sane
