@@ -57,11 +57,10 @@ int main(int argc, char ** argv) {
 		}
 	}
 
+	delete(e);
 	SDL_DestroyWindow(g_window_p);
 
 	//*****temporary loop section ends
-
-	delete(e);
 
 	SDL_Quit();
 
