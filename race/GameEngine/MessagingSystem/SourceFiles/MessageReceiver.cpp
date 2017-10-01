@@ -45,7 +45,7 @@ MessageReceiver::~MessageReceiver()
 
 	/* Unsubscribe from all message subscriptions. */
 	std::vector<MESSAGE_TYPE> subs = _subscriptions;
-	for each (MESSAGE_TYPE eachSubscription in subs)
+	for (MESSAGE_TYPE eachSubscription : subs)
 	{
 		_subscriptions.erase(remove(_subscriptions.begin(), _subscriptions.end(), eachSubscription), _subscriptions.end());
 		MessagingSystem::instance().unsubscribe(eachSubscription, this);
@@ -109,7 +109,7 @@ void MessageReceiver::subscribe(MESSAGE_TYPE messageType)
 	_subscriptionsMutex_p->lock();
 
 	/* If the receiver is already subscribed to messages of the given type, return without doing anything. */
-	for each (MESSAGE_TYPE eachSubscription in _subscriptions)
+	for (MESSAGE_TYPE eachSubscription : _subscriptions)
 	{
 		if (eachSubscription == messageType)
 		{
@@ -139,7 +139,7 @@ void MessageReceiver::unsubscribe(MESSAGE_TYPE messageType)
 	_subscriptionsMutex_p->lock();
 
 	/* If this receiver is subscribed to messages of the given type, unsubscribe. */
-	for each (MESSAGE_TYPE eachSubscription in _subscriptions)
+	for (MESSAGE_TYPE eachSubscription : _subscriptions)
 	{
 		if (eachSubscription == messageType)
 		{
