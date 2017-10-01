@@ -2,6 +2,7 @@
 
 #include <thread>
 #include <queue>
+#include <atomic>
 #include <glew.h>
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
@@ -30,12 +31,15 @@ public:
 
 		_window_p = g_window_p; //really ought to switch to dependency injection
 
+		_state = RendererState::idle;
+
 		_cubeAngle = 0;
 
 		//create message queue and handler, then subscribe to messaging
 		_mq_p = new std::vector<std::shared_ptr<Message>>();
 		_mr_p = new RenderMessageReceiver(_mq_p);
 		_mr_p->subscribeAll();
+		_mqMutex_p = new std::mutex();
 
 		//spawn thread
 		_isRunning = true;
@@ -69,16 +73,20 @@ private:
 	SDL_GLContext _context_p;
 
 	//state data
-	RendererState _state;
+	std::atomic<RendererState> _state;
 	RenderableScene *_lastScene_p;
+	RenderableOverlay *_lastOverlay_p;
 
 	//messaging stuff
 	RenderMessageReceiver *_mr_p;
 	std::vector<std::shared_ptr<Message>> *_mq_p;
+	std::mutex *_mqMutex_p;
 
 	//resource lists
-	std::vector<ModelData> *_models_p;
-	std::vector<TextureData> *_textures_p;
+	std::map<std::string, ModelData> *_models_p;
+	std::map<std::string, TextureData> *_textures_p;
+	std::vector<ModelLoadingData> *_modelLoadQueue_p;
+	std::vector<TextureLoadingData> *_textureLoadQueue_p;
 
 	//threading stuff
 	bool _isRunning;	
@@ -114,6 +122,7 @@ private:
 
 		SDL_Log("RenderEngine thread started!");
 
+		setupStructuresOnThread();
 		setupGLOnThread();
 		setupSceneOnThread();
 
@@ -124,12 +133,30 @@ private:
 			//doLoad, doRender/doImmediateLoad, doUnload
 
 			doRender(); //this should run really absurdly fast
+			
+		}
 
+		//force unload/release if we're not already unloaded
+		if (_state != RendererState::idle)
+		{
+			doUnload();
 		}
 
 		SDL_Log("RenderEngine thread halted!");
 
 		//cleanup after run
+		cleanupGLOnThread();
+		cleanupStructuresOnThread();
+	}
+
+	void setupStructuresOnThread()
+	{
+		//setup data structures
+
+		_models_p = new std::map<std::string, ModelData>();
+		_textures_p = new std::map<std::string, TextureData>();
+		_modelLoadQueue_p = new std::vector<ModelLoadingData>();
+		_textureLoadQueue_p = new std::vector<TextureLoadingData>();
 	}
 
 	void setupGLOnThread()
@@ -142,7 +169,7 @@ private:
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 		//SDL_GL_CreateContext(_window_p);
-		_context_p = SDL_GL_CreateContext(_window_p); //crashes here, a threading issue
+		_context_p = SDL_GL_CreateContext(_window_p); //we will need to modify this to release/acquire context in concert with the UI thread
 		//SDL_GL_MakeCurrent(g_window_p, g_context);
 		glewExperimental = GL_TRUE;
 		glewInit();
@@ -157,25 +184,69 @@ private:
 		setupCube(); //remove this
 	}
 
+	void cleanupGLOnThread()
+	{
+		//TODO cleanup all the GL gunk
+	}
+
+	void cleanupStructuresOnThread()
+	{
+		//delete data structures
+		delete(_textureLoadQueue_p);
+		delete(_modelLoadQueue_p);		
+		delete(_textures_p);
+		delete(_models_p);
+	}
+
 	/// <summary>
 	/// Checks the queue and grabs new state information
 	/// </summary>
 	void checkQueue()
 	{
 		//lock mutex...
+		_mqMutex_p->lock();
 
 		//needs to be sensitive to current state and prioritize certain messages
+		//REMEMBER: the "head" of the queue is at 0 and the "tail" at the other end
+				
+		if (!_mq_p->empty()) //optimization: skip EVERYTHING if empty
+		{
+			if (_state == RendererState::idle)
+			{
+				auto iter = _mq_p->begin();
 
-		//if nothing is loaded, wait for a load call and ignore everything else
+				//if nothing is loaded, wait for a load call and delete everything else
+				for (; iter != _mq_p->end(); iter++)
+				{
+					std::shared_ptr<Message> msg_sp = *iter;
+					if (msg_sp.get()->getType() == RenderLoadMessageType)
+					{
+						//great, we can load, so load and break!
+						//TODO store load info, set loading state
+						break;
+					}
+					else
+					{
+						//remove and log warning
+						SDL_Log("Renderer: found a message before load");
+						iter = _mq_p->erase(iter);
+					}
+				}
+			}
+			else if (_state == RendererState::rendering)
+			{
+				//if rendering:
+				//	if we have an unload message, ignore other messages, start unload and purge everything before unload
+				//	if we have a load message, push to "immediate load" queue and continue rendering as normal
+				//  if we don't have either, simply do a render (grab latest render scene and render overlay messages)
 
-		//if rendering:
-		//	if we have an unload message, ignore other messages, start unload and purge everything before unload
-		//	if we have a load message, push to "immediate load" queue and await that to render
-		//  if we don't have either, simply do a render
+			}
+		}
 
 		//if currently loading or unloading, ignore messages
 
 		//unlock mutexs
+		_mqMutex_p->unlock();
 	}
 
 	/// <summary>
@@ -183,7 +254,16 @@ private:
 	/// </summary>
 	void doLoad()
 	{
+		//if we don't have context, get context
+
 		//loads stuff
+
+		//TODO figure this out, probably going to need two queues
+	}
+
+	void doSingleLoad()
+	{
+		//load one thing during drawing process
 	}
 
 	/// <summary>
@@ -191,7 +271,9 @@ private:
 	/// </summary>
 	void doUnload()
 	{
+		//delete (some) GL stuff, purge data structures, DO NOT PURGE QUEUE
 
+		//finally release context
 	}
 
 	/// <summary>
@@ -329,6 +411,8 @@ private:
 	void drawObject()
 	{
 		//TODO draw one object
+
+		//NOTE: should always be tolerant of missing resources!
 	}
 
 	void drawLighting()
