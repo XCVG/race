@@ -23,6 +23,7 @@
 	Dependencies
 ========================================================================================*/
 
+#include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
 
 /*========================================================================================
 	Enums
@@ -35,7 +36,16 @@
 */
 enum MESSAGE_TYPE
 {
-	BaseMessageType
+	BaseMessageType,
+	FileLoadMessageType,
+	FileLoadedMessageType,
+	RenderLoadMessageType,
+	RenderReadyMessageType,
+	RenderLoadSingleMessageType,
+	RenderDrawMessageType,
+	RenderDrawOverlayMessageType,
+	RenderUnloadMessageType,
+	RenderFinishedMessageType
 };
 
 /*========================================================================================
@@ -54,5 +64,65 @@ enum MESSAGE_TYPE
 */
 class BaseMessageContent
 {};
+
+//*****FILE MESSAGES
+
+class FileLoadMessageContent : BaseMessageContent
+{
+	public:
+		std::string path;
+		bool relative;
+};
+
+class FileLoadedMessageContent: BaseMessageContent
+{
+	public:
+		std::string path;
+		bool relative;
+		bool success;
+		std::string fileContents;
+};
+
+//*****RENDERER MESSAGES
+
+class RenderLoadMessageContent : BaseMessageContent
+{
+	public:
+		RenderableSetupData data;
+};
+
+class RenderReadyMessageContent : BaseMessageContent
+{
+
+};
+
+class RenderLoadSingleMessageContent : BaseMessageContent
+{
+	public:
+		RenderableModel model;
+		RenderableTexture texture;
+};
+
+class RenderDrawMessageContent : BaseMessageContent
+{
+	public:
+		RenderableScene *scene_p; //renderer will ALWAYS be responsible for deletion
+};
+
+class RenderDrawOverlayMessageContent : BaseMessageContent
+{
+	public:
+		RenderableOverlay *overlay_p; //renderer will ALWAYS be responsible for deletion
+};
+
+class RenderUnloadMessageContent : BaseMessageContent
+{
+
+};
+
+class RenderFinishedMessageContent : BaseMessageContent
+{
+
+};
 
 #endif

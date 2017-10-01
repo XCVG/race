@@ -93,5 +93,12 @@ struct RenderableScene
 	RenderableCamera camera;
 };
 
+/// <summary>
+/// Data sent to RenderEngine to draw an overlay (WIP, currently empty)
+/// </summary>
+struct RenderableOverlay
+{
+
+};
 
 

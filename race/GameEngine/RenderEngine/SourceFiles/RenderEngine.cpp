@@ -8,6 +8,8 @@
 #include <SDL.h>
 #include <RenderableTypes.h>
 #include <RendererInternalTypes.h>
+#include <MessageReceiver.h>
+#include "RenderMessageReceiver.h"
 
 #include "Shaders.h"
 #include "Quad.h"
@@ -30,7 +32,10 @@ public:
 
 		_cubeAngle = 0;
 
-		//TODO subscribe to messaging
+		//create message queue and handler, then subscribe to messaging
+		_mq_p = new std::vector<std::shared_ptr<Message>>();
+		_mr_p = new RenderMessageReceiver(_mq_p);
+		_mr_p->subscribeAll();
 
 		//spawn thread
 		_isRunning = true;
@@ -46,9 +51,13 @@ public:
 	{
 		//destructor
 
+		//kill render thread first
 		_isRunning = false;
 		_renderThread_p->join();
 		delete(_renderThread_p);
+
+		delete(_mr_p); //rely on destructor to take care of resource release
+		delete(_mq_p); //this also deletes everything in the message queue
 	}
 
 private:
@@ -62,7 +71,10 @@ private:
 	//state data
 	RendererState _state;
 	RenderableScene *_lastScene_p;
-	std::queue<RenderMessageData> *_mq_p;
+
+	//messaging stuff
+	RenderMessageReceiver *_mr_p;
+	std::vector<std::shared_ptr<Message>> *_mq_p;
 
 	//resource lists
 	std::vector<ModelData> *_models_p;

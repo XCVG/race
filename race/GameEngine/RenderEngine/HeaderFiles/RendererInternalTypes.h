@@ -8,12 +8,6 @@ enum class RendererState
 	idle, loading, rendering, unloading
 };
 
-struct RenderMessageData
-{
-	//TODO make this sane
-	void *data;
-};
-
 struct ModelData
 {
 	//std::string name; //don't need this, will be stored in hashtable
