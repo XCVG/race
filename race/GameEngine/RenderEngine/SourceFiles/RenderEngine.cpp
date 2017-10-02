@@ -21,6 +21,11 @@
 #include "Cube.h"
 #include "main.h"
 
+const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
+const std::string TEXTURE_BASEPATH_CONST = "ResourceFiles/Textures/";
+const std::string MODEL_EXTENSION_CONST = ".obj";
+const std::string TEXTURE_EXTENSION_CONST = ".tga";
+
 class RenderEngineImplementation
 {
 public:
@@ -269,7 +274,8 @@ private:
 					if (msg_sp.get()->getType() == RenderLoadMessageType)
 					{
 						//great, we can load, so load and break!
-						startLoad(static_cast<RenderLoadMessageContent*>(msg_sp.get()->getContent())->data);						
+						startLoad(static_cast<RenderLoadMessageContent*>(msg_sp.get()->getContent())->data);
+						iter = _mq_p->erase(iter); //don't forget to delete that!
 						break;
 					}
 					else
@@ -291,6 +297,91 @@ private:
 				//	if we have a load message, push to "immediate load" queue and continue rendering as normal
 				//  if we don't have either, simply do a render (grab latest render scene and render overlay messages)
 
+				//algorithm:
+				//traverse from start to finish:
+				//store the latest render message and index
+				//store the latest renderOverlay message and index
+				//if we hit an unload instruction, store that and break
+				//if we hit a loadsingle instruction, queue it and continue
+				//if we hit a load instruction, log warning, start unload, store index, and break
+				RenderableScene *latestScene;
+				int latestSceneIndex = 0;
+				RenderableOverlay *latestOverlay;
+				int latestOverlayIndex = 0;
+				int abortIndex = -1;
+
+				for (int i = 0; i < _mq_p->size; i++)
+				{
+					std::shared_ptr<Message> msg_sp = _mq_p->at(i);
+					MESSAGE_TYPE t = msg_sp->getType();
+
+					//DO NOT CHANGE THIS TO A SWITCH
+					if (t == RenderDrawMessageType)
+					{
+						RenderableScene *scn = static_cast<RenderDrawMessageContent*>(msg_sp.get()->getContent())->scene_p;
+						latestScene = scn;
+						latestSceneIndex = i;
+					}
+					else if (t == RenderDrawOverlayMessageType)
+					{
+						RenderableOverlay *ovl = static_cast<RenderDrawOverlayMessageContent*>(msg_sp.get()->getContent())->overlay_p;
+						latestOverlay = ovl;
+						latestOverlayIndex = i;
+					}
+					else if (t == RenderUnloadMessageType)
+					{
+						abortIndex = i;
+						break;
+					}
+					else if (t == RenderLoadSingleMessageType)
+					{
+						RenderLoadSingleMessageContent smc = *static_cast<RenderLoadSingleMessageContent*>(msg_sp.get()->getContent());
+						if (!smc.model.name.empty())
+						{
+							ModelLoadingData mld;
+							mld.name = smc.model.name;
+							mld.path = MODEL_BASEPATH_CONST + mld.name + MODEL_EXTENSION_CONST;
+							mld.relative = true;
+							_modelLoadQueue_p->push_back(mld);
+						}
+						if (!smc.texture.name.empty())
+						{
+							TextureLoadingData tld;
+							tld.name = smc.texture.name;
+							tld.path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
+							tld.relative = true;
+							_textureLoadQueue_p->push_back(tld);
+						}
+					}
+					else if (t == RenderLoadMessageType)
+					{
+						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Received load message while scene is loaded!");
+						abortIndex = i - 1;
+					}
+					else
+					{
+						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Bad message type received!");
+					}
+				}
+				
+				if (abortIndex > 0)
+				{
+					//if abortIndex is a thing, purge everything up and including abortIndex
+					startUnload();
+					_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex+1);
+
+				}
+				else
+				{
+					//if renderOverlay comes after render, delete it first, otherwise it'll get deleted normally
+					//clear everything up to and including stored index
+					if (latestOverlayIndex > latestSceneIndex)
+					{
+						_mq_p->erase(_mq_p->begin() + latestOverlayIndex);
+					}
+					_mq_p->erase(_mq_p->begin(), _mq_p->begin()+latestSceneIndex+1);
+				}
+				
 			}
 			else if (_state == RendererState::unloading)
 			{
@@ -313,6 +404,11 @@ private:
 	{
 		//some of the doLoad stuff will have to move in here
 		//this runs once while doLoad runs every frame until loading is complete
+	}
+
+	void startUnload()
+	{
+		
 	}
 
 	/// <summary>

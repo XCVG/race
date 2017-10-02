@@ -27,6 +27,7 @@ struct ModelLoadingData
 	//TODO data to be stored while waiting for it to load
 	std::string name;
 	std::string path;
+	bool relative;
 };
 
 struct TextureLoadingData
@@ -34,4 +35,5 @@ struct TextureLoadingData
 	//TODO data to be stored while waiting for it to load
 	std::string name;
 	std::string path;
+	bool relative;
 };
