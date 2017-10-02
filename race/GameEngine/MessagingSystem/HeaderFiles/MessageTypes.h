@@ -85,42 +85,42 @@ class FileLoadedMessageContent: BaseMessageContent
 
 //*****RENDERER MESSAGES
 
-class RenderLoadMessageContent : BaseMessageContent
+class RenderLoadMessageContent : public BaseMessageContent
 {
 	public:
 		RenderableSetupData data;
 };
 
-class RenderReadyMessageContent : BaseMessageContent
+class RenderReadyMessageContent : public BaseMessageContent
 {
 
 };
 
-class RenderLoadSingleMessageContent : BaseMessageContent
+class RenderLoadSingleMessageContent : public BaseMessageContent
 {
 	public:
 		RenderableModel model;
 		RenderableTexture texture;
 };
 
-class RenderDrawMessageContent : BaseMessageContent
+class RenderDrawMessageContent : public BaseMessageContent
 {
 	public:
 		RenderableScene *scene_p; //renderer will ALWAYS be responsible for deletion
 };
 
-class RenderDrawOverlayMessageContent : BaseMessageContent
+class RenderDrawOverlayMessageContent : public BaseMessageContent
 {
 	public:
 		RenderableOverlay *overlay_p; //renderer will ALWAYS be responsible for deletion
 };
 
-class RenderUnloadMessageContent : BaseMessageContent
+class RenderUnloadMessageContent : public BaseMessageContent
 {
 
 };
 
-class RenderFinishedMessageContent : BaseMessageContent
+class RenderFinishedMessageContent : public BaseMessageContent
 {
 
 };

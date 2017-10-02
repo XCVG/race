@@ -43,7 +43,7 @@ void Engine::start() {
 }
 
 void Engine::update() {
-    SDL_Log("%s", "Running Engine::udpate");
+    //SDL_Log("%s", "Running Engine::udpate"); //NO NO NO NO NO NO NO!
 }
 
 void Engine::loop() {
@@ -52,6 +52,7 @@ void Engine::loop() {
     }
     while(_running) {
         this->update();
+		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
     }
 }
 

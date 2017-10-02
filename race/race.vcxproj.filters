@@ -18,6 +18,8 @@
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessageReceiver.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderFileMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\GlobalPrefs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
@@ -44,5 +46,6 @@
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessagingSystem.h" />
     <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderMessageReceiver.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderFileMessageReceiver.h" />
   </ItemGroup>
 </Project>

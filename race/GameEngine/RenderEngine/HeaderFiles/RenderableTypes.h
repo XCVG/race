@@ -79,8 +79,8 @@ struct RenderableTexture
 /// </summary>
 struct RenderableSetupData
 {
-	std::vector<std::string> *models_p;
-	std::vector<std::string> *textures_p;
+	std::vector<std::string> models;
+	std::vector<std::string> textures;
 };
 
 /// <summary>

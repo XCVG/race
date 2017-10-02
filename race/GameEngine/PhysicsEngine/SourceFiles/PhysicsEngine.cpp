@@ -17,7 +17,7 @@ void PhysicsEngine::loop() {
 }
 
 void PhysicsEngine::update() {
-    SDL_Log("%s", "Running PhysicsEngine::update");
+    //SDL_Log("%s", "Running PhysicsEngine::update");
 }
 
 void PhysicsEngine::stop() {

@@ -7,10 +7,14 @@
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
 #include <SDL.h>
-#include <RenderableTypes.h>
-#include <RendererInternalTypes.h>
 #include <MessageReceiver.h>
+#include <MessageTypes.h>
+#include <GlobalPrefs.h>
+
+#include "RenderableTypes.h"
+#include "RendererInternalTypes.h"
 #include "RenderMessageReceiver.h"
+#include "RenderFileMessageReceiver.h"
 
 #include "Shaders.h"
 #include "Quad.h"
@@ -40,6 +44,12 @@ public:
 		_mr_p = new RenderMessageReceiver(_mq_p);
 		_mr_p->subscribeAll();
 		_mqMutex_p = new std::mutex();
+		
+		//create file handling message queue and handler, then subscribe to messaging
+		_fmq_p = new std::vector<std::shared_ptr<Message>>();
+		_fmr_p = new RenderFileMessageReceiver(_fmq_p);
+		_fmr_p->subscribeAll();
+		_fmqMutex_p = new std::mutex();
 
 		//spawn thread
 		_isRunning = true;
@@ -62,6 +72,11 @@ public:
 
 		delete(_mr_p); //rely on destructor to take care of resource release
 		delete(_mq_p); //this also deletes everything in the message queue
+		delete(_mqMutex_p);
+
+		delete(_fmr_p);
+		delete(_fmq_p);
+		delete(_fmqMutex_p);
 	}
 
 private:
@@ -79,8 +94,11 @@ private:
 
 	//messaging stuff
 	RenderMessageReceiver *_mr_p;
+	RenderFileMessageReceiver *_fmr_p;
 	std::vector<std::shared_ptr<Message>> *_mq_p;
+	std::vector<std::shared_ptr<Message>> *_fmq_p;
 	std::mutex *_mqMutex_p;
+	std::mutex *_fmqMutex_p;
 
 	//resource lists
 	std::map<std::string, ModelData> *_models_p;
@@ -96,6 +114,9 @@ private:
 	GLuint _programID;
 
 	//framebuffer stuff
+	int _renderWidth;
+	int _renderHeight;
+
 	GLuint _framebufferID;
 	GLuint _framebufferTextureID;
 	GLuint _renderbufferDepthID;
@@ -126,14 +147,38 @@ private:
 		setupGLOnThread();
 		setupSceneOnThread();
 
+		//for testing
+		SDL_Log(std::to_string(SDL_GL_GetSwapInterval()).c_str());
+		_state = RendererState::rendering;
+
 		//loop: on RenderEngine thread
 		while (_isRunning)
 		{
 			//TODO: state switching and stuff
 			//doLoad, doRender/doImmediateLoad, doUnload
 
-			doRender(); //this should run really absurdly fast
+			checkQueue();
+
+			switch (_state)
+			{
+			case RendererState::idle:
+				std::this_thread::sleep_for(std::chrono::milliseconds(10)); //don't busywait!
+				break;
+			case RendererState::loading:
+				doLoad();
+				break;
+			case RendererState::rendering:
+				doSingleLoad();
+				doRender(); //this should run really absurdly fast
+				break;
+			case RendererState::unloading:
+				doUnload();
+				break;
+			}
+
 			
+			
+			//std::this_thread::sleep_for(std::chrono::milliseconds(17));
 		}
 
 		//force unload/release if we're not already unloaded
@@ -170,6 +215,7 @@ private:
 		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 		//SDL_GL_CreateContext(_window_p);
 		_context_p = SDL_GL_CreateContext(_window_p); //we will need to modify this to release/acquire context in concert with the UI thread
+		SDL_GL_SetSwapInterval(1);
 		//SDL_GL_MakeCurrent(g_window_p, g_context);
 		glewExperimental = GL_TRUE;
 		glewInit();
@@ -177,6 +223,7 @@ private:
 
 	void setupSceneOnThread()
 	{
+		setupWindow();
 		setupProgram();
 		setupFramebuffers();
 		setupFramebufferDraw();
@@ -222,7 +269,7 @@ private:
 					if (msg_sp.get()->getType() == RenderLoadMessageType)
 					{
 						//great, we can load, so load and break!
-						//TODO store load info, set loading state
+						startLoad(static_cast<RenderLoadMessageContent*>(msg_sp.get()->getContent())->data);						
 						break;
 					}
 					else
@@ -233,6 +280,10 @@ private:
 					}
 				}
 			}
+			else if (_state == RendererState::loading)
+			{
+				//we won't do anything until the load is done- not even abort!
+			}
 			else if (_state == RendererState::rendering)
 			{
 				//if rendering:
@@ -240,6 +291,14 @@ private:
 				//	if we have a load message, push to "immediate load" queue and continue rendering as normal
 				//  if we don't have either, simply do a render (grab latest render scene and render overlay messages)
 
+			}
+			else if (_state == RendererState::unloading)
+			{
+				//like loading, we won't do anything if unloading
+			}
+			else
+			{
+				//well, that shouldn't happen
 			}
 		}
 
@@ -249,11 +308,20 @@ private:
 		_mqMutex_p->unlock();
 	}
 
+
+	void startLoad(RenderableSetupData data)
+	{
+		//some of the doLoad stuff will have to move in here
+		//this runs once while doLoad runs every frame until loading is complete
+	}
+
 	/// <summary>
 	/// Loads stuff
 	/// </summary>
 	void doLoad()
 	{
+		//TODO EVENTUALLY: blit render load screen
+
 		//if we don't have context, get context
 
 		//loads stuff
@@ -271,6 +339,8 @@ private:
 	/// </summary>
 	void doUnload()
 	{
+		//TODO EVENTUALLY: blit render load screen
+
 		//delete (some) GL stuff, purge data structures, DO NOT PURGE QUEUE
 
 		//finally release context
@@ -283,7 +353,7 @@ private:
 	{
 		//temporary
 		updateCube();
-		
+
 		drawCube();
 
 		//will remain in final
@@ -292,6 +362,25 @@ private:
 		drawOverlay();
 
 		SDL_GL_SwapWindow(_window_p);
+	}
+
+	void setupWindow()
+	{
+		//eventually this may do more
+
+		int width, height;
+		if (GlobalPrefs::renderHeight > 0 && GlobalPrefs::renderWidth > 0)
+		{
+			width = GlobalPrefs::renderWidth;
+			height = GlobalPrefs::renderHeight;
+		}
+		else
+		{
+			SDL_GL_GetDrawableSize(_window_p, &width, &height);
+		}
+
+		_renderWidth = width;
+		_renderHeight = height;
 	}
 
 	void setupProgram()
@@ -313,7 +402,7 @@ private:
 
 	void setupBaseMatrices()
 	{
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)16 / (float)9, 0.1f, 100.0f); //TODO global const screen size instead of hardcoding it stupid
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)_renderWidth / (float)_renderHeight, 0.1f, 100.0f); //TODO deal with near/far plane
 		glm::mat4 view = glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		glm::mat4 model = glm::mat4(1.0f);
 		_baseModelViewMatrix = view * model;
@@ -324,6 +413,7 @@ private:
 
 	void setupFramebuffers()
 	{
+
 		//gen FBO
 		glGenFramebuffers(1, &_framebufferID);
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
@@ -331,14 +421,14 @@ private:
 		//gen framebuffer texture
 		glGenTextures(1, &_framebufferTextureID);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTextureID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, RENDER_WIDTH_CONST, RENDER_HEIGHT_CONST, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
 		//gen depthbuffer
 		glGenRenderbuffers(1, &_renderbufferDepthID);
 		glBindRenderbuffer(GL_RENDERBUFFER, _renderbufferDepthID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, RENDER_WIDTH_CONST, RENDER_HEIGHT_CONST);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _renderWidth, _renderHeight);
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _renderbufferDepthID);
 
 		//configure FBO
@@ -382,7 +472,7 @@ private:
 
 		//bind framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
-		glViewport(0, 0, RENDER_WIDTH_CONST, RENDER_HEIGHT_CONST);
+		glViewport(0, 0, _renderWidth, _renderHeight);
 
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
