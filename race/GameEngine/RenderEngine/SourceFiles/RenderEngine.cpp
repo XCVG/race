@@ -6,6 +6,7 @@
 #include <glew.h>
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
+#include <gtx\euler_angles.hpp>
 #include <SDL.h>
 #include <MessageReceiver.h>
 #include <MessageTypes.h>
@@ -304,9 +305,9 @@ private:
 				//if we hit an unload instruction, store that and break
 				//if we hit a loadsingle instruction, queue it and continue
 				//if we hit a load instruction, log warning, start unload, store index, and break
-				RenderableScene *latestScene;
+				RenderableScene *latestScene = nullptr;
 				int latestSceneIndex = 0;
-				RenderableOverlay *latestOverlay;
+				RenderableOverlay *latestOverlay = nullptr;
 				int latestOverlayIndex = 0;
 				int abortIndex = -1;
 
@@ -366,10 +367,9 @@ private:
 				
 				if (abortIndex > 0)
 				{
-					//if abortIndex is a thing, purge everything up and including abortIndex
-					startUnload();
+					//if abortIndex is a thing, purge everything up and including abortIndex					
 					_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex+1);
-
+					startUnload();
 				}
 				else
 				{
@@ -380,6 +380,18 @@ private:
 						_mq_p->erase(_mq_p->begin() + latestOverlayIndex);
 					}
 					_mq_p->erase(_mq_p->begin(), _mq_p->begin()+latestSceneIndex+1);
+					
+					//assign renderablescene and renderableoverlay if they exist
+					if (latestScene != nullptr)
+					{
+						delete(_lastScene_p);
+						_lastScene_p = latestScene;
+					}
+					if (latestOverlay != nullptr)
+					{
+						delete(_lastOverlay_p);
+						_lastOverlay_p = latestOverlay;
+					}
 				}
 				
 			}
@@ -404,6 +416,8 @@ private:
 	{
 		//some of the doLoad stuff will have to move in here
 		//this runs once while doLoad runs every frame until loading is complete
+
+		//DON'T DO ANYTHING LONG IN HERE BECAUSE THE QUEUE IS STILL BLOCKED
 	}
 
 	void startUnload()
@@ -440,24 +454,6 @@ private:
 		//delete (some) GL stuff, purge data structures, DO NOT PURGE QUEUE
 
 		//finally release context
-	}
-
-	/// <summary>
-	/// Renders a frame
-	/// </summary>
-	void doRender()
-	{
-		//temporary
-		updateCube();
-
-		drawCube();
-
-		//will remain in final
-		drawObjects();
-		drawLighting();
-		drawOverlay();
-
-		SDL_GL_SwapWindow(_window_p);
 	}
 
 	void setupWindow()
@@ -504,6 +500,7 @@ private:
 		_baseModelViewMatrix = view * model;
 		_baseModelViewProjectionMatrix = projection * view * model;
 
+		//don't delete this, we still need this
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
 	}
 
@@ -560,37 +557,84 @@ private:
 
 	}
 
-	void drawCube()
+	/// <summary>
+	/// Renders a frame
+	/// </summary>
+	void doRender()
+	{
+		//temporary
+		//updateCube();
+
+		//drawCube();
+
+		//will remain in final
+		if (_lastScene_p == nullptr)
+		{
+			drawNullScene();
+		}
+		else
+		{
+			drawCamera(_lastScene_p);
+			drawObjects(_lastScene_p);
+			drawLighting();
+		}
+
+		if (_lastOverlay_p == nullptr)
+		{
+			drawNullOverlay();
+		}
+		else
+		{
+			drawOverlay();
+		}
+
+		//TODO vsync/no vsync
+		SDL_GL_SwapWindow(_window_p);
+	}
+
+	void drawNullScene()
+	{
+		//fallback drawing routine if no scene is available
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		int w, h;
+		SDL_GL_GetDrawableSize(_window_p, &w, &h);
+		glViewport(0, 0, w, h);
+
+		glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	}
+
+	void drawCamera(RenderableScene *scene)
+	{
+		RenderableCamera *camera = &scene->camera;
+
+		//"draw" the camera, actually just set up base matrices
+
+		//THIS IS FINE
+		glm::mat4 projection = glm::perspective(camera->viewAngle, (float)_renderWidth / (float)_renderHeight, camera->nearPlane, camera->farPlane);
+		glm::mat4 translation = glm::translate(glm::mat4(), camera->position * -1.0f);
+		glm::mat4 rotation = glm::eulerAngleYXZ(-camera->rotation.y, -camera->rotation.x, -camera->rotation.z);
+		glm::mat4 view = translation * rotation;
+		glm::mat4 model = glm::mat4(1.0f);
+		_baseModelViewMatrix = view * model;
+		_baseModelViewProjectionMatrix = projection * view * model;
+	}
+
+	void drawObjects(RenderableScene *scene)
 	{
 
-		//set shader program
-		glUseProgram(_programID);
-
-		//bind framebuffer
+		//bind framebuffer and clear
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//bind cube, set properties, and draw
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		//glBindVertexArray(_cubeVertexArrayID);
-		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  _cubeModelViewMatrix;
-		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
+		//set shader program (here?)
+		glUseProgram(_programID);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDisableVertexAttribArray(0);
-
-		//unbind
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	}
-
-	void drawObjects()
-	{
 		//TODO draw objects
 	}
 
@@ -634,6 +678,41 @@ private:
 	void drawOverlay()
 	{
 		//TODO draw overlay
+	}
+
+	void drawNullOverlay()
+	{
+		//fallback overlay draw if no overlay is available
+
+	}
+
+	void drawCube()
+	{
+
+		//set shader program
+		glUseProgram(_programID);
+
+		//bind framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glViewport(0, 0, _renderWidth, _renderHeight);
+
+		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//bind cube, set properties, and draw
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		//glBindVertexArray(_cubeVertexArrayID);
+		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  _cubeModelViewMatrix;
+		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDisableVertexAttribArray(0);
+
+		//unbind
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void updateCube()
