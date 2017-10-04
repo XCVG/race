@@ -22,6 +22,7 @@
 #include "Cube.h"
 #include "main.h"
 
+const int_least64_t IDLE_DELAY_CONST = 10;
 const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
 const std::string TEXTURE_BASEPATH_CONST = "ResourceFiles/Textures/";
 const std::string MODEL_EXTENSION_CONST = ".obj";
@@ -117,29 +118,29 @@ private:
 	std::thread *_renderThread_p;
 
 	//honestly not sure
-	GLuint _programID;
+	GLuint _programID = 0;
 
 	//framebuffer stuff
-	int _renderWidth;
-	int _renderHeight;
+	int _renderWidth = 0;
+	int _renderHeight = 0;
 
-	GLuint _framebufferID;
-	GLuint _framebufferTextureID;
-	GLuint _renderbufferDepthID;
+	GLuint _framebufferID = 0;
+	GLuint _framebufferTextureID = 0;
+	GLuint _renderbufferDepthID = 0;
 
-	GLuint _framebufferDrawProgramID;
-	GLuint _framebufferDrawVertexArrayID;
-	GLuint _framebufferDrawVertexBufferID;
-	GLuint _framebufferDrawTexID;
+	GLuint _framebufferDrawProgramID = 0;
+	GLuint _framebufferDrawVertexArrayID = 0;
+	GLuint _framebufferDrawVertexBufferID = 0;
+	GLuint _framebufferDrawTexID = 0;
 
 	//temporary cube stuff
-	GLuint _cubeVertexArrayID;
-	GLuint _cubeVertexBufferID;
+	GLuint _cubeVertexArrayID = 0;
+	GLuint _cubeVertexBufferID = 0;
 	glm::mat4 _cubeModelViewMatrix;
 	float _cubeAngle;
 
 	//base MVP, may keep or remove
-	GLuint _shaderMVPMatrixID;
+	GLuint _shaderMVPMatrixID = 0;
 	glm::mat4 _baseModelViewMatrix;
 	glm::mat4 _baseModelViewProjectionMatrix;
 
@@ -168,7 +169,7 @@ private:
 			switch (_state)
 			{
 			case RendererState::idle:
-				std::this_thread::sleep_for(std::chrono::milliseconds(10)); //don't busywait!
+				std::this_thread::sleep_for(std::chrono::milliseconds(IDLE_DELAY_CONST)); //don't busywait!
 				break;
 			case RendererState::loading:
 				doLoad();
@@ -190,14 +191,16 @@ private:
 		//force unload/release if we're not already unloaded
 		if (_state != RendererState::idle)
 		{
+			startUnload();
 			doUnload();
 		}
 
-		SDL_Log("RenderEngine thread halted!");
-
 		//cleanup after run
+		cleanupSceneOnThread();
 		cleanupGLOnThread();
 		cleanupStructuresOnThread();
+
+		SDL_Log("RenderEngine thread halted!");
 	}
 
 	void setupStructuresOnThread()
@@ -234,7 +237,14 @@ private:
 		setupFramebuffers();
 		setupFramebufferDraw();
 		setupBaseMatrices(); //will need to move/redo to deal with moving camera
-		setupCube(); //remove this
+		setupCube(); //remove this soon
+	}
+
+	void cleanupSceneOnThread()
+	{
+		cleanupProgram();
+		cleanupFramebuffers();
+		cleanupFramebufferDraw();
 	}
 
 	void cleanupGLOnThread()
@@ -275,7 +285,7 @@ private:
 					if (msg_sp.get()->getType() == RenderLoadMessageType)
 					{
 						//great, we can load, so load and break!
-						startLoad(static_cast<RenderLoadMessageContent*>(msg_sp.get()->getContent())->data);
+						startLoad(&static_cast<RenderLoadMessageContent*>(msg_sp.get()->getContent())->data);
 						iter = _mq_p->erase(iter); //don't forget to delete that!
 						break;
 					}
@@ -311,7 +321,7 @@ private:
 				int latestOverlayIndex = 0;
 				int abortIndex = -1;
 
-				for (int i = 0; i < _mq_p->size; i++)
+				for (int i = 0; i < _mq_p->size(); i++)
 				{
 					std::shared_ptr<Message> msg_sp = _mq_p->at(i);
 					MESSAGE_TYPE t = msg_sp->getType();
@@ -364,11 +374,11 @@ private:
 						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Bad message type received!");
 					}
 				}
-				
+
 				if (abortIndex > 0)
 				{
 					//if abortIndex is a thing, purge everything up and including abortIndex					
-					_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex+1);
+					_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex + 1);
 					startUnload();
 				}
 				else
@@ -379,8 +389,8 @@ private:
 					{
 						_mq_p->erase(_mq_p->begin() + latestOverlayIndex);
 					}
-					_mq_p->erase(_mq_p->begin(), _mq_p->begin()+latestSceneIndex+1);
-					
+					_mq_p->erase(_mq_p->begin(), _mq_p->begin() + latestSceneIndex + 1);
+
 					//assign renderablescene and renderableoverlay if they exist
 					if (latestScene != nullptr)
 					{
@@ -393,7 +403,7 @@ private:
 						_lastOverlay_p = latestOverlay;
 					}
 				}
-				
+
 			}
 			else if (_state == RendererState::unloading)
 			{
@@ -412,17 +422,44 @@ private:
 	}
 
 
-	void startLoad(RenderableSetupData data)
+	void startLoad(RenderableSetupData *data)
 	{
-		//some of the doLoad stuff will have to move in here
-		//this runs once while doLoad runs every frame until loading is complete
+		_state = RendererState::loading;
+
+		//just start the load here
+		for (auto mdata : data->models)
+		{
+			if (!mdata.empty())
+			{
+				ModelLoadingData mld;
+				mld.name = mdata;
+				mld.path = MODEL_BASEPATH_CONST + mld.name + MODEL_EXTENSION_CONST;
+				mld.relative = true;
+				_modelLoadQueue_p->push_back(mld);
+			}
+		}
+
+		for (auto tdata : data->textures)
+		{
+			if (!tdata.empty())
+			{
+				TextureLoadingData tld;
+				tld.name = tdata;
+				tld.path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
+				tld.relative = true;
+				_textureLoadQueue_p->push_back(tld);
+			}
+		}
+
+		//grab context
+		acquireContext();
 
 		//DON'T DO ANYTHING LONG IN HERE BECAUSE THE QUEUE IS STILL BLOCKED
 	}
 
 	void startUnload()
 	{
-		
+		_state = RendererState::unloading;
 	}
 
 	/// <summary>
@@ -436,12 +473,20 @@ private:
 
 		//loads stuff
 
-		//TODO figure this out, probably going to need two queues
+		//dispatch from model and texture load queues
+
+		//process results from file return queue
+
+		//check if we're done, if we're done continue
 	}
 
 	void doSingleLoad()
 	{
 		//load one thing during drawing process
+
+		//dispatch ONE model and ONE texture from load queues (if nonempty)
+
+		//check the file return queue for ONE file
 	}
 
 	/// <summary>
@@ -453,7 +498,9 @@ private:
 
 		//delete (some) GL stuff, purge data structures, DO NOT PURGE QUEUE
 
+
 		//finally release context
+		releaseContext();
 	}
 
 	void setupWindow()
@@ -475,9 +522,17 @@ private:
 		_renderHeight = height;
 	}
 
+
 	void setupProgram()
 	{
 		_programID = LoadShaders();
+	}
+
+	void cleanupProgram()
+	{
+		//delete shaders/program
+		if(_programID > 0)
+			glDeleteProgram(_programID);
 	}
 
 	void setupCube()
@@ -542,6 +597,14 @@ private:
 
 	}
 
+	void cleanupFramebuffers()
+	{
+		//delete FBOs
+		glDeleteRenderbuffers(1, &_renderbufferDepthID);
+		glDeleteTextures(1, &_framebufferTextureID);
+		glDeleteFramebuffers(1, &_framebufferID);
+	}
+
 	void setupFramebufferDraw()
 	{
 		glGenVertexArrays(1, &_framebufferDrawVertexArrayID);
@@ -555,6 +618,13 @@ private:
 
 		_framebufferDrawProgramID = LoadShadersFBDraw();
 
+	}
+
+	void cleanupFramebufferDraw()
+	{
+		// delete VBOs
+		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
+		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
 	}
 
 	/// <summary>
@@ -576,7 +646,7 @@ private:
 		{
 			drawCamera(_lastScene_p);
 			drawObjects(_lastScene_p);
-			drawLighting();
+			drawLighting(_lastScene_p);
 		}
 
 		if (_lastOverlay_p == nullptr)
@@ -636,16 +706,56 @@ private:
 		glUseProgram(_programID);
 
 		//TODO draw objects
+		for (int i = 0; i < scene->objects.size(); i++)
+		{
+			RenderableObject *ro = &scene->objects[i];
+			drawObject(ro);
+		}
+
 	}
 
-	void drawObject()
+	void drawObject(RenderableObject *object)
 	{
-		//TODO draw one object
-
+		//TODO draw one arbitraty object
 		//NOTE: should always be tolerant of missing resources!
+
+		//below: temporary cube code
+
+		//set shader program
+		glUseProgram(_programID);
+
+		//bind framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glViewport(0, 0, _renderWidth, _renderHeight);
+
+		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		//bind cube, set properties, and draw
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		//glBindVertexArray(_cubeVertexArrayID);
+
+		//transform!
+		glm::mat4 cubeMVM = glm::mat4();
+		cubeMVM = glm::translate(cubeMVM, object->position);
+		cubeMVM = glm::scale(cubeMVM, object->scale);
+		cubeMVM = glm::rotate(cubeMVM, object->rotation.y, glm::vec3(0, 1, 0));
+		cubeMVM = glm::rotate(cubeMVM, object->rotation.x, glm::vec3(1, 0, 0));
+		cubeMVM = glm::rotate(cubeMVM, object->rotation.z, glm::vec3(0, 0, 1));
+		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  cubeMVM;
+		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glDisableVertexAttribArray(0);
+
+		//unbind
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
-	void drawLighting()
+	void drawLighting(RenderableScene *scene)
 	{
 		//setup framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -721,6 +831,28 @@ private:
 		glm::mat4 identity = glm::mat4();
 		glm::mat4 rotate = glm::rotate(identity, _cubeAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 		_cubeModelViewMatrix = rotate;
+	}
+
+	bool acquireContext()
+	{
+		if (SDL_GL_GetCurrentContext() == _context_p)
+		{
+			return true; //we already have it!
+		}
+		else
+		{
+			int responseCode = SDL_GL_MakeCurrent(_window_p, _context_p);
+			if (responseCode == 0)
+				return true;
+		}
+
+		return false;
+	}
+
+	bool releaseContext()
+	{
+		//does nothing but we may need it later
+		return true;
 	}
 
 };
