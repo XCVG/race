@@ -5,6 +5,11 @@
 class AccelerationComponent : public Component
 {
 public:
-	Vector3 _accelerationVector;
+	void setAccelerationVector(Vector3 _acceleration);
+	void setMaxAcceleration(GLfloat _maxAcceleration);
+	Vector3 getAccelerationVector();
+	GLfloat getMaxAcceleration();
+private:
+	Vector3 _acceleration;
 	GLfloat _maxAcceleration;
 };
