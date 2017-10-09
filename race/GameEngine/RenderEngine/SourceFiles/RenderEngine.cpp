@@ -684,6 +684,7 @@ private:
 
 		//THIS IS FINE
 		glm::mat4 projection = glm::perspective(camera->viewAngle, (float)_renderWidth / (float)_renderHeight, camera->nearPlane, camera->farPlane);
+		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 		glm::mat4 translation = glm::translate(glm::mat4(), camera->position * -1.0f);
 		glm::mat4 rotation = glm::eulerAngleYXZ(-camera->rotation.y, -camera->rotation.x, -camera->rotation.z);
 		glm::mat4 view = translation * rotation;
