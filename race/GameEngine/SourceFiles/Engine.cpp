@@ -86,4 +86,5 @@ Engine::~Engine() {
     _aiEngine_p->~AIEngine();
     _physicsEngine_p->~PhysicsEngine();
     _renderEngine_p->~RenderEngine();
+	_fileEngine_p->~FileEngine();
 }
