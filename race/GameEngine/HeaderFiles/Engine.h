@@ -13,6 +13,7 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include "FileEngine.h"
 #include "RenderEngine.h"
 #include "PhysicsEngine.h"
 #include "AIEngine.h"
