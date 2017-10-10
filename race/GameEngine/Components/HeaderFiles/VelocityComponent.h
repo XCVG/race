@@ -5,12 +5,14 @@
 #elif defined _WIN32 || defined _WIN64
 #include <SDL.h>
 #include <SDL_opengl.h>
-#endif>
+#endif
 #include "Component.h"
 #include "Vector3.h"
 class VelocityComponent : public Component
 {
 public:
+	VelocityComponent();
+	VelocityComponent(const VelocityComponent &obj);
 	void setVelocity(Vector3 _velocity);
 	void setMaxVelocity(GLfloat _maxVelocity);
 	Vector3 getVelocity();

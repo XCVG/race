@@ -1,21 +1,32 @@
 #include "GameObject.h"
-void setPosition(Vector3 _position)
+GameObject::GameObject()
 {
-    this->_position = _position;
+    this->_position_p = new Vector3(0, 0, 0);
+    this->_rotation_p = new Vector3(0, 0, 0);
+    this->_scale = 1;
+    this->_components_p = new std::vector<Component>();
 };
-void setRotation(Vector3 _rotation)
+GameObject::GameObject(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
-    this->_rotation = _rotation;
+
 };
-void setScale(GLfloat _scale)
+void GameObject::setPosition(Vector3 _position)
+{
+    this->_position_p = &_position;
+};
+void GameObject::setRotation(Vector3 _rotation)
+{
+    this->_rotation_p = &_rotation;
+};
+void GameObject::setScale(GLfloat _scale)
 {
     this->_scale = _scale;
 };
-void addComponent(Component _component)
+void GameObject::addComponent(Component _component)
 {
-    this->_components.add(_component); // Double checkt this
+    this->_components_p->push_back(_component); // Double checkt this
 };
-void removeComponent(Component _component)
+void GameObject::removeComponent(Component _component)
 {
     /**
      * TODO: This needs to be fixed
@@ -23,19 +34,19 @@ void removeComponent(Component _component)
      * other than just by name (i.e., may have duplicate components (sound)).
      */
 };
-Vector3 getPosition()
+Vector3 GameObject::getPosition()
 {
-    return this->_position;
+    return *this->_position_p;
 };
-Vector3 getRotation()
+Vector3 GameObject::getRotation()
 {
-    return this->_rotation;
+    return *this->_rotation_p;
 };
-GLfloat getScale()
+GLfloat GameObject::getScale()
 {
     return this->_scale;
 };
-std::list<Component> getComponentList()
+std::vector<Component> GameObject::getComponentList()
 {
-    return this->_components;
+    return *this->_components_p;
 };

@@ -18,13 +18,15 @@
 #include "AIEngine.h"
 #include "InputEngine.h"
 #include "SoundEngine.h"
+#include "GameObject.h"
+#include "VelocityComponent.h"
 class Engine {
 public:
+    Engine();
+    ~Engine();
     void start();
     void update();
     void stop();
-    Engine();
-    ~Engine();
     std::thread *_engineThread_p;
 private:
     RenderEngine *_renderEngine_p;

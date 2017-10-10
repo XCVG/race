@@ -1,5 +1,4 @@
 #pragma once
-#include <SDL_opengl.h>
 #include "Component.h"
 #include "Vector3.h"
 class AccelerationComponent : public Component

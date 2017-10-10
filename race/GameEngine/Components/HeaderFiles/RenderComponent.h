@@ -18,7 +18,7 @@ public:
 	std::string getModelName();
 	std::string getAlbedoName();
 	std::string getNormalName();
-	GLflaot getSmoothness();
+	GLfloat getSmoothness();
 private:
 	std::string _modelName;
 	std::string _albedoName;

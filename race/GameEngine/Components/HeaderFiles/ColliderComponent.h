@@ -14,5 +14,5 @@ public:
 	void setVertices(Vector3 _verts);
 	Vector3 getVertices();
 private:
-	Vector3 _verticies;
+	Vector3 _vertices;
 };
