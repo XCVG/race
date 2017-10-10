@@ -38,15 +38,21 @@ void FileEngine::loop()
 			if (!_urgentMessageQueue.empty())
 			{
 				//handle urgent messages first
-				HandleMessage(_urgentMessageQueue.front().getContent());
+				_urgentMessageQueueMutex_p->lock();
+				Message *msg = _urgentMessageQueue.front().get();
+				HandleMessage(msg->getContent());
 				_urgentMessageQueue.pop();
+				_urgentMessageQueueMutex_p->unlock();
 
 			}
 			else if (!_messageQueue.empty())
 			{
 				//then non-urgent messages
-				HandleMessage(_messageQueue.front().getContent());
+				_messageQueueMutex_p->lock();
+				Message *msg = _messageQueue.front().get();
+				HandleMessage(msg->getContent());
 				_messageQueue.pop();
+				_messageQueueMutex_p->unlock();
 			}
 			else
 			{
