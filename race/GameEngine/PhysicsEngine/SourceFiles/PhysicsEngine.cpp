@@ -54,36 +54,37 @@ PhysicsEngine::~PhysicsEngine() {
 ///
 ///	Starts the physics engine loop on its own thread and returns a pointer to the thread.
 ///
-std::thread* PhysicsEngine::start() {
-	if (!_running) {
+std::thread* PhysicsEngine::start()
+{
+	if (!_running)
+	{
 		_running = true;
 	}
+
 	return new std::thread(&PhysicsEngine::loop, this);
 }
 
 ///
 ///	The physics engine loop.
 ///
-void PhysicsEngine::loop() {
-    if (!_running) {
+void PhysicsEngine::loop()
+{
+    if (!_running)
+	{
         return;
     }
-    while(_running) {
-        this->update();
-    }
-}
 
-///
-///	The physics engine update function.
-///
-void PhysicsEngine::update() {
-    // Commenting this out to avoid spamming the debug log with dummy messages.
-	//SDL_Log("%s", "Running PhysicsEngine::update");
+    while(_running)
+	{
+		// Commenting this out to avoid spamming the debug log with dummy messages.
+		//SDL_Log("%s", "Running PhysicsEngine::update");
+    }
 }
 
 ///
 ///	Stops the physics engine.
 ///
-void PhysicsEngine::stop() {
+void PhysicsEngine::stop()
+{
     _running = false;
 }
