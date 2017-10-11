@@ -11,6 +11,9 @@
 class RenderComponent : public Component
 {
 public:
+	RenderComponent();
+	RenderComponent(std::string _modelName, std::string _albedoName, std::string _normalName, GLfloat _smoothness);
+	RenderComponent(const RenderComponent &obj);
 	void setModelName(std::string _name);
 	void setAlbedoName(std::string _name);
 	void setNormalName(std::string _name);

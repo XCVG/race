@@ -4,7 +4,7 @@ GameObject::GameObject()
     this->_position_p = new Vector3(0, 0, 0);
     this->_rotation_p = new Vector3(0, 0, 0);
     this->_scale = 1;
-    this->_components_p = new std::vector<Component>();
+    this->_components_p = new std::vector<Component *>();
 };
 GameObject::GameObject(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
@@ -22,9 +22,13 @@ void GameObject::setScale(GLfloat _scale)
 {
     this->_scale = _scale;
 };
-void GameObject::addComponent(Component _component)
+// void GameObject::addComponent(Component _component)
+// {
+//     this->_components_p->push_back(&_component); // Double checkt this
+// };
+void GameObject::addComponent(Component *_component_p)
 {
-    this->_components_p->push_back(_component); // Double checkt this
+    this->_components_p->push_back(_component_p);
 };
 void GameObject::removeComponent(Component _component)
 {
@@ -46,7 +50,7 @@ GLfloat GameObject::getScale()
 {
     return this->_scale;
 };
-std::vector<Component> GameObject::getComponentList()
+std::vector<Component *> GameObject::getComponentList()
 {
     return *this->_components_p;
 };

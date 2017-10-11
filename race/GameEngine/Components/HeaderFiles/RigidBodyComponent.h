@@ -10,6 +10,9 @@
 class RigidBodyComponent : public Component
 {
 public:
+	RigidBodyComponent();
+	RigidBodyComponent(GLfloat _weight, GLfloat _bouncyness, GLfloat _friction, GLfloat _resistance);
+	RigidBodyComponent(const RigidBodyComponent &obj);
 	void setWeight(GLfloat _weight);
 	void setBouncyness(GLfloat _bouncyness);
 	void setFriction(GLfloat _friction);

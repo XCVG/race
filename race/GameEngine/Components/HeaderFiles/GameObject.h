@@ -18,15 +18,16 @@ public:
 	void setPosition(Vector3 _position);
 	void setRotation(Vector3 _rotation);
 	void setScale(GLfloat _scale);
-	void addComponent(Component _component);
+	// void addComponent(Component _component);
+	void addComponent(Component *_component_p);
 	void removeComponent(Component _component);
 	Vector3 getPosition();
 	Vector3 getRotation();
 	GLfloat getScale();
-	std::vector<Component> getComponentList();
+	std::vector<Component *> getComponentList();
 private:
 	Vector3 *_position_p;
 	Vector3 *_rotation_p;
 	GLfloat _scale;
-	std::vector<Component> *_components_p; // TODO: Change to vector
+	std::vector<Component *> *_components_p; // TODO: Change to vector
 };

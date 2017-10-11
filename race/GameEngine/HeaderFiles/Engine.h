@@ -13,13 +13,8 @@
 #include <string>
 #include <iostream>
 #include <thread>
-#include "RenderEngine.h"
-#include "PhysicsEngine.h"
-#include "AIEngine.h"
-#include "InputEngine.h"
-#include "SoundEngine.h"
-#include "GameObject.h"
-#include "VelocityComponent.h"
+#include "EngineHeaders.h"
+#include "ComponentHeaders.h"
 class Engine {
 public:
     Engine();

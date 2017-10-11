@@ -11,8 +11,11 @@
 class ColliderComponent : public Component
 {
 public:
-	void setVertices(Vector3 _verts);
+	ColliderComponent();
+	ColliderComponent(Vector3 _vertices);
+	ColliderComponent(const ColliderComponent& obj);
+	void setVertices(Vector3 _vertices);
 	Vector3 getVertices();
 private:
-	Vector3 _vertices;
+	Vector3 _vertices; // TODO: This needs to be different
 };

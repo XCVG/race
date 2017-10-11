@@ -1,4 +1,25 @@
 #include "RenderComponent.h"
+RenderComponent::RenderComponent()
+{
+    this->_modelName = "";
+    this->_albedoName = "";
+    this->_normalName = "";
+    this->_smoothness = 0;
+};
+RenderComponent::RenderComponent(std::string _modelName, std::string _albedoName, std::string _normalName, GLfloat _smoothness)
+{
+    this->_modelName = _modelName;
+    this->_albedoName = _albedoName;
+    this->_normalName = _normalName;
+    this->_smoothness = _smoothness;
+};
+RenderComponent::RenderComponent(const RenderComponent &obj)
+{
+    this->_modelName = obj._modelName;
+    this->_albedoName = obj._albedoName;
+    this->_normalName = obj._normalName;
+    this->_smoothness = obj._smoothness;
+};
 void RenderComponent::setModelName(std::string _name)
 {
     this->_modelName = _name;
