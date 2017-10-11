@@ -23,6 +23,7 @@
 #include <SDL.h>
 #endif
 #include <thread>
+#include "MessageReceiver.h"
 
 /*========================================================================================
 	Dependencies
@@ -38,7 +39,7 @@
 	@see PhysicsEngine
 	@see PhysicsEngine.cpp
 */
-class PhysicsEngine
+class PhysicsEngine : public MessageReceiver
 {
     /*------------------------------------------------------------------------------------
 		Instance Fields

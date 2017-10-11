@@ -33,9 +33,10 @@
 	-	Naming convention for message types is [Message type] + "Type".
 		For example, "BaseMessage" has type "BaseMessageType".
 */
-enum MESSAGE_TYPE
+enum class MESSAGE_TYPE
 {
-	BaseMessageType
+	BaseMessageType,
+	PhysicsCallMessageType
 };
 
 /*========================================================================================
@@ -52,7 +53,13 @@ enum MESSAGE_TYPE
 	-	Setting a message's content deletes the old content's memory! Because of this, 
 		messages should not share pointers to the same content object!
 */
+
 class BaseMessageContent
 {};
+
+class PhysicsCallMessageContent
+{
+	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
+};
 
 #endif

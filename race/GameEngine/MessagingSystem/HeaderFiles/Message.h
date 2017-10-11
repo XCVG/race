@@ -54,7 +54,7 @@ class Message
 		Constructors and Destructors
     ------------------------------------------------------------------------------------*/
     public:
-		Message(MESSAGE_TYPE type = BaseMessageType, bool isUrgent = false, BaseMessageContent* content_p = nullptr);
+		Message(MESSAGE_TYPE type = MESSAGE_TYPE::BaseMessageType, bool isUrgent = false, BaseMessageContent* content_p = nullptr);
         ~Message();
 
 	/*------------------------------------------------------------------------------------

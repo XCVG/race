@@ -27,14 +27,16 @@
 ///
 ///	Physics engine constructor.
 ///
-PhysicsEngine::PhysicsEngine() {
-
+PhysicsEngine::PhysicsEngine()
+{
+	subscribe(MESSAGE_TYPE::PhysicsCallMessageType);
 }
 
 ///
 ///	Physics engine destructor.
 ///
-PhysicsEngine::~PhysicsEngine() {
+PhysicsEngine::~PhysicsEngine()
+{
 
 }
 
@@ -78,6 +80,8 @@ void PhysicsEngine::loop()
 	{
 		// Commenting this out to avoid spamming the debug log with dummy messages.
 		//SDL_Log("%s", "Running PhysicsEngine::update");
+
+		/* Check if we have urgent messages */
     }
 }
 
