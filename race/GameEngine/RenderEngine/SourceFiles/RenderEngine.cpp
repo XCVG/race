@@ -9,7 +9,7 @@ RenderEngine::RenderEngine()
 	//constructor: on engine thread
 }
 
-void RenderEngine::start()
+std::thread* RenderEngine::start()
 {
 	//start: on engine thread
 
@@ -24,7 +24,7 @@ void RenderEngine::start()
 	//std::thread rthread(&RenderEngine::loop, this);
 	//std::thread rthread(&RenderEngine::loop);
 	//_renderThread_p = &rthread;
-	_renderThread_p = new std::thread(&RenderEngine::loop, this);
+	return new std::thread(&RenderEngine::loop, this);
 }
 
 void RenderEngine::update()
@@ -37,8 +37,6 @@ RenderEngine::~RenderEngine()
     //destructor
 
 	_isRunning = false;
-	_renderThread_p->join();
-	delete(_renderThread_p);
 }
 
 void RenderEngine::loop()

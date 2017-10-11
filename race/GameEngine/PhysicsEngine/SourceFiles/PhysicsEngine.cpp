@@ -37,7 +37,8 @@ PhysicsEngine::PhysicsEngine()
 ///
 PhysicsEngine::~PhysicsEngine()
 {
-
+	SDL_Log("%s", "Running Render::Destructor");
+	this->stop();
 }
 
 /*----------------------------------------------------------------------------------------

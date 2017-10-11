@@ -5,6 +5,7 @@
 uint32_t TICKS_TO_WAIT = 17;
 SDL_Window *g_window_p;
 SDL_GLContext g_context;
+std::thread* engineThread_p;
 
 /// <summary>
 /// Application entry point
@@ -32,7 +33,7 @@ int main(int argc, char ** argv) {
 	//it doesn't start Engine on a separate thread yet; Spencer I'll let you do that
 	MessagingSystem::instance().start();
 	Engine *e = new Engine();
-	e->start();
+	engineThread_p = e->start();
 
 	//*****temporary loop stolen from racerender
 
@@ -60,6 +61,7 @@ int main(int argc, char ** argv) {
 	}
 
 	delete(e);
+	engineThread_p->join();
 	MessagingSystem::instance().kill();
 	SDL_DestroyWindow(g_window_p);
 

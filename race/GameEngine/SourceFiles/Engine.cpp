@@ -1,7 +1,7 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
 
-void Engine::start() {
+std::thread* Engine::start() {
     // Create the other engines, or at least get pointer to them
     _renderEngine_p = new RenderEngine();
     if (_renderEngine_p == nullptr) {
@@ -11,10 +11,10 @@ void Engine::start() {
     if (_physicsEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
-    _aiEngine_p = new AIEngine();
+    /**_aiEngine_p = new AIEngine();
     if (_aiEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
-    }
+    }**/
     _inputEngine_p = new InputEngine();
     if (_inputEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
@@ -24,15 +24,15 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
     try {
-        _renderEngine_p->start();
+        _renderThread_p = _renderEngine_p->start();
         _physicsThread_p = _physicsEngine_p->start();
-        _aiThread_p = _aiEngine_p->start();
+        //_aiThread_p = _aiEngine_p->start();
         _inputEngine_p->start();
         _soundEngine_p->start();
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
-    _engineThread_p = new std::thread(&Engine::loop, this);
+
     if (!_running) {
         _running = true;
     } else {
@@ -40,10 +40,11 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
+	return new std::thread(&Engine::loop, this);
 }
 
 void Engine::update() {
-    SDL_Log("%s", "Running Engine::udpate");
+    //SDL_Log("%s", "Running Engine::udpate");
 }
 
 void Engine::loop() {
@@ -67,8 +68,8 @@ void Engine::loop() {
 /// 
 void Engine::stop() {
     _running = false;
-    _physicsEngine_p->stop();
-    _aiEngine_p->stop();
+    //_physicsEngine_p->stop();
+    //_aiEngine_p->stop();
 }
 
 Engine::Engine() {
@@ -76,9 +77,13 @@ Engine::Engine() {
 }
 
 Engine::~Engine() {
+	SDL_Log("%s", "Running Engine::Destructor");
     _soundEngine_p->~SoundEngine();
     _inputEngine_p->~InputEngine();
-    _aiEngine_p->~AIEngine();
+    //_aiEngine_p->~AIEngine();
     _physicsEngine_p->~PhysicsEngine();
     _renderEngine_p->~RenderEngine();
+	_renderThread_p->join();
+	_physicsThread_p->join();
+	this->stop();
 }

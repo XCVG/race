@@ -38,5 +38,6 @@
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageReceiver.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageTypes.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessagingSystem.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
   </ItemGroup>
 </Project>

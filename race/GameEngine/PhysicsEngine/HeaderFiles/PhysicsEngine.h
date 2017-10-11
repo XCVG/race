@@ -72,7 +72,6 @@ class PhysicsEngine : public MessageReceiver
 	------------------------------------------------------------------------------------*/
     public:
 		std::thread* start();
-		void update();
 		void stop();
 
     private:

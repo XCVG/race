@@ -20,12 +20,11 @@
 #include "SoundEngine.h"
 class Engine {
 public:
-    void start();
+    std::thread* start();
     void update();
     void stop();
     Engine();
     ~Engine();
-    std::thread *_engineThread_p;
 private:
     RenderEngine *_renderEngine_p;
     PhysicsEngine *_physicsEngine_p;
@@ -33,7 +32,8 @@ private:
     InputEngine *_inputEngine_p;
     SoundEngine *_soundEngine_p;
     std::thread *_physicsThread_p;
-    std::thread *_aiThread_p;
+	std::thread *_renderThread_p;
+    //std::thread *_aiThread_p;
     bool _running = false;
     void loop();
 };
