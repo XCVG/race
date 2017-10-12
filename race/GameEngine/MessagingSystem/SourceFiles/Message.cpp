@@ -49,9 +49,9 @@ Message::~Message()
 		FileLoadMessageContent* contentToDelete = static_cast<FileLoadMessageContent*>(_content_p);
 		delete contentToDelete;
 	}
-	else if (_type == MESSAGE_TYPE::FileLoadedMessageType)
+	else if (_type == MESSAGE_TYPE::PhysicsCallMessageType)
 	{
-		FileLoadedMessageContent* contentToDelete = static_cast<FileLoadedMessageContent*>(_content_p);
+		PhysicsCallMessageContent* contentToDelete = static_cast<PhysicsCallMessageContent*>(_content_p);
 		delete contentToDelete;
 	}
 }

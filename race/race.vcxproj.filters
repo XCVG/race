@@ -41,5 +41,6 @@
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessagingSystem.h" />
     <ClInclude Include="GameEngine\HeaderFiles\FileEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\EngineHeaders.h" />
   </ItemGroup>
 </Project>

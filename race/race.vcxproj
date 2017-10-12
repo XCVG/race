@@ -38,6 +38,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\EngineHeaders.h" />
     <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\Message.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageReceiver.h" />
