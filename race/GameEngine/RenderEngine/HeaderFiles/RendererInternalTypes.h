@@ -12,6 +12,7 @@ struct ModelData
 {
 	//std::string name; //don't need this, will be stored in hashtable
 	GLuint vboID;
+	GLuint vaoID;
 	GLuint numVerts;
 	GLfloat preScale;
 };
@@ -25,15 +26,13 @@ struct TextureData
 struct ModelLoadingData
 {
 	//TODO data to be stored while waiting for it to load
+	size_t hash;
 	std::string name;
-	std::string path;
-	bool relative;
 };
 
 struct TextureLoadingData
 {
 	//TODO data to be stored while waiting for it to load
+	size_t hash;
 	std::string name;
-	std::string path;
-	bool relative;
 };

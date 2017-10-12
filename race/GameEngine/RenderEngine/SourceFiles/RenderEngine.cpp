@@ -8,14 +8,20 @@
 #include <gtc\matrix_transform.hpp>
 #include <gtx\euler_angles.hpp>
 #include <SDL.h>
-#include <MessageReceiver.h>
-#include <MessageTypes.h>
-#include <GlobalPrefs.h>
+
+#include "GlobalPrefs.h"
+#include "FileEngine.h"
+#include "OBJImport.h"
 
 #include "RenderableTypes.h"
 #include "RendererInternalTypes.h"
 #include "RenderMessageReceiver.h"
 #include "RenderFileMessageReceiver.h"
+
+#include "MessagingSystem.h"
+#include "MessageTypes.h"
+#include "MessageReceiver.h"
+#include "Message.h"
 
 #include "Shaders.h"
 #include "Quad.h"
@@ -358,16 +364,12 @@ private:
 						{
 							ModelLoadingData mld;
 							mld.name = smc.model.name;
-							mld.path = MODEL_BASEPATH_CONST + mld.name + MODEL_EXTENSION_CONST;
-							mld.relative = true;
 							_modelLoadQueue_p->push_back(mld);
 						}
 						if (!smc.texture.name.empty())
 						{
 							TextureLoadingData tld;
 							tld.name = smc.texture.name;
-							tld.path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
-							tld.relative = true;
 							_textureLoadQueue_p->push_back(tld);
 						}
 					}
@@ -443,8 +445,6 @@ private:
 			{
 				ModelLoadingData mld;
 				mld.name = mdata;
-				mld.path = MODEL_BASEPATH_CONST + mld.name + MODEL_EXTENSION_CONST;
-				mld.relative = true;
 				_modelLoadQueue_p->push_back(mld);
 			}
 		}
@@ -455,8 +455,6 @@ private:
 			{
 				TextureLoadingData tld;
 				tld.name = tdata;
-				tld.path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
-				tld.relative = true;
 				_textureLoadQueue_p->push_back(tld);
 			}
 		}
@@ -477,7 +475,10 @@ private:
 	/// </summary>
 	void doLoad()
 	{
-		
+		//needs refactoring badly
+
+		//possible future optimization: do things you don't need context for when you don't have context
+
 		//if we don't have context, get context
 		if (!haveContext())
 			acquireContext();
@@ -488,12 +489,122 @@ private:
 		drawLoadScreen();
 
 		//loads stuff
+		
+		MessagingSystem *ms = &MessagingSystem::instance();
+		if (ms == nullptr)
+		{
+			SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: messaging system does not exist");
+			return;
+		}
 
+		//possible future optimization: don't push the entire queues at once
 		//dispatch from model and texture load queues
+		if (!_modelLoadQueue_p->empty())
+		{
+			for (int i = 0; i < _modelLoadQueue_p->size(); i++)
+			{
+				ModelLoadingData mld = _modelLoadQueue_p->at(i);
+
+				FileLoadMessageContent *flmc = new FileLoadMessageContent();
+				flmc->path = MODEL_BASEPATH_CONST + mld.name + MODEL_EXTENSION_CONST;
+				flmc->relative = true;
+				
+				mld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
+				
+				Message *msg = new Message();
+				msg->setContent(flmc);
+				ms->postMessage(std::shared_ptr<Message>(msg));
+
+				_modelAwaitQueue_p->push_back(mld);
+			}
+
+			_modelLoadQueue_p->clear();
+		}
+
+		if (!_textureLoadQueue_p->empty())
+		{
+			for (int i = 0; i < _textureLoadQueue_p->size(); i++)
+			{
+				TextureLoadingData tld = _textureLoadQueue_p->at(i);
+
+				FileLoadMessageContent *flmc = new FileLoadMessageContent();
+				flmc->path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
+				flmc->relative = true;
+
+				tld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
+
+				Message *msg = new Message();
+				msg->setContent(flmc);
+				ms->postMessage(std::shared_ptr<Message>(msg));
+
+				_textureAwaitQueue_p->push_back(tld);
+			}
+
+			_textureAwaitQueue_p->clear();
+		}
 
 		//process results from file return queue
+		//not optimized for concurrency TODO
+		if (!_fmq_p->empty())
+		{
+			_fmqMutex_p->lock();
+
+			for (int i = 0; i < _fmq_p->size(); i++)
+			{
+				Message *msg = _fmq_p->at(i).get();
+				BaseMessageContent * bmc = msg->getContent();
+				FileLoadedMessageContent *flmc = static_cast<FileLoadedMessageContent*>(bmc);
+
+				size_t foundModel = -1;
+				ModelLoadingData foundMLD;
+				size_t foundTexture = -1;
+				TextureLoadingData foundTLD;
+
+				for (int j = 0; j < _modelAwaitQueue_p->size(); j++)
+				{
+					ModelLoadingData mld = _modelAwaitQueue_p->at(j);
+					if (mld.hash == flmc->hash)
+					{
+						foundModel = j;
+						break;
+					}
+				}
+
+				if (foundModel >= 0)
+				{
+					loadOneModel(foundMLD, &flmc->content);
+					_modelAwaitQueue_p->erase(_modelAwaitQueue_p->begin() + foundModel);
+					continue;
+				}
+
+				for (int j = 0; j < _textureAwaitQueue_p->size(); j++)
+				{
+					TextureLoadingData tld = _textureAwaitQueue_p->at(j);
+					if (tld.hash == flmc->hash)
+					{
+						foundTexture = j;
+						break;
+					}
+				}
+				
+				if (foundTexture >= 0)
+				{
+					loadOneTexture(foundTLD, &flmc->content);
+					_textureAwaitQueue_p->erase(_textureAwaitQueue_p->begin() + foundTexture);
+				}
+			}
+
+			_fmq_p->clear();
+
+			_fmqMutex_p->unlock();
+		}
 
 		//loading is done if and only if both load and await queues are empty and we have context
+		if (_textureLoadQueue_p->empty() && _textureAwaitQueue_p->empty() && _modelLoadQueue_p->empty() && _modelAwaitQueue_p->empty() && haveContext())
+		{
+			_state = RendererState::rendering;
+		}
+
 	}
 
 	void doSingleLoad()
@@ -505,6 +616,41 @@ private:
 		//check the file return queue for ONE file
 	}
 
+	void loadOneModel(ModelLoadingData mld, std::string *data_p)
+	{
+		ModelData md;	
+
+		//does nothing yet
+		auto objData = OBJImport::importObjInfo(*data_p);
+		GLuint numVertices = objData.size() / 8;
+
+		GLfloat *objPtr = &objData[0];
+		GLuint glVaoId, glVboId;
+
+		glGenVertexArrays(1, &glVaoId);
+		glBindVertexArray(glVaoId);
+		glGenBuffers(1, &glVboId);
+		glBindBuffer(GL_ARRAY_BUFFER, glVboId);
+		glBufferData(GL_ARRAY_BUFFER, (numVertices * sizeof(GLfloat)), objPtr, GL_STATIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+
+		md.numVerts = numVertices;
+		md.preScale = 1.0f;
+		md.vaoID = glVaoId;
+		md.vboID = glVboId;
+
+		_models_p->emplace(mld.name, md);
+		
+	}
+
+	void loadOneTexture(TextureLoadingData tld, std::string *data_p)
+	{
+		//does nothing yet
+
+	}
+
 	/// <summary>
 	/// Unloads stuff
 	/// </summary>
@@ -513,7 +659,7 @@ private:
 		//TODO EVENTUALLY: blit render load screen
 		drawUnloadScreen();
 
-		//delete (some) GL stuff, purge data structures, DO NOT PURGE QUEUE
+		//delete (some) GL stuff, purge data structures, DO NOT PURGE MESSAGE QUEUES
 
 
 		//finally release context
