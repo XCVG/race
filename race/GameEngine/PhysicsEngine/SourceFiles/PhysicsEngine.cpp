@@ -93,10 +93,11 @@ void PhysicsEngine::loop()
 			{
 				std::shared_ptr<Message> myMessage = _messageQueue.front();
 				PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-				SDL_Log(content->contentVar.c_str());
+				//SDL_Log(content->contentVar.c_str());
 				// process a normal message
-
 				_messageQueue.pop();
+				//SDL_Log("After pop()");
+				
 				//SDL_Log("Message Processed");
 			}
 			_messageQueueMutex_p->unlock();

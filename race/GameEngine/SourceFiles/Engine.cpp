@@ -47,12 +47,11 @@ std::thread* Engine::start() {
 void Engine::update() {
 		
 	/* Send a message. */
-	PhysicsCallMessageContent* content = new PhysicsCallMessageContent();
-	content->contentVar = "Hello!";
 	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
-	myMessage->setContent(content);
+	myMessage->setContent(new PhysicsCallMessageContent("Test"));
 
 	MessagingSystem::instance().postMessage(myMessage);
+	//delete(content);
 	//SDL_Log("%s", "Running Engine::udpate");
 }
 

@@ -63,6 +63,7 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	public:
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
 	std::string contentVar;
+	PhysicsCallMessageContent::PhysicsCallMessageContent(std::string s) { contentVar = s; }
 };
 
 #endif
