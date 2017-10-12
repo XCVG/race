@@ -37,7 +37,7 @@ PhysicsEngine::PhysicsEngine()
 ///
 PhysicsEngine::~PhysicsEngine()
 {
-	SDL_Log("%s", "Running Render::Destructor");
+	SDL_Log("%s", "Running Physics::Destructor");
 	this->stop();
 }
 
@@ -73,7 +73,7 @@ std::thread* PhysicsEngine::start()
 void PhysicsEngine::loop()
 {
 	while (_running) {
-		while (_messageQueue.empty() && _urgentMessageQueue.empty()) {
+		while (_messageQueue.empty() && _urgentMessageQueue.empty() && _running) {
 			std::this_thread::yield();
 		}
 		//SDL_Log("Out of Yield");
@@ -97,12 +97,12 @@ void PhysicsEngine::loop()
 				// process a normal message
 
 				_messageQueue.pop();
-				SDL_Log("Message Processed");
+				//SDL_Log("Message Processed");
 			}
 			_messageQueueMutex_p->unlock();
 		}
 	}
-
+	//SDL_Log("Physics::Out of loop");
 }
 
 ///
@@ -111,4 +111,5 @@ void PhysicsEngine::loop()
 void PhysicsEngine::stop()
 {
     _running = false;
+	//SDL_Log("Physics::Stop");
 }

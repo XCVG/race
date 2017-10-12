@@ -30,7 +30,7 @@
 Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p):
 	_type(type), _isUrgent(isUrgent), _content_p(content_p)
 {
-	SDL_Log("New Message Created");
+	//SDL_Log("New Message Created");
 }
 
 ///
@@ -38,7 +38,7 @@ Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p
 ///
 Message::~Message()
 {
-	SDL_Log("Message Deleted");
+	//SDL_Log("Message Deleted");
 	delete _content_p;
 }
 

@@ -45,6 +45,7 @@ std::thread* Engine::start() {
 }
 
 void Engine::update() {
+		
 	/* Send a message. */
 	PhysicsCallMessageContent* content = new PhysicsCallMessageContent();
 	content->contentVar = "Hello!";
@@ -63,6 +64,7 @@ void Engine::loop() {
         this->update();
 		
     }
+	//SDL_Log("Engine::Out of Loop");
 }
 
 ///
@@ -76,6 +78,14 @@ void Engine::loop() {
 /// </summary>
 /// 
 void Engine::stop() {
+	//SDL_Log("Engine::stop");
+	_soundEngine_p->~SoundEngine();
+	_inputEngine_p->~InputEngine();
+	//_aiEngine_p->~AIEngine();
+	_physicsEngine_p->~PhysicsEngine();
+	_renderEngine_p->~RenderEngine();
+	_renderThread_p->join();
+	_physicsThread_p->join();
     _running = false;
     //_physicsEngine_p->stop();
     //_aiEngine_p->stop();
@@ -86,13 +96,5 @@ Engine::Engine() {
 }
 
 Engine::~Engine() {
-	SDL_Log("%s", "Running Engine::Destructor");
-    _soundEngine_p->~SoundEngine();
-    _inputEngine_p->~InputEngine();
-    //_aiEngine_p->~AIEngine();
-    _physicsEngine_p->~PhysicsEngine();
-    _renderEngine_p->~RenderEngine();
-	_renderThread_p->join();
-	_physicsThread_p->join();
-	this->stop();
+	//SDL_Log("%s", "Running Engine::Destructor");
 }

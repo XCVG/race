@@ -60,8 +60,11 @@ int main(int argc, char ** argv) {
 		}
 	}
 
-	delete(e);
+	//SDL_Log("Main::Out of Loop");
+	e->stop();
+	//SDL_Log("Main::Wait for Engine Join");
 	engineThread_p->join();
+	delete(e);
 	MessagingSystem::instance().kill();
 	SDL_DestroyWindow(g_window_p);
 
