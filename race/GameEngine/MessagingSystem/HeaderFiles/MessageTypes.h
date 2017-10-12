@@ -24,6 +24,7 @@
 ========================================================================================*/
 
 #include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
+#include <string>
 
 /*========================================================================================
 	Enums
@@ -65,24 +66,6 @@ enum MESSAGE_TYPE
 class BaseMessageContent
 {};
 
-//*****FILE MESSAGES
-
-class FileLoadMessageContent : BaseMessageContent
-{
-	public:
-		std::string path;
-		bool relative;
-};
-
-class FileLoadedMessageContent: BaseMessageContent
-{
-	public:
-		std::string path;
-		bool relative;
-		bool success;
-		std::string fileContents;
-};
-
 //*****RENDERER MESSAGES
 
 class RenderLoadMessageContent : public BaseMessageContent
@@ -122,7 +105,25 @@ class RenderUnloadMessageContent : public BaseMessageContent
 
 class RenderFinishedMessageContent : public BaseMessageContent
 {
+	
+};
 
+//*****FILE MESSAGES
+
+class FileLoadMessageContent : public BaseMessageContent
+{
+public:
+	std::string path;
+	bool relative;
+};
+
+class FileLoadedMessageContent : public BaseMessageContent
+{
+public:
+	size_t hash;
+	std::string path;
+	bool relative;
+	std::string content;
 };
 
 #endif

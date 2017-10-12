@@ -1,6 +1,7 @@
 #include "main.h" 
 #include "Engine.h"
 #include "GlobalPrefs.h"
+#include "MessagingSystem.h"
 
 uint32_t TICKS_TO_WAIT = 17;
 SDL_Window *g_window_p;
@@ -30,6 +31,7 @@ int main(int argc, char ** argv) {
 	SDL_Log("It worked!");
 
 	//it doesn't start Engine on a separate thread yet; Spencer I'll let you do that
+	MessagingSystem::instance().start();
 	Engine *e = new Engine();
 	e->start();
 
@@ -61,6 +63,7 @@ int main(int argc, char ** argv) {
 	}
 
 	delete(e);
+	MessagingSystem::instance().kill();
 	SDL_DestroyWindow(g_window_p);
 
 	//*****temporary loop section ends
