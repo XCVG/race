@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
+#include "../MessagingSystem/HeaderFiles/MessageTypes.h"
 
 std::thread* Engine::start() {
     // Create the other engines, or at least get pointer to them
@@ -44,7 +45,14 @@ std::thread* Engine::start() {
 }
 
 void Engine::update() {
-    //SDL_Log("%s", "Running Engine::udpate");
+	/* Send a message. */
+	PhysicsCallMessageContent* content = new PhysicsCallMessageContent();
+	content->contentVar = "Hello!";
+	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
+	myMessage->setContent(content);
+
+	MessagingSystem::instance().postMessage(myMessage);
+	//SDL_Log("%s", "Running Engine::udpate");
 }
 
 void Engine::loop() {
@@ -53,6 +61,7 @@ void Engine::loop() {
     }
     while(_running) {
         this->update();
+		
     }
 }
 

@@ -72,18 +72,37 @@ std::thread* PhysicsEngine::start()
 ///
 void PhysicsEngine::loop()
 {
-    if (!_running)
-	{
-        return;
-    }
+	while (_running) {
+		while (_messageQueue.empty() && _urgentMessageQueue.empty()) {
+			std::this_thread::yield();
+		}
+		//SDL_Log("Out of Yield");
 
-    while(_running)
-	{
-		// Commenting this out to avoid spamming the debug log with dummy messages.
-		//SDL_Log("%s", "Running PhysicsEngine::update");
+		_urgentMessageQueueMutex_p->lock();
+		if (!_urgentMessageQueue.empty()) {
+			// process an urgent message
 
-		/* Check if we have urgent messages */
-    }
+
+			_urgentMessageQueueMutex_p->unlock();
+		}
+		else 
+		{
+			_urgentMessageQueueMutex_p->unlock();
+			_messageQueueMutex_p->lock();
+			if (!_messageQueue.empty())
+			{
+				std::shared_ptr<Message> myMessage = _messageQueue.front();
+				PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
+				SDL_Log(content->contentVar.c_str());
+				// process a normal message
+
+				_messageQueue.pop();
+				SDL_Log("Message Processed");
+			}
+			_messageQueueMutex_p->unlock();
+		}
+	}
+
 }
 
 ///

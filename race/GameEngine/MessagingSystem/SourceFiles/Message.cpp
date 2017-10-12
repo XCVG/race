@@ -29,13 +29,16 @@
 ///
 Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p):
 	_type(type), _isUrgent(isUrgent), _content_p(content_p)
-{}
+{
+	SDL_Log("New Message Created");
+}
 
 ///
 ///	Default Message destructor.
 ///
 Message::~Message()
 {
+	SDL_Log("Message Deleted");
 	delete _content_p;
 }
 

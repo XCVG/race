@@ -18,6 +18,7 @@
 #include "AIEngine.h"
 #include "InputEngine.h"
 #include "SoundEngine.h"
+#include "../MessagingSystem/HeaderFiles/MessagingSystem.h"
 class Engine {
 public:
     std::thread* start();
@@ -35,5 +36,7 @@ private:
 	std::thread *_renderThread_p;
     //std::thread *_aiThread_p;
     bool _running = false;
+	PhysicsCallMessageContent* content;
+	float i = 0;
     void loop();
 };

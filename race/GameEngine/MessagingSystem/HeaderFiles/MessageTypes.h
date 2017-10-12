@@ -18,6 +18,7 @@
 
 #ifndef MESSAGE_TYPES_H
 #define MESSAGE_TYPES_H
+#include <string>
 
 /*========================================================================================
 	Dependencies
@@ -57,9 +58,11 @@ enum class MESSAGE_TYPE
 class BaseMessageContent
 {};
 
-class PhysicsCallMessageContent
+class PhysicsCallMessageContent: public BaseMessageContent
 {
+	public:
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
+	std::string contentVar;
 };
 
 #endif
