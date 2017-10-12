@@ -12,7 +12,7 @@ FileEngine::FileEngine()
 void FileEngine::start()
 {
 	//subscribe to messages
-	subscribe(FileLoadMessageType);
+	subscribe(MESSAGE_TYPE::FileLoadMessageType);
 
 	//start loop
 	_thread_p = new std::thread(&FileEngine::loop, this);
@@ -24,7 +24,7 @@ FileEngine::~FileEngine()
 	_thread_p->join();
 	delete(_thread_p);
 
-	unsubscribe(FileLoadMessageType);
+	unsubscribe(MESSAGE_TYPE::FileLoadMessageType);
 }
 
 void FileEngine::loop()
@@ -94,8 +94,7 @@ void FileEngine::HandleMessage(BaseMessageContent *inBaseMessage)
 	outMessage->path = inMessage.path;
 	outMessage->relative = inMessage.relative;
 
-	MessagingSystem::instance().postMessage(std::shared_ptr<Message>(new Message(FileLoadedMessageType,false,outMessage)));
-	
+	MessagingSystem::instance().postMessage(std::make_shared<Message>(MESSAGE_TYPE::FileLoadedMessageType,false,outMessage));
 }
 
 size_t FileEngine::HashFilePath(std::string path, bool relative)
