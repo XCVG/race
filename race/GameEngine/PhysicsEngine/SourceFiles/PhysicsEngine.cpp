@@ -73,34 +73,38 @@ std::thread* PhysicsEngine::start()
 void PhysicsEngine::loop()
 {
 	while (_running) {
-		while (_messageQueue.empty() && _urgentMessageQueue.empty() && _running) {
+		_urgentMessageQueueMutex_p->lock();
+		_messageQueueMutex_p->lock();
+		if (_messageQueue.empty() && _urgentMessageQueue.empty() && _running) {
+			_urgentMessageQueueMutex_p->unlock();
+			_messageQueueMutex_p->unlock();
 			std::this_thread::yield();
 		}
-		//SDL_Log("Out of Yield");
+		else {
+			if (!_urgentMessageQueue.empty()) {
+				_messageQueueMutex_p->unlock();
+				// process an urgent message
 
-		_urgentMessageQueueMutex_p->lock();
-		if (!_urgentMessageQueue.empty()) {
-			// process an urgent message
 
-
-			_urgentMessageQueueMutex_p->unlock();
-		}
-		else 
-		{
-			_urgentMessageQueueMutex_p->unlock();
-			_messageQueueMutex_p->lock();
-			if (!_messageQueue.empty())
-			{
-				std::shared_ptr<Message> myMessage = _messageQueue.front();
-				PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-				//SDL_Log(content->contentVar.c_str());
-				// process a normal message
-				_messageQueue.pop();
-				//SDL_Log("After pop()");
-				
-				//SDL_Log("Message Processed");
+				_urgentMessageQueueMutex_p->unlock();
 			}
-			_messageQueueMutex_p->unlock();
+			else
+			{
+				_urgentMessageQueueMutex_p->unlock();
+				if (!_messageQueue.empty())
+				{
+					std::shared_ptr<Message> myMessage = _messageQueue.front();
+					PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
+					//SDL_Log(content->contentVar.c_str());
+					// process a normal message
+					_messageQueue.pop();
+					//SDL_Log("After pop()");
+
+					//SDL_Log("Message Processed");
+					
+				}
+				_messageQueueMutex_p->unlock();
+			}
 		}
 	}
 	//SDL_Log("Physics::Out of loop");
