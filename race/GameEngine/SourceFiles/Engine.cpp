@@ -1,6 +1,16 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
-
+#include <typeinfo>
+Engine::Engine() {
+    
+};
+Engine::~Engine() {
+    _soundEngine_p->~SoundEngine();
+    _inputEngine_p->~InputEngine();
+    _aiEngine_p->~AIEngine();
+    _physicsEngine_p->~PhysicsEngine();
+    _renderEngine_p->~RenderEngine();
+};
 void Engine::start() {
     // Create the other engines, or at least get pointer to them
 	_fileEngine_p = new FileEngine();
@@ -45,11 +55,10 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
-}
-
+};
 void Engine::update() {
     SDL_Log("%s", "Running Engine::udpate");
-}
+};
 
 void Engine::loop() {
     if (!_running) {
@@ -58,8 +67,7 @@ void Engine::loop() {
     while(_running) {
         this->update();
     }
-}
-
+};
 ///
 /// <title>
 /// Engine Stop
@@ -74,17 +82,4 @@ void Engine::stop() {
     _running = false;
     _physicsEngine_p->stop();
     _aiEngine_p->stop();
-}
-
-Engine::Engine() {
-
-}
-
-Engine::~Engine() {
-    _soundEngine_p->~SoundEngine();
-    _inputEngine_p->~InputEngine();
-    _aiEngine_p->~AIEngine();
-    _physicsEngine_p->~PhysicsEngine();
-    _renderEngine_p->~RenderEngine();
-	_fileEngine_p->~FileEngine();
-}
+};

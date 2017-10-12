@@ -111,7 +111,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir)GameEngine\MessagingSystem\HeaderFiles;$(ProjectDir)GameEngine\PhysicsEngine\HeaderFiles;$(ProjectDir)GameEngine\RenderEngine\HeaderFiles;$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)GameEngine\Components\HeaderFiles;$(ProjectDir)GameEngine\MessagingSystem\HeaderFiles;$(ProjectDir)GameEngine\PhysicsEngine\HeaderFiles;$(ProjectDir)GameEngine\RenderEngine\HeaderFiles;$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(ProjectDir)GameEngine\RenderEngine\HeaderFiles;$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>

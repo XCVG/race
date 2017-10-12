@@ -13,20 +13,16 @@
 #include <string>
 #include <iostream>
 #include <thread>
-#include "FileEngine.h"
-#include "RenderEngine.h"
-#include "PhysicsEngine.h"
-#include "AIEngine.h"
-#include "InputEngine.h"
-#include "SoundEngine.h"
-#include "FileEngine.h"
+#include "EngineHeaders.h"
+#include "ComponentHeaders.h"
+#include "GameObject.h"
 class Engine {
 public:
+    Engine();
+    ~Engine();
     void start();
     void update();
     void stop();
-    Engine();
-    ~Engine();
     std::thread *_engineThread_p;
 private:
 	FileEngine *_fileEngine_p;
