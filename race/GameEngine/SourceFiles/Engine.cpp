@@ -51,8 +51,8 @@ void Engine::start() {
     }
 	GameObject *go = new GameObject();
 	go->addComponent(new VelocityComponent(new glm::vec3(0, 0, 1), 100));
-	VelocityComponent *vc = (VelocityComponent *)go->getComponent(&typeid(VelocityComponent));
-	SDL_Log("%s", *vc);
+	VelocityComponent *vc = go->getComponent<VelocityComponent *>();
+	SDL_Log("%s", vc.ToString());
 };
 void Engine::update() {
     SDL_Log("%s", "Running Engine::udpate");

@@ -1,6 +1,7 @@
 #pragma once
 #include <list>
-#include <vector>
+//#include <vector>
+#include <map>
 #include <typeinfo>
 #include <typeindex>
 #include "ComponentHeaders.h"
@@ -12,17 +13,57 @@ public:
 	void setPosition(glm::vec3 _position);
 	void setRotation(glm::vec3 _rotation);
 	void setScale(GLfloat _scale);
-	void addComponent(Component *_component_p);
-	void removeComponent(Component _component);
+	template <typename T>
+	void addComponent(T component)
+	{
+		std::string type = this->getType<T>();
+		(*this->_components_p)[type] = component;
+	};
+	template <typename T>
+	void removeComponent()
+	{
+		std::string type = getType<T>();
+		if (this->hasComponent<T>())
+		{
+			this->_components_p->erase(this->_components_p->find(type));
+		}
+	};
 	glm::vec3 getPosition();
 	glm::vec3 getRotation();
 	GLfloat getScale();
-	std::vector<Component *> getComponentList();
-	template <class Comp>
-	Component* getComponent(Comp type);
+	template <typename T>
+	T getComponent()
+	{
+		if (this->hasComponent<T>())
+		{
+			return (T)(*this->_components_p)[this->getType<T>()];
+		}
+		else
+		{
+			return NULL;
+		}
+	};
+	std::map<std::string, Component *> getComponentList();
 private:
 	glm::vec3 *_position_p;
 	glm::vec3 *_rotation_p;
 	GLfloat _scale;
-	std::vector<Component *> *_components_p; // TODO: Change to vector
+	std::map<std::string, Component *> *_components_p;
+	template <typename T>
+	std::string getType()
+	{
+		return typeid(T).name();
+	};
+	template <typename T>
+	bool hasComponent()
+	{
+		if (this->_components_p->find(this->getType<T>()) == this->_components_p->end())
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	};
 };

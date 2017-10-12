@@ -1,7 +1,7 @@
 #include "AccelerationComponent.h"
 AccelerationComponent::AccelerationComponent()
 {
-    this->_acceleration = new Vector3();
+    this->_acceleration = new glm::vec3();
     this->_maxAcceleration = 0;
 };
 AccelerationComponent::AccelerationComponent(glm::vec3 *_acceleration, GLfloat _maxAcceleration)

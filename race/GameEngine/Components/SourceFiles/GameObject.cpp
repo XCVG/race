@@ -24,22 +24,6 @@ void GameObject::setScale(GLfloat _scale)
 {
     this->_scale = _scale;
 };
-// void GameObject::addComponent(Component _component)
-// {
-//     this->_components_p->push_back(&_component); // Double checkt this
-// };
-void GameObject::addComponent(Component *_component_p)
-{
-    this->_components_p->push_back(_component_p);
-};
-void GameObject::removeComponent(Component _component)
-{
-    /**
-     * TODO: This needs to be fixed
-     * I need to figure out a better way to pop a component from the list
-     * other than just by name (i.e., may have duplicate components (sound)).
-     */
-};
 glm::vec3 GameObject::getPosition()
 {
     return *this->_position_p;
@@ -55,16 +39,4 @@ GLfloat GameObject::getScale()
 std::vector<Component *> GameObject::getComponentList()
 {
     return *this->_components_p;
-};
-template <class Comp>
-Component* GameObject::getComponent(Comp A)
-{
-	for (Component *comp : *this->_components_p)
-	{
-		if (*comp == A)
-		{
-			return comp; // Return found component
-		}
-	}
-	return NULL; // Not found
 };
