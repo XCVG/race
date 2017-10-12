@@ -5,11 +5,6 @@ Engine::Engine() {
     
 };
 Engine::~Engine() {
-    _soundEngine_p->~SoundEngine();
-    _inputEngine_p->~InputEngine();
-    _aiEngine_p->~AIEngine();
-    _physicsEngine_p->~PhysicsEngine();
-    _renderEngine_p->~RenderEngine();
 };
 std::thread* Engine::start() {
     // Create the other engines, or at least get pointer to them
