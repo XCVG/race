@@ -38,8 +38,22 @@ Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p
 ///
 Message::~Message()
 {
-	//SDL_Log("Message Deleted");
-	delete _content_p;
+	/* Check the type of this message and cast and delete the content accordingly. */
+	if (_type == MESSAGE_TYPE::BaseMessageType)
+	{
+		BaseMessageContent* contentToDelete = static_cast<BaseMessageContent*>(_content_p);
+		delete contentToDelete;
+	}
+	else if (_type == MESSAGE_TYPE::FileLoadMessageType)
+	{
+		FileLoadMessageContent* contentToDelete = static_cast<FileLoadMessageContent*>(_content_p);
+		delete contentToDelete;
+	}
+	else if (_type == MESSAGE_TYPE::FileLoadedMessageType)
+	{
+		FileLoadedMessageContent* contentToDelete = static_cast<FileLoadedMessageContent*>(_content_p);
+		delete contentToDelete;
+	}
 }
 
 /*----------------------------------------------------------------------------------------
