@@ -1,4 +1,5 @@
 #include "RenderMessageReceiver.h"
+#include <SDL.h>
 
 RenderMessageReceiver::RenderMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p)
 {
@@ -17,6 +18,8 @@ void RenderMessageReceiver::subscribeAll()
 
 bool RenderMessageReceiver::messageHandler(std::shared_ptr<Message> message)
 {
+	SDL_Log("Renderer: Received a message!");
+
 	_mqMutex_p->lock();
 	_mq_p->push_back(message);
 	_mqMutex_p->unlock();

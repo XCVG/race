@@ -56,7 +56,7 @@ int main(int argc, char ** argv) {
 		uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
 		if (ticksSinceLast >= TICKS_TO_WAIT)
 		{
-			e->update();
+			//e->update();
 		}
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(1));

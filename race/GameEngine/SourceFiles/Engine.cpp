@@ -1,6 +1,8 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
 
+#include "MessagingSystem.h"
+
 void Engine::start() {
     // Create the other engines, or at least get pointer to them
 	_fileEngine_p = new FileEngine();
@@ -30,14 +32,20 @@ void Engine::start() {
     try {
 		_fileEngine_p->start();
         _renderEngine_p->start();
-        _physicsThread_p = _physicsEngine_p->start();
-        _aiThread_p = _aiEngine_p->start();
+        //_physicsThread_p = _physicsEngine_p->start();
+        //_aiThread_p = _aiEngine_p->start();
         _inputEngine_p->start();
         _soundEngine_p->start();
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
+
+	_running = true;
     _engineThread_p = new std::thread(&Engine::loop, this);
+
+	
+	
+	/*
     if (!_running) {
         _running = true;
     } else {
@@ -45,6 +53,9 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
+
+	*/
+	
 }
 
 void Engine::update() {
@@ -52,12 +63,42 @@ void Engine::update() {
 }
 
 void Engine::loop() {
+	bool ran = false;
+
     if (!_running) {
         return;
     }
     while(_running) {
+		//SDL_Log("This one should work");
+
         this->update();
-		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
+		std::this_thread::sleep_for(std::chrono::milliseconds(17));
+
+		if (ran)
+			continue;
+
+		SDL_Log("Doing a stupid befpre!");
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+		SDL_Log("Doing a stupid!");
+
+		//disgusting render test hack
+		
+		MessagingSystem *ms = &MessagingSystem::instance();		
+		{			
+			RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
+			RenderableSetupData rsd;
+			rsd.models.push_back("cube");
+			rlmc->data = rsd;
+			Message *msg = new Message(RenderLoadMessageType,false,rlmc);
+			ms->postMessage(std::shared_ptr<Message>(msg));
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+		ran = true;
+
     }
 }
 

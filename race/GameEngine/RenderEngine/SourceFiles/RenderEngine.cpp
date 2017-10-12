@@ -57,7 +57,7 @@ public:
 		_mr_p = new RenderMessageReceiver(_mq_p);
 		_mr_p->subscribeAll();
 		_mqMutex_p = new std::mutex();
-		
+
 		//create file handling message queue and handler, then subscribe to messaging
 		_fmq_p = new std::vector<std::shared_ptr<Message>>();
 		_fmr_p = new RenderFileMessageReceiver(_fmq_p);
@@ -122,7 +122,7 @@ private:
 	std::vector<TextureLoadingData> *_textureAwaitQueue_p;
 
 	//threading stuff
-	bool _isRunning;	
+	bool _isRunning;
 	std::thread *_renderThread_p;
 
 	//honestly not sure
@@ -192,8 +192,8 @@ private:
 				break;
 			}
 
-			
-			
+
+
 			//std::this_thread::sleep_for(std::chrono::milliseconds(17));
 		}
 
@@ -269,7 +269,7 @@ private:
 		delete(_textureAwaitQueue_p);
 		delete(_modelAwaitQueue_p);
 		delete(_textureLoadQueue_p);
-		delete(_modelLoadQueue_p);		
+		delete(_modelLoadQueue_p);
 		delete(_textures_p);
 		delete(_models_p);
 	}
@@ -284,7 +284,7 @@ private:
 
 		//needs to be sensitive to current state and prioritize certain messages
 		//REMEMBER: the "head" of the queue is at 0 and the "tail" at the other end
-				
+
 		if (!_mq_p->empty()) //optimization: skip EVERYTHING if empty
 		{
 			if (_state == RendererState::idle)
@@ -403,13 +403,13 @@ private:
 					//assign renderablescene and renderableoverlay if they exist
 					if (latestScene != nullptr)
 					{
-						if(_lastScene_p == nullptr)
+						if (_lastScene_p == nullptr)
 							delete(_lastScene_p);
 						_lastScene_p = latestScene;
 					}
 					if (latestOverlay != nullptr)
 					{
-						if(_lastOverlay_p == nullptr)
+						if (_lastOverlay_p == nullptr)
 							delete(_lastOverlay_p);
 						_lastOverlay_p = latestOverlay;
 					}
@@ -436,6 +436,8 @@ private:
 
 	void startLoad(RenderableSetupData *data)
 	{
+		SDL_Log("Renderer: Entering load state");
+
 		_state = RendererState::loading;
 
 		//just start the load here
@@ -489,7 +491,7 @@ private:
 		drawLoadScreen();
 
 		//loads stuff
-		
+
 		MessagingSystem *ms = &MessagingSystem::instance();
 		if (ms == nullptr)
 		{
@@ -508,11 +510,10 @@ private:
 				FileLoadMessageContent *flmc = new FileLoadMessageContent();
 				flmc->path = MODEL_BASEPATH_CONST + mld.name + MODEL_EXTENSION_CONST;
 				flmc->relative = true;
-				
+
 				mld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
-				
-				Message *msg = new Message();
-				msg->setContent(flmc);
+
+				Message *msg = new Message(FileLoadMessageType, false, flmc);
 				ms->postMessage(std::shared_ptr<Message>(msg));
 
 				_modelAwaitQueue_p->push_back(mld);
@@ -533,8 +534,7 @@ private:
 
 				tld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
 
-				Message *msg = new Message();
-				msg->setContent(flmc);
+				Message *msg = new Message(FileLoadMessageType, false, flmc);
 				ms->postMessage(std::shared_ptr<Message>(msg));
 
 				_textureAwaitQueue_p->push_back(tld);
@@ -586,7 +586,7 @@ private:
 						break;
 					}
 				}
-				
+
 				if (foundTexture >= 0)
 				{
 					loadOneTexture(foundTLD, &flmc->content);
@@ -602,6 +602,7 @@ private:
 		//loading is done if and only if both load and await queues are empty and we have context
 		if (_textureLoadQueue_p->empty() && _textureAwaitQueue_p->empty() && _modelLoadQueue_p->empty() && _modelAwaitQueue_p->empty() && haveContext())
 		{
+			SDL_Log("Renderer: Entering render state");
 			_state = RendererState::rendering;
 		}
 
@@ -618,7 +619,7 @@ private:
 
 	void loadOneModel(ModelLoadingData mld, std::string *data_p)
 	{
-		ModelData md;	
+		ModelData md;
 
 		//does nothing yet
 		auto objData = OBJImport::importObjInfo(*data_p);
@@ -642,7 +643,7 @@ private:
 		md.vboID = glVboId;
 
 		_models_p->emplace(mld.name, md);
-		
+
 	}
 
 	void loadOneTexture(TextureLoadingData tld, std::string *data_p)
@@ -660,15 +661,28 @@ private:
 		drawUnloadScreen();
 
 		//delete (some) GL stuff, purge data structures, DO NOT PURGE MESSAGE QUEUES
-
+		unloadGL();
+		unloadData();
 
 		//finally release context
 		releaseContext();
+
+		_state = RendererState::idle;
 	}
 
 	void doIdle()
 	{
 		//drawIdleScreen();
+	}
+
+	void unloadGL()
+	{
+
+	}
+
+	void unloadData()
+	{
+
 	}
 
 	void drawLoadScreen()
