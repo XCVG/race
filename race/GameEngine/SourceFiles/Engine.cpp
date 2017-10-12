@@ -5,13 +5,8 @@ Engine::Engine() {
     
 };
 Engine::~Engine() {
-    _soundEngine_p->~SoundEngine();
-    _inputEngine_p->~InputEngine();
-    _aiEngine_p->~AIEngine();
-    _physicsEngine_p->~PhysicsEngine();
-    _renderEngine_p->~RenderEngine();
 };
-void Engine::start() {
+std::thread* Engine::start() {
     // Create the other engines, or at least get pointer to them
 	_fileEngine_p = new FileEngine();
 	if (_fileEngine_p == nullptr) {
@@ -25,10 +20,10 @@ void Engine::start() {
     if (_physicsEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
-    _aiEngine_p = new AIEngine();
+    /**_aiEngine_p = new AIEngine();
     if (_aiEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
-    }
+    }**/
     _inputEngine_p = new InputEngine();
     if (_inputEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
@@ -38,16 +33,15 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
     try {
-		_fileEngine_p->start();
-        _renderEngine_p->start();
+        _renderThread_p = _renderEngine_p->start();
         _physicsThread_p = _physicsEngine_p->start();
-        _aiThread_p = _aiEngine_p->start();
+        //_aiThread_p = _aiEngine_p->start();
         _inputEngine_p->start();
         _soundEngine_p->start();
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
-    _engineThread_p = new std::thread(&Engine::loop, this);
+
     if (!_running) {
         _running = true;
     } else {
@@ -55,10 +49,18 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
+	return new std::thread(&Engine::loop, this);
 };
 void Engine::update() {
-    SDL_Log("%s", "Running Engine::udpate");
-};
+		
+	/* Send a message. */
+	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
+	myMessage->setContent(new PhysicsCallMessageContent("Test"));
+
+	MessagingSystem::instance().postMessage(myMessage);
+	//delete(content);
+	//SDL_Log("%s", "Running Engine::udpate");
+}
 
 void Engine::loop() {
     if (!_running) {
@@ -66,7 +68,9 @@ void Engine::loop() {
     }
     while(_running) {
         this->update();
+		
     }
+	//SDL_Log("Engine::Out of Loop");
 };
 ///
 /// <title>
@@ -79,7 +83,15 @@ void Engine::loop() {
 /// </summary>
 /// 
 void Engine::stop() {
+	//SDL_Log("Engine::stop");
+	_soundEngine_p->~SoundEngine();
+	_inputEngine_p->~InputEngine();
+	//_aiEngine_p->~AIEngine();
+	_physicsEngine_p->~PhysicsEngine();
+	_renderEngine_p->~RenderEngine();
+	_renderThread_p->join();
+	_physicsThread_p->join();
     _running = false;
-    _physicsEngine_p->stop();
-    _aiEngine_p->stop();
-};
+    //_physicsEngine_p->stop();
+    //_aiEngine_p->stop();
+}

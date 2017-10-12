@@ -94,7 +94,7 @@ void FileEngine::HandleMessage(BaseMessageContent *inBaseMessage)
 	outMessage->path = inMessage.path;
 	outMessage->relative = inMessage.relative;
 
-	MessagingSystem::instance().postMessage(std::make_shared<Message>(MESSAGE_TYPE::FileLoadedMessageType,false,outMessage));
+	MessagingSystem::instance().postMessage(std::make_shared<Message>(Message(MESSAGE_TYPE::FileLoadedMessageType,false,outMessage)));
 }
 
 size_t FileEngine::HashFilePath(std::string path, bool relative)

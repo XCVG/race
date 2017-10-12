@@ -18,9 +18,9 @@
 #include "GameObject.h"
 class Engine {
 public:
+    std::thread* start();
     Engine();
     ~Engine();
-    void start();
     void update();
     void stop();
     std::thread *_engineThread_p;
@@ -32,7 +32,10 @@ private:
     InputEngine *_inputEngine_p;
     SoundEngine *_soundEngine_p;	
     std::thread *_physicsThread_p;
-    std::thread *_aiThread_p;
+	std::thread *_renderThread_p;
+    //std::thread *_aiThread_p;
     bool _running = false;
+	PhysicsCallMessageContent* content;
+	float i = 0;
     void loop();
 };

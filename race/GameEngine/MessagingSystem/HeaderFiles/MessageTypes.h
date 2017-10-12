@@ -18,6 +18,7 @@
 
 #ifndef MESSAGE_TYPES_H
 #define MESSAGE_TYPES_H
+#include <string>
 
 /*========================================================================================
 	Dependencies
@@ -37,6 +38,7 @@
 enum class MESSAGE_TYPE
 {
 	BaseMessageType,
+	PhysicsCallMessageType,
 	FileLoadMessageType,
 	FileLoadedMessageType
 };
@@ -55,8 +57,17 @@ enum class MESSAGE_TYPE
 	-	Setting a message's content deletes the old content's memory! Because of this, 
 		messages should not share pointers to the same content object!
 */
+
 class BaseMessageContent
 {};
+
+class PhysicsCallMessageContent: public BaseMessageContent
+{
+	public:
+	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
+	std::string contentVar;
+	PhysicsCallMessageContent(std::string s) { contentVar = s; }
+};
 
 class FileLoadMessageContent : public BaseMessageContent
 {
