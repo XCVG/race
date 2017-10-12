@@ -9,9 +9,9 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(glm::vec3 _position, glm::vec3 _rotation, GLfloat _scale);
-	void setPosition(glm::vec3 _position);
-	void setRotation(glm::vec3 _rotation);
+	GameObject(Vector3 _position, Vector3 _rotation, GLfloat _scale);
+	void setPosition(Vector3 _position);
+	void setRotation(Vector3 _rotation);
 	void setScale(GLfloat _scale);
 	template <typename T>
 	void addComponent(T component)
@@ -28,15 +28,15 @@ public:
 			this->_components_p->erase(this->_components_p->find(type));
 		}
 	};
-	glm::vec3 getPosition();
-	glm::vec3 getRotation();
+	Vector3 getPosition();
+	Vector3 getRotation();
 	GLfloat getScale();
 	template <typename T>
 	T getComponent()
 	{
 		if (this->hasComponent<T>())
 		{
-			return (T)(*this->_components_p)[this->getType<T>()];
+			return (T)(*this->_components_p)[this->getType<T>()]; // TODO: Dynamic cast?
 		}
 		else
 		{
@@ -45,8 +45,8 @@ public:
 	};
 	std::map<std::string, Component *> getComponentList();
 private:
-	glm::vec3 *_position_p;
-	glm::vec3 *_rotation_p;
+	Vector3 *_position_p;
+	Vector3 *_rotation_p;
 	GLfloat _scale;
 	std::map<std::string, Component *> *_components_p;
 	template <typename T>

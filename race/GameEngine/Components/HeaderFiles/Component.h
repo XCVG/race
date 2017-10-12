@@ -2,17 +2,15 @@
 #ifdef __APPLE__
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
-#include <glm/vec3.hpp>
 #elif defined _WIN32 || defined _WIN64
 #include <SDL.h>
 #include <SDL_opengl.h>
-#include <vec3.hpp>
 #endif
-#include <string>
+#include "Vector3.h"
 class Component
 {
 public:
     Component();
     Component(const Component &obj);
-    virtual std::string ToString();
+    //TODO: toString() method for each class? At least for name possibly
 };

@@ -1,12 +1,12 @@
 #include "CameraComponent.h"
 CameraComponent::CameraComponent()
 {
-	this->_clearColor = new glm::vec3();
+	this->_clearColor = new Vector3();
 	this->_nearPlane = 0;
 	this->_farPlane = 0;
 	this->_angle = 0;
 };
-CameraComponent::CameraComponent(glm::vec3 _clearColor, GLfloat _nearPlane, GLfloat _farPlane, GLfloat _angle)
+CameraComponent::CameraComponent(Vector3 _clearColor, GLfloat _nearPlane, GLfloat _farPlane, GLfloat _angle)
 {
 	this->_clearColor = _clearColor;
 	this->_nearPlane = _nearPlane;
@@ -20,7 +20,7 @@ CameraComponent::CameraComponent(const CameraComponent &obj)
 	this->_farPlane = obj._farPlane;
 	this->_angle = obj._angle;
 };
-void CameraComponent::setClearColor(glm::vec3 _clearColor)
+void CameraComponent::setClearColor(Vector3 _clearColor)
 {
     this->_clearColor = _clearColor;
 };
@@ -36,7 +36,7 @@ void CameraComponent::setAngle(GLfloat _angle)
 {
     this->_angle = _angle;
 };
-glm::vec3 CameraComponent::setClearColor()
+Vector3 CameraComponent::setClearColor()
 {
     return this->_clearColor;
 };

@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
+#include <typeinfo>
 Engine::Engine() {
     
 };
@@ -49,10 +50,6 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
-	GameObject *go = new GameObject();
-	go->addComponent(new VelocityComponent(new glm::vec3(0, 0, 1), 100));
-	VelocityComponent *vc = go->getComponent<VelocityComponent *>();
-	SDL_Log("%s", vc.ToString());
 };
 void Engine::update() {
     SDL_Log("%s", "Running Engine::udpate");

@@ -4,14 +4,14 @@ class AccelerationComponent : public Component
 {
 public:
 	AccelerationComponent();
-	AccelerationComponent(glm::vec3 _acceleration, GLfloat _maxAcceleration);
-	AccelerationComponent(glm::vec3 *_acceleration, GLfloat _maxAcceleration);
+	AccelerationComponent(Vector3 _acceleration, GLfloat _maxAcceleration);
+	AccelerationComponent(Vector3 *_acceleration, GLfloat _maxAcceleration);
 	AccelerationComponent(const AccelerationComponent &obj);
-	void setAccelerationVector(glm::vec3 _acceleration);
+	void setAccelerationVector(Vector3 _acceleration);
 	void setMaxAcceleration(GLfloat _maxAcceleration);
-	glm::vec3 getAccelerationVector();
+	Vector3 getAccelerationVector();
 	GLfloat getMaxAcceleration();
 private:
-	glm::vec3 _acceleration;
+	Vector3 _acceleration;
 	GLfloat _maxAcceleration;
 };
