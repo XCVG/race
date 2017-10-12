@@ -1,17 +1,17 @@
 #pragma once
 #include "Component.h"
-#include "Vector3.h"
 class AccelerationComponent : public Component
 {
 public:
 	AccelerationComponent();
-	AccelerationComponent(Vector3 _acceleration, GLfloat _maxAcceleration);
+	AccelerationComponent(glm::vec3 _acceleration, GLfloat _maxAcceleration);
+	AccelerationComponent(glm::vec3 *_acceleration, GLfloat _maxAcceleration);
 	AccelerationComponent(const AccelerationComponent &obj);
-	void setAccelerationVector(Vector3 _acceleration);
+	void setAccelerationVector(glm::vec3 _acceleration);
 	void setMaxAcceleration(GLfloat _maxAcceleration);
-	Vector3 getAccelerationVector();
+	glm::vec3 getAccelerationVector();
 	GLfloat getMaxAcceleration();
 private:
-	Vector3 _acceleration;
+	glm::vec3 _acceleration;
 	GLfloat _maxAcceleration;
 };

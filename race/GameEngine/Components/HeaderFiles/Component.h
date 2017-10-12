@@ -5,6 +5,7 @@
 #elif defined _WIN32 || defined _WIN64
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <vec3.hpp>
 #endif
 class Component
 {

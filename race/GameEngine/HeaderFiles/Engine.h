@@ -13,8 +13,11 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <typeinfo>
+#include <typeindex>
 #include "EngineHeaders.h"
 #include "ComponentHeaders.h"
+#include "GameObject.h"
 class Engine {
 public:
     Engine();

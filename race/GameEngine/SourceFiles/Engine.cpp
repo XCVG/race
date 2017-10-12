@@ -49,6 +49,10 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
+	GameObject *go = new GameObject();
+	go->addComponent(new VelocityComponent(new glm::vec3(0, 0, 1), 100));
+	VelocityComponent *vc = (VelocityComponent *)go->getComponent(&typeid(VelocityComponent));
+	SDL_Log("%s", *vc);
 };
 void Engine::update() {
     SDL_Log("%s", "Running Engine::udpate");

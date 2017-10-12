@@ -4,9 +4,7 @@
 /// Header file containing all the components for easy addition to game files
 /// </summary>
 ///
-#include "Vector3.h"
 #include "Component.h"
-#include "GameObject.h"
 #include "AccelerationComponent.h"
 #include "AIComponent.h"
 #include "AudioComponent.h"

@@ -1,20 +1,22 @@
 #include "GameObject.h"
 GameObject::GameObject()
 {
-    this->_position_p = new Vector3(0, 0, 0);
-    this->_rotation_p = new Vector3(0, 0, 0);
+    this->_position_p = new glm::vec3(0, 0, 0);
+    this->_rotation_p = new glm::vec3(0, 0, 0);
     this->_scale = 1;
     this->_components_p = new std::vector<Component *>();
 };
-GameObject::GameObject(Vector3 _position, Vector3 _rotation, GLfloat _scale)
+GameObject::GameObject(glm::vec3 _position, glm::vec3 _rotation, GLfloat _scale)
 {
-
+    this->_position_p = &_position;
+    this->_rotation_p = &_rotation;
+    this->_scale = _scale;
 };
-void GameObject::setPosition(Vector3 _position)
+void GameObject::setPosition(glm::vec3 _position)
 {
     this->_position_p = &_position;
 };
-void GameObject::setRotation(Vector3 _rotation)
+void GameObject::setRotation(glm::vec3 _rotation)
 {
     this->_rotation_p = &_rotation;
 };
@@ -38,11 +40,11 @@ void GameObject::removeComponent(Component _component)
      * other than just by name (i.e., may have duplicate components (sound)).
      */
 };
-Vector3 GameObject::getPosition()
+glm::vec3 GameObject::getPosition()
 {
     return *this->_position_p;
 };
-Vector3 GameObject::getRotation()
+glm::vec3 GameObject::getRotation()
 {
     return *this->_rotation_p;
 };
@@ -53,4 +55,16 @@ GLfloat GameObject::getScale()
 std::vector<Component *> GameObject::getComponentList()
 {
     return *this->_components_p;
+};
+template <class Comp>
+Component* GameObject::getComponent(Comp A)
+{
+	for (Component *comp : *this->_components_p)
+	{
+		if (*comp == A)
+		{
+			return comp; // Return found component
+		}
+	}
+	return NULL; // Not found
 };

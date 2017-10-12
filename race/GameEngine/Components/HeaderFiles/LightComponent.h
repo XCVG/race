@@ -11,7 +11,7 @@ class LightComponent : public Component
 {
 public:
 	GLfloat _intensity;
-	// type
+	// type // TODO: This needs to be different
 	GLfloat _range;
 	GLfloat _angle;
 };
