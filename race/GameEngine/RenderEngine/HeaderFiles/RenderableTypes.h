@@ -7,7 +7,7 @@
 /// <summary>
 /// Types of lights that can be rendered
 /// </summary>
-enum class RenderableLightType : int8_t
+enum class RenderableLightType : int_fast8_t
 {
 	AMBIENT, DIRECTIONAL, POINT, SPOT
 };

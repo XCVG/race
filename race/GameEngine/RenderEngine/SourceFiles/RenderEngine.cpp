@@ -112,6 +112,8 @@ private:
 	std::map<std::string, TextureData> *_textures_p;
 	std::vector<ModelLoadingData> *_modelLoadQueue_p;
 	std::vector<TextureLoadingData> *_textureLoadQueue_p;
+	std::vector<ModelLoadingData> *_modelAwaitQueue_p;
+	std::vector<TextureLoadingData> *_textureAwaitQueue_p;
 
 	//threading stuff
 	bool _isRunning;	
@@ -156,7 +158,7 @@ private:
 
 		//for testing
 		SDL_Log(std::to_string(SDL_GL_GetSwapInterval()).c_str());
-		_state = RendererState::rendering;
+		_state = RendererState::idle;
 
 		//loop: on RenderEngine thread
 		while (_isRunning)
@@ -169,6 +171,7 @@ private:
 			switch (_state)
 			{
 			case RendererState::idle:
+				doIdle();
 				std::this_thread::sleep_for(std::chrono::milliseconds(IDLE_DELAY_CONST)); //don't busywait!
 				break;
 			case RendererState::loading:
@@ -211,6 +214,8 @@ private:
 		_textures_p = new std::map<std::string, TextureData>();
 		_modelLoadQueue_p = new std::vector<ModelLoadingData>();
 		_textureLoadQueue_p = new std::vector<TextureLoadingData>();
+		_modelAwaitQueue_p = new std::vector<ModelLoadingData>();
+		_textureAwaitQueue_p = new std::vector<TextureLoadingData>();
 	}
 
 	void setupGLOnThread()
@@ -255,6 +260,8 @@ private:
 	void cleanupStructuresOnThread()
 	{
 		//delete data structures
+		delete(_textureAwaitQueue_p);
+		delete(_modelAwaitQueue_p);
 		delete(_textureLoadQueue_p);
 		delete(_modelLoadQueue_p);		
 		delete(_textures_p);
@@ -292,7 +299,7 @@ private:
 					else
 					{
 						//remove and log warning
-						SDL_Log("Renderer: found a message before load");
+						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: found a message before load");
 						iter = _mq_p->erase(iter);
 					}
 				}
@@ -366,12 +373,12 @@ private:
 					}
 					else if (t == RenderLoadMessageType)
 					{
-						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Received load message while scene is loaded!");
+						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Received load message while scene is loaded!");
 						abortIndex = i - 1;
 					}
 					else
 					{
-						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Bad message type received!");
+						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Bad message type received!");
 					}
 				}
 
@@ -394,12 +401,14 @@ private:
 					//assign renderablescene and renderableoverlay if they exist
 					if (latestScene != nullptr)
 					{
-						delete(_lastScene_p);
+						if(_lastScene_p == nullptr)
+							delete(_lastScene_p);
 						_lastScene_p = latestScene;
 					}
 					if (latestOverlay != nullptr)
 					{
-						delete(_lastOverlay_p);
+						if(_lastOverlay_p == nullptr)
+							delete(_lastOverlay_p);
 						_lastOverlay_p = latestOverlay;
 					}
 				}
@@ -412,6 +421,7 @@ private:
 			else
 			{
 				//well, that shouldn't happen
+				SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Ended up in an impossible state");
 			}
 		}
 
@@ -467,9 +477,15 @@ private:
 	/// </summary>
 	void doLoad()
 	{
-		//TODO EVENTUALLY: blit render load screen
-
+		
 		//if we don't have context, get context
+		if (!haveContext())
+			acquireContext();
+		if (!haveContext())
+			return; //wait for context to be released
+
+		//TODO EVENTUALLY: blit render load screen
+		drawLoadScreen();
 
 		//loads stuff
 
@@ -477,7 +493,7 @@ private:
 
 		//process results from file return queue
 
-		//check if we're done, if we're done continue
+		//loading is done if and only if both load and await queues are empty and we have context
 	}
 
 	void doSingleLoad()
@@ -495,12 +511,54 @@ private:
 	void doUnload()
 	{
 		//TODO EVENTUALLY: blit render load screen
+		drawUnloadScreen();
 
 		//delete (some) GL stuff, purge data structures, DO NOT PURGE QUEUE
 
 
 		//finally release context
 		releaseContext();
+	}
+
+	void doIdle()
+	{
+		//drawIdleScreen();
+	}
+
+	void drawLoadScreen()
+	{
+		if (!haveContext())
+			return;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glViewport(0, 0, _renderWidth, _renderHeight);
+
+		glClearColor(0.1f, 0.75f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void drawUnloadScreen()
+	{
+		if (!haveContext())
+			return;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glViewport(0, 0, _renderWidth, _renderHeight);
+
+		glClearColor(0.1f, 0.25f, 0.75f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
+
+	void drawIdleScreen()
+	{
+		if (!haveContext())
+			return;
+
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glViewport(0, 0, _renderWidth, _renderHeight);
+
+		glClearColor(0.75f, 0.5f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void setupWindow()
@@ -854,6 +912,11 @@ private:
 	{
 		//does nothing but we may need it later
 		return true;
+	}
+
+	bool haveContext()
+	{
+		return SDL_GL_GetCurrentContext() == _context_p;
 	}
 
 };
