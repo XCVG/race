@@ -23,7 +23,7 @@ static const int RENDER_HEIGHT_CONST = 720;
 
 class RenderEngine {
 public:
-    void start();
+    std::thread* start();
     void update();
     RenderEngine();
     ~RenderEngine();
@@ -45,7 +45,6 @@ private:
 	void updateCube();
 
 	bool _isRunning;
-	std::thread *_renderThread_p;
 
 	SDL_Window *_window_p;
 	SDL_GLContext _context_p;

@@ -34,9 +34,9 @@ MessagingSystem::MessagingSystem()
 	_isDead = false;
 }
 
-///
+/// <summary>
 ///	Creates and returns the MessagingSystem singleton instance.
-///
+/// </summary>
 MessagingSystem& MessagingSystem::instance()
 {
     static MessagingSystem _instance;

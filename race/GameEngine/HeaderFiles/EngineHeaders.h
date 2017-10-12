@@ -5,6 +5,7 @@
 /// that is where this file will be called from.
 /// </summary>
 ///
+#include "MessagingSystem.h"
 #include "RenderEngine.h"
 #include "PhysicsEngine.h"
 #include "AIEngine.h"
