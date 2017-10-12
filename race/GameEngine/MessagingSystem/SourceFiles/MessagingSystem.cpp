@@ -137,7 +137,11 @@ void MessagingSystem::sendMessage(std::shared_ptr<Message> messageToSend_p)
 	ReceiverGroup& receivers = _receiverGroups[messageToSend_p->getType()];
 	for (MessageReceiver* const eachReceiver_p : receivers)
 	{
-		eachReceiver_p->messageHandler(messageToSend_p);
+		/* Send the message to the next receiver. Stop sending out the message if indicated. */
+		if (eachReceiver_p->messageHandler(messageToSend_p))
+		{
+			break;
+		}
 	}
 
 	_receiverGroupsMutex.unlock();
