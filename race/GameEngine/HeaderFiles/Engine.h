@@ -13,11 +13,13 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include "FileEngine.h"
 #include "RenderEngine.h"
 #include "PhysicsEngine.h"
 #include "AIEngine.h"
 #include "InputEngine.h"
 #include "SoundEngine.h"
+#include "FileEngine.h"
 class Engine {
 public:
     void start();
@@ -27,11 +29,12 @@ public:
     ~Engine();
     std::thread *_engineThread_p;
 private:
+	FileEngine *_fileEngine_p;
     RenderEngine *_renderEngine_p;
     PhysicsEngine *_physicsEngine_p;
     AIEngine *_aiEngine_p;
     InputEngine *_inputEngine_p;
-    SoundEngine *_soundEngine_p;
+    SoundEngine *_soundEngine_p;	
     std::thread *_physicsThread_p;
     std::thread *_aiThread_p;
     bool _running = false;

@@ -23,6 +23,7 @@
 	Dependencies
 ========================================================================================*/
 
+#include <string>
 
 /*========================================================================================
 	Enums
@@ -35,7 +36,9 @@
 */
 enum MESSAGE_TYPE
 {
-	BaseMessageType
+	BaseMessageType,
+	FileLoadMessageType,
+	FileLoadedMessageType
 };
 
 /*========================================================================================
@@ -54,5 +57,21 @@ enum MESSAGE_TYPE
 */
 class BaseMessageContent
 {};
+
+class FileLoadMessageContent : public BaseMessageContent
+{
+public:
+	std::string path;
+	bool relative;
+};
+
+class FileLoadedMessageContent : public BaseMessageContent
+{
+public:
+	size_t hash;
+	std::string path;
+	bool relative;
+	std::string content;
+};
 
 #endif
