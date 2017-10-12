@@ -24,6 +24,7 @@
 	Dependencies
 ========================================================================================*/
 
+#include <string>
 
 /*========================================================================================
 	Enums
@@ -37,7 +38,9 @@
 enum class MESSAGE_TYPE
 {
 	BaseMessageType,
-	PhysicsCallMessageType
+	PhysicsCallMessageType,
+	FileLoadMessageType,
+	FileLoadedMessageType
 };
 
 /*========================================================================================
@@ -63,7 +66,23 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	public:
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
 	std::string contentVar;
-	PhysicsCallMessageContent::PhysicsCallMessageContent(std::string s) { contentVar = s; }
+	PhysicsCallMessageContent(std::string s) { contentVar = s; }
+};
+
+class FileLoadMessageContent : public BaseMessageContent
+{
+public:
+	std::string path;
+	bool relative;
+};
+
+class FileLoadedMessageContent : public BaseMessageContent
+{
+public:
+	size_t hash;
+	std::string path;
+	bool relative;
+	std::string content;
 };
 
 #endif

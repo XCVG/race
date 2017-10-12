@@ -1,9 +1,22 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
-#include "../MessagingSystem/HeaderFiles/MessageTypes.h"
-
+#include <typeinfo>
+Engine::Engine() {
+    
+};
+Engine::~Engine() {
+    _soundEngine_p->~SoundEngine();
+    _inputEngine_p->~InputEngine();
+    _aiEngine_p->~AIEngine();
+    _physicsEngine_p->~PhysicsEngine();
+    _renderEngine_p->~RenderEngine();
+};
 std::thread* Engine::start() {
     // Create the other engines, or at least get pointer to them
+	_fileEngine_p = new FileEngine();
+	if (_fileEngine_p == nullptr) {
+		std::cout << ErrorHandler::getErrorString(1) << std::endl;
+	}
     _renderEngine_p = new RenderEngine();
     if (_renderEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
@@ -42,8 +55,7 @@ std::thread* Engine::start() {
         delete this;
     }
 	return new std::thread(&Engine::loop, this);
-}
-
+};
 void Engine::update() {
 		
 	/* Send a message. */
@@ -64,8 +76,7 @@ void Engine::loop() {
 		
     }
 	//SDL_Log("Engine::Out of Loop");
-}
-
+};
 ///
 /// <title>
 /// Engine Stop
@@ -88,12 +99,4 @@ void Engine::stop() {
     _running = false;
     //_physicsEngine_p->stop();
     //_aiEngine_p->stop();
-}
-
-Engine::Engine() {
-
-}
-
-Engine::~Engine() {
-	//SDL_Log("%s", "Running Engine::Destructor");
 }
