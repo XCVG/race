@@ -91,6 +91,7 @@ class MessagingSystem
 
     private:
 		void loop();
+		void update();
 		void sendMessage(std::shared_ptr<Message> messageToSend_p);
 };
 

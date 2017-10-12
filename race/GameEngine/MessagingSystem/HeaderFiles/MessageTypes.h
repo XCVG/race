@@ -34,7 +34,7 @@
 	-	Naming convention for message types is [Message type] + "Type".
 		For example, "BaseMessage" has type "BaseMessageType".
 */
-enum MESSAGE_TYPE
+enum class MESSAGE_TYPE
 {
 	BaseMessageType,
 	FileLoadMessageType,
