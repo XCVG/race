@@ -15,6 +15,7 @@ void FileEngine::start()
 	subscribe(FileLoadMessageType);
 
 	//start loop
+	_isRunning = true;
 	_thread_p = new std::thread(&FileEngine::loop, this);
 }
 
