@@ -1,11 +1,17 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
 #include <typeinfo>
+
+uint32_t ticksAtLast = 0;
+const int FRAMES_PER_SECOND = 60;
+
 Engine::Engine() {
     
 };
+
 Engine::~Engine() {
 };
+
 std::thread* Engine::start() {
     // Create the other engines, or at least get pointer to them
 	_fileEngine_p = new FileEngine();
@@ -33,6 +39,7 @@ std::thread* Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
     try {
+        _fileEngine_p->start();
         _renderEngine_p->start(); // Render handles it's own thread
         _physicsThread_p = _physicsEngine_p->start();
         //_aiThread_p = _aiEngine_p->start();
@@ -49,16 +56,24 @@ std::thread* Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
+	_sceneObj = new Scene();
+	ticksAtLast = SDL_GetTicks();
 	return new std::thread(&Engine::loop, this);
 };
 void Engine::update() {
-		
-	/* Send a message. */
-	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
-	myMessage->setContent(new PhysicsCallMessageContent("Test"));
+	
+	//run the renderer every tick
+	uint32_t currentTime = SDL_GetTicks();
+	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND) 
+	{
+		SDL_Log("Ticked");
+		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
+	    myMessage->setContent(new PhysicsCallMessageContent("Test"));
 
-	MessagingSystem::instance().postMessage(myMessage);
-	//delete(content);
+		MessagingSystem::instance().postMessage(myMessage);
+		ticksAtLast = currentTime;
+	}
+	
 	//SDL_Log("%s", "Running Engine::udpate");
 }
 
@@ -88,7 +103,8 @@ void Engine::stop() {
 	_inputEngine_p->~InputEngine();
 	//_aiEngine_p->~AIEngine();
 	_physicsEngine_p->~PhysicsEngine();
-	_renderEngine_p->~RenderEngine();
+    _renderEngine_p->~RenderEngine();
+    _fileEngine_p->~FileEngine();
 	_physicsThread_p->join();
     _running = false;
     //_physicsEngine_p->stop();
