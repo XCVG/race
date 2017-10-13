@@ -13,6 +13,7 @@ void FileEngine::start()
 {
 	//subscribe to messages
 	subscribe(MESSAGE_TYPE::FileLoadMessageType);
+	subscribe(MESSAGE_TYPE::FileLoadImageMessageType);
 
 	//start loop
 	_isRunning = true;
@@ -26,6 +27,7 @@ FileEngine::~FileEngine()
 	delete(_thread_p);
 
 	unsubscribe(MESSAGE_TYPE::FileLoadMessageType);
+	unsubscribe(MESSAGE_TYPE::FileLoadImageMessageType);
 }
 
 void FileEngine::loop()
@@ -122,7 +124,28 @@ void FileEngine::HandleNormalMessage(FileLoadMessageContent inMessage)
 
 void FileEngine::HandleImageMessage(FileLoadImageMessageContent inMessage)
 {
+	size_t hash = 0;
+	SDL_Surface *content;
 
+	if (inMessage.relative)
+	{
+		hash = HashFilePath(inMessage.path, true);
+		content = FileHelper::loadImageFileFromStringRelative(inMessage.path);
+	}
+	else
+	{
+		hash = HashFilePath(inMessage.path, false);
+		content = FileHelper::loadImageFileFromString(inMessage.path);
+	}
+
+	FileLoadedImageMessageContent *outMessage = new FileLoadedImageMessageContent();
+
+	outMessage->hash = hash;
+	outMessage->image = std::shared_ptr<SDL_Surface>(content);
+	outMessage->path = inMessage.path;
+	outMessage->relative = inMessage.relative;
+
+	MessagingSystem::instance().postMessage(std::make_shared<Message>(Message(MESSAGE_TYPE::FileLoadedImageMessageType, false, outMessage)));
 }
 
 size_t FileEngine::HashFilePath(std::string path, bool relative)

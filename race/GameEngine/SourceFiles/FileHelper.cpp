@@ -76,7 +76,28 @@ std::vector<uint8_t> FileHelper::loadBinaryFileFromString(std::string path)
 
 SDL_Surface * FileHelper::loadImageFileFromString(std::string path)
 {
-	return nullptr;
+	SDL_RWops *rwop_p = SDL_RWFromFile(path.c_str(), "rb");
+	SDL_Surface *surface = nullptr;
+
+	if (rwop_p == NULL)
+	{
+		std::string msg = "Could not find file at ";
+		msg += path;
+		throw FileNotFoundException(msg);
+	}
+
+	IMG_Load_RW(rwop_p, 0);
+
+	SDL_RWclose(rwop_p);
+
+	if (surface == NULL)
+	{
+		std::string msg = "Could not create image with file ";
+		msg += path;
+		throw FileImageConversionException(msg);
+	}
+
+	return surface;
 }
 
 std::string FileHelper::loadFileFromStringRelative(std::string relativePath)
