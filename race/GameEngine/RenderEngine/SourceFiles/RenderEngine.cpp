@@ -249,7 +249,7 @@ private:
 		setupProgram();
 		setupFramebuffers();
 		setupFramebufferDraw();
-		setupBaseMatrices(); //will need to move/redo to deal with moving camera
+		//setupBaseMatrices(); //will need to move/redo to deal with moving camera
 		setupCube(); //remove this soon
 	}
 
@@ -933,26 +933,15 @@ private:
 		RenderableCamera *camera = &scene->camera;
 
 		//"draw" the camera, actually just set up base matrices
-
-		//THIS IS FINE
 		
 		glm::mat4 projection = glm::perspective(camera->viewAngle, (float)_renderWidth / (float)_renderHeight, camera->nearPlane, camera->farPlane);
 		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
 		glm::mat4 translation = glm::translate(look, camera->position * -1.0f);
-		//glm::mat4 rotation = glm::eulerAngleYXZ(-camera->rotation.y, -camera->rotation.x, -camera->rotation.z);
-		glm::mat4 rotation = glm::mat4();
-		glm::mat4 view = translation * rotation;
-		//view = look;
+		glm::mat4 rotation = glm::eulerAngleYXZ(camera->rotation.y, camera->rotation.x, camera->rotation.z);
+		glm::mat4 view = rotation * translation;
 		_baseModelViewMatrix = view;
 		_baseModelViewProjectionMatrix = projection * view;
-		/*
-		//glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)16 / (float)9, 0.1f, 100.0f);
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)_renderWidth / (float)_renderHeight, 0.1f, 100.0f);
-		glm::mat4 view = glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		glm::mat4 model = glm::mat4(1.0f);
-		_baseModelViewMatrix = view * model;
-		_baseModelViewProjectionMatrix = projection * view * model;
-		*/
+
 	}
 
 	void drawObjects(RenderableScene *scene)
@@ -993,10 +982,10 @@ private:
 		//transform!
 		glm::mat4 cubeMVM = glm::mat4();
 		cubeMVM = glm::translate(cubeMVM, object->position);
-		//cubeMVM = glm::scale(cubeMVM, object->scale);
-		//cubeMVM = glm::rotate(cubeMVM, object->rotation.y, glm::vec3(0, 1, 0));
-		//cubeMVM = glm::rotate(cubeMVM, object->rotation.x, glm::vec3(1, 0, 0));
-		//cubeMVM = glm::rotate(cubeMVM, object->rotation.z, glm::vec3(0, 0, 1));
+		cubeMVM = glm::scale(cubeMVM, object->scale);
+		cubeMVM = glm::rotate(cubeMVM, object->rotation.y, glm::vec3(0, 1, 0));
+		cubeMVM = glm::rotate(cubeMVM, object->rotation.x, glm::vec3(1, 0, 0));
+		cubeMVM = glm::rotate(cubeMVM, object->rotation.z, glm::vec3(0, 0, 1));
 		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  cubeMVM;
 		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
 

@@ -106,8 +106,8 @@ void Engine::loop() {
 			rc.clearColor = glm::vec3(1, 1, 1);
 			rc.farPlane = 1000.0f;
 			rc.nearPlane = 0.1f;
-			rc.position = glm::vec3(0, 0, 0);
-			rc.rotation = glm::vec3(0, 0, 0);
+			rc.position = glm::vec3(0, 0, 5);
+			rc.rotation = glm::vec3(0, 0, 0); //x=pitch, y=yaw, z=roll
 			rc.viewAngle = 1.05f;
 			rs->camera = rc;
 
