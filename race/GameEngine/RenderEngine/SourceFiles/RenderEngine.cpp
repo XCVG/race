@@ -622,6 +622,9 @@ private:
 
 	void loadOneModel(ModelLoadingData mld, std::string *data_p)
 	{
+
+		//return;
+
 		ModelData md;
 
 		//does nothing yet
@@ -635,7 +638,8 @@ private:
 		glBindVertexArray(glVaoId);
 		glGenBuffers(1, &glVboId);
 		glBindBuffer(GL_ARRAY_BUFFER, glVboId);
-		glBufferData(GL_ARRAY_BUFFER, (numVertices * sizeof(GLfloat)), objPtr, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, (objData.size() * sizeof(GLfloat)), objPtr, GL_STATIC_DRAW);
+		//will break but shouldn't break other things
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
@@ -764,9 +768,13 @@ private:
 
 		glGenBuffers(1, &_cubeVertexBufferID);
 		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-		//glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+				
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 	}
 
 	void setupBaseMatrices()
@@ -829,6 +837,21 @@ private:
 
 	void setupFramebufferDraw()
 	{
+		/*
+		glGenBuffers(1, &_cubeVertexBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+		glGenVertexArrays(1, &_cubeVertexArrayID);
+		glBindVertexArray(_cubeVertexArrayID);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+				
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+		*/
+
 		glGenVertexArrays(1, &_framebufferDrawVertexArrayID);
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 
@@ -836,7 +859,11 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, _framebufferDrawVertexBufferID);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
 
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 
 		_framebufferDrawProgramID = LoadShadersFBDraw();
 
@@ -858,6 +885,12 @@ private:
 		//updateCube();
 
 		//drawCube();
+
+		updateCube();
+		drawCube();
+		drawLighting(_lastScene_p);
+		SDL_GL_SwapWindow(_window_p);
+		return;
 
 		//will remain in final
 		if (_lastScene_p == nullptr)
@@ -1005,14 +1038,11 @@ private:
 		glUniform1i(_framebufferDrawTexID, 0);
 
 		//setup vertices
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, _framebufferDrawVertexBufferID);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
+		glBindVertexArray(_framebufferDrawVertexArrayID);
 
 		//draw
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(0);
+		glBindVertexArray(0);
 
 	}
 
@@ -1042,19 +1072,15 @@ private:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//bind cube, set properties, and draw
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+		glBindVertexArray(_cubeVertexArrayID);		
 		//glBindVertexArray(_cubeVertexArrayID);
+		//glm::mat4 testView = glm::translate(glm::mat4(), glm::vec3(0,0,-2));
 		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  _cubeModelViewMatrix;
 		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDisableVertexAttribArray(0);
 
-		//unbind
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindVertexArray(0);
 	}
 
 	void updateCube()
