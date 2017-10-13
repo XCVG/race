@@ -6,11 +6,12 @@ GameObject::GameObject()
     this->_scale = 1;
     this->_components_p = new std::map<std::string, Component *>();
 };
-GameObject::GameObject(Vector3 _position, Vector3 _rotation, GLfloat _scale)
+GameObject::GameObject(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
-    this->_position_p = &_position;
-    this->_rotation_p = &_rotation;
+    this->_position_p = _position;
+    this->_rotation_p = _rotation;
     this->_scale = _scale;
+	this->_components_p = new std::map<std::string, Component *>();
 };
 void GameObject::setPosition(Vector3 _position)
 {

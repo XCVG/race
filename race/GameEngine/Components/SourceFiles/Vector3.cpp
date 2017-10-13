@@ -15,5 +15,5 @@ Vector3::Vector3(const Vector3 &obj)
 { 
     this->_x = obj._x; 
     this->_y = obj._y; 
-    this->_z = obj._x; 
+    this->_z = obj._z; /// FUCK YOU SPENCER
 };

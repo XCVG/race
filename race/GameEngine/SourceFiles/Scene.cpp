@@ -43,7 +43,7 @@ RenderableScene* Scene::getRenderInformation()
 			rs->camera = rc;
 		} else if (it->first == "Light") 
 		{
-			if (it->second->hasComponent<LightComponent>()) {
+			if (it->second->hasComponent<LightComponent*>()) {
 				RenderableLight rl;
 				LightComponent *lc = it->second->getComponent<LightComponent*>();
 				rl.type = RenderableLightType::AMBIENT;
@@ -59,7 +59,7 @@ RenderableScene* Scene::getRenderInformation()
 		}
 		else 
 		{
-			if (it->second->hasComponent<RenderComponent>()) {
+			if (it->second->hasComponent<RenderComponent*>()) {
 				RenderableObject ro;
 				RenderComponent *rc = it->second->getComponent<RenderComponent *>();
 				ro.albedoName = rc->getAlbedoName();
@@ -88,16 +88,16 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 };
 
 void Scene::setUpSceneOne() {
-	GameObject *go = new GameObject(Vector3(0, 0, 5), Vector3(0, 0, 0), 1.0f);
+	GameObject *go = new GameObject(new Vector3(0, 0, 5), new Vector3(0, 0, 0), 1.0f);
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	go = new GameObject(Vector3(0, 2, 2), Vector3(0, 0, 0), 1.0f);
-	go->addComponent(new RenderComponent("Cube", "crate", "", 0));
-	addGameObject("Cube", go);
+	GameObject *go2 = new GameObject(new Vector3(0, 2, 2), new Vector3(0, 0, 0), 1.0f);
+	go2->addComponent(new RenderComponent("Cube", "crate", "", 0));
+	addGameObject("Cube", go2);
 
-	go = new GameObject();
-	go->addComponent(new LightComponent(0.5f, Vector3(1, 1, 1), 0.0f, 0.0f));
-	addGameObject("Light", go);
+	GameObject *go3 = new GameObject();
+	go3->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f));
+	addGameObject("Light", go3);
 };
 

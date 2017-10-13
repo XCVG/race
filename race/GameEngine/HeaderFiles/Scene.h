@@ -14,8 +14,8 @@ public:
 	void deleteGameObject(std::string);
 	GameObject* getGameObject(std::string);
 	RenderableScene* getRenderInformation();
-	glm::vec3 Scene::Vector3ToGLMVector(Vector3 vec);
-	glm::vec3 Scene::FloatToGLMVector(GLfloat num);
+	glm::vec3 Vector3ToGLMVector(Vector3 vec);
+	glm::vec3 FloatToGLMVector(GLfloat num);
 private:
 	void setUpSceneOne();
 

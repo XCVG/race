@@ -15,7 +15,7 @@ public:
 	Vector3 _color;
 	GLfloat _range;
 	GLfloat _angle;
-	LightComponent(GLfloat intense, Vector3 color, GLfloat range, GLfloat angle) {
+	LightComponent(GLfloat intense, Vector3 *color, GLfloat range, GLfloat angle) {
 		_intensity = intense; _color = color; _range = range; _angle = angle;
 	}
 	LightComponent() {
