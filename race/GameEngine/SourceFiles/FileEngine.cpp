@@ -13,6 +13,7 @@ void FileEngine::start()
 {
 	//subscribe to messages
 	subscribe(MESSAGE_TYPE::FileLoadMessageType);
+	subscribe(MESSAGE_TYPE::FileLoadImageMessageType);
 
 	//start loop
 	_isRunning = true;
@@ -26,6 +27,7 @@ FileEngine::~FileEngine()
 	delete(_thread_p);
 
 	unsubscribe(MESSAGE_TYPE::FileLoadMessageType);
+	unsubscribe(MESSAGE_TYPE::FileLoadImageMessageType);
 }
 
 void FileEngine::loop()
@@ -41,7 +43,7 @@ void FileEngine::loop()
 				//handle urgent messages first
 				_urgentMessageQueueMutex_p->lock();
 				Message *msg = _urgentMessageQueue.front().get();
-				HandleMessage(msg->getContent());
+				HandleMessage(msg);
 				_urgentMessageQueue.pop();
 				_urgentMessageQueueMutex_p->unlock();
 
@@ -51,7 +53,7 @@ void FileEngine::loop()
 				//then non-urgent messages
 				_messageQueueMutex_p->lock();
 				Message *msg = _messageQueue.front().get();
-				HandleMessage(msg->getContent());
+				HandleMessage(msg);
 				_messageQueue.pop();
 				_messageQueueMutex_p->unlock();
 			}
@@ -70,10 +72,32 @@ void FileEngine::loop()
 
 }
 
-void FileEngine::HandleMessage(BaseMessageContent *inBaseMessage)
+void FileEngine::HandleMessage(Message *inBaseMessage)
 {
-	FileLoadMessageContent inMessage = *static_cast<FileLoadMessageContent*>(inBaseMessage); //this seems safe
+	
+	MESSAGE_TYPE contentType = inBaseMessage->getType();
+	switch (contentType)
+	{
+		case MESSAGE_TYPE::FileLoadMessageType:
+		{
+			FileLoadMessageContent inMessage = *static_cast<FileLoadMessageContent*>(inBaseMessage->getContent()); //this seems safe
+			HandleNormalMessage(inMessage);
+			break;
+		}
+		case MESSAGE_TYPE::FileLoadImageMessageType:
+		{
+			FileLoadImageMessageContent inMessage = *static_cast<FileLoadImageMessageContent*>(inBaseMessage->getContent()); //this seems safe
+			HandleImageMessage(inMessage);
+			break;
+		}
+		default:
+			SDL_Log("Filesystem: Received unknown message type");
+			break;
+	}
+}
 
+void FileEngine::HandleNormalMessage(FileLoadMessageContent inMessage)
+{
 	size_t hash = 0;
 	std::string content = std::string();
 
@@ -95,7 +119,33 @@ void FileEngine::HandleMessage(BaseMessageContent *inBaseMessage)
 	outMessage->path = inMessage.path;
 	outMessage->relative = inMessage.relative;
 
-	MessagingSystem::instance().postMessage(std::make_shared<Message>(Message(MESSAGE_TYPE::FileLoadedMessageType,false,outMessage)));
+	MessagingSystem::instance().postMessage(std::make_shared<Message>(Message(MESSAGE_TYPE::FileLoadedMessageType, false, outMessage)));
+}
+
+void FileEngine::HandleImageMessage(FileLoadImageMessageContent inMessage)
+{
+	size_t hash = 0;
+	SDL_Surface *content;
+
+	if (inMessage.relative)
+	{
+		hash = HashFilePath(inMessage.path, true);
+		content = FileHelper::loadImageFileFromStringRelative(inMessage.path);
+	}
+	else
+	{
+		hash = HashFilePath(inMessage.path, false);
+		content = FileHelper::loadImageFileFromString(inMessage.path);
+	}
+
+	FileLoadedImageMessageContent *outMessage = new FileLoadedImageMessageContent();
+
+	outMessage->hash = hash;
+	outMessage->image = std::shared_ptr<SDL_Surface>(content);
+	outMessage->path = inMessage.path;
+	outMessage->relative = inMessage.relative;
+
+	MessagingSystem::instance().postMessage(std::make_shared<Message>(Message(MESSAGE_TYPE::FileLoadedImageMessageType, false, outMessage)));
 }
 
 size_t FileEngine::HashFilePath(std::string path, bool relative)

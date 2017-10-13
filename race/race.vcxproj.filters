@@ -55,13 +55,10 @@
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageReceiver.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageTypes.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessagingSystem.h" />
-<<<<<<< HEAD
     <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderMessageReceiver.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderFileMessageReceiver.h" />
-=======
     <ClInclude Include="GameEngine\HeaderFiles\FileEngine.h" />
-    <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
     <ClInclude Include="GameEngine\HeaderFiles\EngineHeaders.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\AccelerationComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\AIComponent.h" />
