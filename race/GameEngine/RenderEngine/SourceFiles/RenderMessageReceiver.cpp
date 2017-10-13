@@ -1,5 +1,9 @@
 #include "RenderMessageReceiver.h"
+#ifdef __APPLE__
+#include <SDL2/SDL.h>
+#elif defined _WIN32 || defined _WIN64
 #include <SDL.h>
+#endif
 
 RenderMessageReceiver::RenderMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p)
 {
@@ -9,11 +13,11 @@ RenderMessageReceiver::RenderMessageReceiver(std::vector<std::shared_ptr<Message
 
 void RenderMessageReceiver::subscribeAll()
 {
-	this->subscribe(RenderLoadMessageType);
-	this->subscribe(RenderLoadSingleMessageType);
-	this->subscribe(RenderDrawMessageType);
-	this->subscribe(RenderDrawOverlayMessageType);
-	this->subscribe(RenderUnloadMessageType);
+	this->subscribe(MESSAGE_TYPE::RenderLoadMessageType);
+	this->subscribe(MESSAGE_TYPE::RenderLoadSingleMessageType);
+	this->subscribe(MESSAGE_TYPE::RenderDrawMessageType);
+	this->subscribe(MESSAGE_TYPE::RenderDrawOverlayMessageType);
+	this->subscribe(MESSAGE_TYPE::RenderUnloadMessageType);
 }
 
 bool RenderMessageReceiver::messageHandler(std::shared_ptr<Message> message)

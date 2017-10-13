@@ -1,13 +1,21 @@
-#include "RenderEngine.h"
-
-#include <thread>
-#include <queue>
-#include <atomic>
+#ifdef __APPLE__
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
+#elif defined _WIN32 || defined _WIN64
 #include <glew.h>
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
 #include <gtx\euler_angles.hpp>
 #include <SDL.h>
+#endif
+
+#include <thread>
+#include <queue>
+#include <atomic>
+
+#include "RenderEngine.h"
 
 #include "GlobalPrefs.h"
 #include "FileEngine.h"
@@ -163,7 +171,7 @@ private:
 		setupSceneOnThread();
 
 		//for testing
-		SDL_Log(std::to_string(SDL_GL_GetSwapInterval()).c_str());
+		SDL_Log("%s", std::to_string(SDL_GL_GetSwapInterval()).c_str());
 		_state = RendererState::idle;
 
 		//loop: on RenderEngine thread
@@ -174,7 +182,7 @@ private:
 
 			checkQueue();
 
-			switch (_state)
+			switch ((RendererState)_state)
 			{
 			case RendererState::idle:
 				//SDL_Log("Idle");
@@ -297,7 +305,7 @@ private:
 				for (; iter != _mq_p->end(); iter++)
 				{
 					std::shared_ptr<Message> msg_sp = *iter;
-					if (msg_sp.get()->getType() == RenderLoadMessageType)
+					if (msg_sp.get()->getType() == MESSAGE_TYPE::RenderLoadMessageType)
 					{
 						//great, we can load, so load and break!
 						startLoad(&static_cast<RenderLoadMessageContent*>(msg_sp.get()->getContent())->data);
@@ -342,24 +350,24 @@ private:
 					MESSAGE_TYPE t = msg_sp->getType();
 
 					//DO NOT CHANGE THIS TO A SWITCH
-					if (t == RenderDrawMessageType)
+					if (t == MESSAGE_TYPE::RenderDrawMessageType)
 					{
 						RenderableScene *scn = static_cast<RenderDrawMessageContent*>(msg_sp.get()->getContent())->scene_p;
 						latestScene = scn;
 						latestSceneIndex = i;
 					}
-					else if (t == RenderDrawOverlayMessageType)
+					else if (t == MESSAGE_TYPE::RenderDrawOverlayMessageType)
 					{
 						RenderableOverlay *ovl = static_cast<RenderDrawOverlayMessageContent*>(msg_sp.get()->getContent())->overlay_p;
 						latestOverlay = ovl;
 						latestOverlayIndex = i;
 					}
-					else if (t == RenderUnloadMessageType)
+					else if (t == MESSAGE_TYPE::RenderUnloadMessageType)
 					{
 						abortIndex = i;
 						break;
 					}
-					else if (t == RenderLoadSingleMessageType)
+					else if (t == MESSAGE_TYPE::RenderLoadSingleMessageType)
 					{
 						RenderLoadSingleMessageContent smc = *static_cast<RenderLoadSingleMessageContent*>(msg_sp.get()->getContent());
 						if (!smc.model.name.empty())
@@ -375,7 +383,7 @@ private:
 							_textureLoadQueue_p->push_back(tld);
 						}
 					}
-					else if (t == RenderLoadMessageType)
+					else if (t == MESSAGE_TYPE::RenderLoadMessageType)
 					{
 						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Received load message while scene is loaded!");
 						abortIndex = i - 1;
@@ -515,7 +523,7 @@ private:
 
 				mld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
 
-				Message *msg = new Message(FileLoadMessageType, false, flmc);
+				Message *msg = new Message(MESSAGE_TYPE::FileLoadMessageType, false, flmc);
 				ms->postMessage(std::shared_ptr<Message>(msg));
 
 				_modelAwaitQueue_p->push_back(mld);
@@ -536,7 +544,7 @@ private:
 
 				tld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
 
-				Message *msg = new Message(FileLoadMessageType, false, flmc);
+				Message *msg = new Message(MESSAGE_TYPE::FileLoadMessageType, false, flmc);
 				ms->postMessage(std::shared_ptr<Message>(msg));
 
 				_textureAwaitQueue_p->push_back(tld);
@@ -557,9 +565,9 @@ private:
 				BaseMessageContent * bmc = msg->getContent();
 				FileLoadedMessageContent *flmc = static_cast<FileLoadedMessageContent*>(bmc);
 
-				size_t foundModel = -1;
+				int64_t foundModel = -1;
 				ModelLoadingData foundMLD;
-				size_t foundTexture = -1;
+				int64_t foundTexture = -1;
 				TextureLoadingData foundTLD;
 
 				for (int j = 0; j < _modelAwaitQueue_p->size(); j++)
@@ -604,7 +612,7 @@ private:
 		//loading is done if and only if both load and await queues are empty and we have context
 		if (_textureLoadQueue_p->empty() && _textureAwaitQueue_p->empty() && _modelLoadQueue_p->empty() && _modelAwaitQueue_p->empty() && haveContext())
 		{
-			ms->postMessage(std::shared_ptr<Message>(new Message(RenderReadyMessageType,false,new RenderReadyMessageContent())));
+			ms->postMessage(std::shared_ptr<Message>(new Message(MESSAGE_TYPE::RenderReadyMessageType,false,new RenderReadyMessageContent())));
 			SDL_Log("Renderer: Entering render state");
 			_state = RendererState::rendering;
 		}

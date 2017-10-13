@@ -32,7 +32,7 @@ private:
     InputEngine *_inputEngine_p;
     SoundEngine *_soundEngine_p;	
     std::thread *_physicsThread_p;
-	std::thread *_renderThread_p;
+	//std::thread *_renderThread_p;
     //std::thread *_aiThread_p;
     bool _running = false;
 	PhysicsCallMessageContent* content;
