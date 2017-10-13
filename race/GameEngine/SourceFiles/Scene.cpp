@@ -1,5 +1,5 @@
 #include "../HeaderFiles/Scene.h"
-
+const float MATH_PI = 3.14159;
 Scene::Scene()
 {
 	setUpSceneOne();
@@ -88,11 +88,11 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 };
 
 void Scene::setUpSceneOne() {
-	GameObject *go = new GameObject(new Vector3(0, 0, 5), new Vector3(0, 0, 0), 1.0f);
+	GameObject *go = new GameObject(new Vector3(0, 0, 10), new Vector3(0, 0, 0), 1.0f);
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	GameObject *go2 = new GameObject(new Vector3(0, 2, 2), new Vector3(0, 0, 0), 1.0f);
+	GameObject *go2 = new GameObject(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f);
 	go2->addComponent(new RenderComponent("Cube", "crate", "", 0));
 	addGameObject("Cube", go2);
 
