@@ -886,12 +886,6 @@ private:
 
 		//drawCube();
 
-		updateCube();
-		drawCube();
-		drawLighting(_lastScene_p);
-		SDL_GL_SwapWindow(_window_p);
-		return;
-
 		//will remain in final
 		if (_lastScene_p == nullptr)
 		{
@@ -899,10 +893,10 @@ private:
 		}
 		else
 		{
-			//drawCamera(_lastScene_p);
-			//drawObjects(_lastScene_p);
-			updateCube();
-			drawCube();
+			drawCamera(_lastScene_p);
+			drawObjects(_lastScene_p);
+			//updateCube();
+			//drawCube();
 			drawLighting(_lastScene_p);
 			
 		}
@@ -941,23 +935,24 @@ private:
 		//"draw" the camera, actually just set up base matrices
 
 		//THIS IS FINE
-		/*
+		
 		glm::mat4 projection = glm::perspective(camera->viewAngle, (float)_renderWidth / (float)_renderHeight, camera->nearPlane, camera->farPlane);
-		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
-		glm::mat4 translation = glm::translate(glm::mat4(), camera->position * -1.0f);
-		glm::mat4 rotation = glm::eulerAngleYXZ(-camera->rotation.y, -camera->rotation.x, -camera->rotation.z);
+		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+		glm::mat4 translation = glm::translate(look, camera->position * -1.0f);
+		//glm::mat4 rotation = glm::eulerAngleYXZ(-camera->rotation.y, -camera->rotation.x, -camera->rotation.z);
+		glm::mat4 rotation = glm::mat4();
 		glm::mat4 view = translation * rotation;
 		//view = look;
-		glm::mat4 model = glm::mat4(1.0f);
-		_baseModelViewMatrix = view * model;
-		_baseModelViewProjectionMatrix = projection * view * model;
-		*/
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)16 / (float)9, 0.1f, 100.0f);
-		//glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)_renderWidth / (float)_renderHeight, 0.1f, 100.0f); //TODO deal with near/far plane
+		_baseModelViewMatrix = view;
+		_baseModelViewProjectionMatrix = projection * view;
+		/*
+		//glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)16 / (float)9, 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)_renderWidth / (float)_renderHeight, 0.1f, 100.0f);
 		glm::mat4 view = glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		glm::mat4 model = glm::mat4(1.0f);
 		_baseModelViewMatrix = view * model;
 		_baseModelViewProjectionMatrix = projection * view * model;
+		*/
 	}
 
 	void drawObjects(RenderableScene *scene)
@@ -967,7 +962,7 @@ private:
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //TODO use camera color
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//set shader program (here?)
@@ -986,20 +981,14 @@ private:
 	{
 		//TODO draw one arbitraty object
 		//NOTE: should always be tolerant of missing resources!
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
-		glViewport(0, 0, _renderWidth, _renderHeight);
-
-
+		
 		//below: temporary cube code
 
 		//set shader program
 		glUseProgram(_programID);
 
 		//bind cube, set properties, and draw
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-		//glBindVertexArray(_cubeVertexArrayID);
+		glBindVertexArray(_cubeVertexArrayID);
 
 		//transform!
 		glm::mat4 cubeMVM = glm::mat4();
@@ -1012,10 +1001,7 @@ private:
 		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glDisableVertexAttribArray(0);
-
-		//unbind
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 

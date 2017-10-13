@@ -116,7 +116,7 @@ void Engine::loop() {
 			cube1.normalName = "";
 			cube1.smoothness = 0.5;
 			cube1.modelName = "cube";
-			cube1.position = glm::vec3(0, 0, 0);
+			cube1.position = glm::vec3(0, 2, 2);
 			cube1.rotation = glm::vec3(0, 0, 0);
 			cube1.scale = glm::vec3(1, 1, 1);
 			rs->objects.push_back(cube1);
