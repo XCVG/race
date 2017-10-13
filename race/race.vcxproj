@@ -22,11 +22,14 @@
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\Message.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessageReceiver.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderFileMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderMessageReceiver.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\AIEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Engine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\ErrorHandler.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\FileEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\FileHelper.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\GlobalPrefs.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\InputEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\OBJImport.cpp" />
     <ClCompile Include="GameEngine\PhysicsEngine\SourceFiles\PhysicsEngine.cpp" />
@@ -55,6 +58,9 @@
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Quad.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderableTypes.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderEngine.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RendererInternalTypes.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderFileMessageReceiver.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderMessageReceiver.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Shaders.h" />
     <ClInclude Include="GameEngine\HeaderFiles\SoundEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Window.h" />
@@ -116,7 +122,7 @@
     <IncludePath>$(ProjectDir)GameEngine\Components\HeaderFiles;$(ProjectDir)GameEngine\MessagingSystem\HeaderFiles;$(ProjectDir)GameEngine\PhysicsEngine\HeaderFiles;$(ProjectDir)GameEngine\RenderEngine\HeaderFiles;$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir)GameEngine\RenderEngine\HeaderFiles;$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)GameEngine\PhysicsEngine\HeaderFiles;$(ProjectDir)GameEngine\RenderEngine\HeaderFiles;$(ProjectDir)GameEngine\HeaderFiles;$(ProjectDir)HeaderFiles;$(ProjectDir)Libraries\glew\include;$(ProjectDir)Libraries\glm\include;$(ProjectDir)Libraries\sdl_mixer\include;$(ProjectDir)Libraries\sdl\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

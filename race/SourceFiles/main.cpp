@@ -1,5 +1,6 @@
 #include "main.h" 
 #include "Engine.h"
+#include "GlobalPrefs.h"
 #include "MessagingSystem.h"
 
 uint32_t TICKS_TO_WAIT = 17;
@@ -22,7 +23,7 @@ int main(int argc, char ** argv) {
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	//SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	//SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-	g_window_p = SDL_CreateWindow("RACE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
+	g_window_p = SDL_CreateWindow("RACE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GlobalPrefs::windowWidth, GlobalPrefs::windowHeight, SDL_WINDOW_OPENGL);
 	//g_context = SDL_GL_CreateContext(g_window_p);
 	//SDL_GL_MakeCurrent(g_window_p, NULL);
 
@@ -58,6 +59,8 @@ int main(int argc, char ** argv) {
 		{
 			//e->update();
 		}
+
+		//std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 
 	//SDL_Log("Main::Out of Loop");
