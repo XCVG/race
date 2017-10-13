@@ -39,6 +39,7 @@ std::thread* Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
     try {
+        _fileEngine_p->start();
         _renderEngine_p->start(); // Render handles it's own thread
         _physicsThread_p = _physicsEngine_p->start();
         //_aiThread_p = _aiEngine_p->start();
@@ -102,7 +103,8 @@ void Engine::stop() {
 	_inputEngine_p->~InputEngine();
 	//_aiEngine_p->~AIEngine();
 	_physicsEngine_p->~PhysicsEngine();
-	_renderEngine_p->~RenderEngine();
+    _renderEngine_p->~RenderEngine();
+    _fileEngine_p->~FileEngine();
 	_physicsThread_p->join();
     _running = false;
     //_physicsEngine_p->stop();
