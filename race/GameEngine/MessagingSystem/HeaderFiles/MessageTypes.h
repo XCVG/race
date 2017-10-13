@@ -18,7 +18,6 @@
 
 #ifndef MESSAGE_TYPES_H
 #define MESSAGE_TYPES_H
-#include <string>
 
 /*========================================================================================
 	Dependencies
@@ -26,6 +25,7 @@
 
 #include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
 #include <string>
+#include <memory>
 
 /*========================================================================================
 	Enums
@@ -41,7 +41,9 @@ enum class MESSAGE_TYPE
 	BaseMessageType,
 	PhysicsCallMessageType,
 	FileLoadMessageType,
+	FileLoadImageMessageType,
 	FileLoadedMessageType,
+	FileLoadedImageMessageType,
 	RenderLoadMessageType,
 	RenderReadyMessageType,
 	RenderLoadSingleMessageType,
@@ -128,6 +130,14 @@ public:
 	bool relative;
 };
 
+class FileLoadImageMessageContent : public BaseMessageContent
+{
+public:
+	std::string path;
+	bool relative;
+};
+
+
 class FileLoadedMessageContent : public BaseMessageContent
 {
 public:
@@ -135,6 +145,15 @@ public:
 	std::string path;
 	bool relative;
 	std::string content;
+};
+
+class FileLoadedImageMessageContent : public BaseMessageContent
+{
+public:
+	size_t hash;
+	std::string path;
+	bool relative;
+	std::shared_ptr<SDL_Surface> image;
 };
 
 #endif
