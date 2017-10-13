@@ -24,6 +24,7 @@
 ========================================================================================*/
 
 #include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
+#include "../../Components/HeaderFiles/GameObject.h"
 #include <string>
 #include <memory>
 
@@ -120,6 +121,7 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	public:
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
 	std::string contentVar;
+	GameObject *go;
 	PhysicsCallMessageContent(std::string s) { contentVar = s; }
 };
 

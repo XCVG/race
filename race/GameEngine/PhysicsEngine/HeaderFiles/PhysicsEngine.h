@@ -24,6 +24,7 @@
 #endif
 #include <thread>
 #include "MessageReceiver.h"
+#include "../../Components/HeaderFiles/GameObject.h"
 
 /*========================================================================================
 	Dependencies

@@ -3,7 +3,7 @@
 #include <typeinfo>
 
 uint32_t ticksAtLast = 0;
-const int FRAMES_PER_SECOND = 60;
+const int FRAMES_PER_SECOND = 120;
 
 Engine::Engine() {
     
@@ -77,9 +77,10 @@ void Engine::update() {
 	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND) 
 	{
 		//SDL_Log("Ticked");
+		PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
+		physicsContent->go = _sceneObj->getGameObject("Cube");
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
-	    myMessage->setContent(new PhysicsCallMessageContent("Test"));
-
+		myMessage->setContent(physicsContent);
 		MessagingSystem::instance().postMessage(myMessage);
 
 		RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();

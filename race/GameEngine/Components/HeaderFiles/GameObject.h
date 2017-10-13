@@ -31,6 +31,7 @@ public:
 	Vector3 getPosition();
 	Vector3 getRotation();
 	GLfloat getScale();
+	void addRotate();
 	template <typename T>
 	T getComponent()
 	{

@@ -36,6 +36,12 @@ Vector3 GameObject::getRotation()
 GLfloat GameObject::getScale()
 {
     return this->_scale;
+}
+void GameObject::addRotate()
+{
+	this->_rotation_p->_x += 0.02;
+	this->_rotation_p->_y += 0.03;
+	this->_rotation_p->_z -= 0.01;
 };
 std::map<std::string, Component *> GameObject::getComponentList()
 {
