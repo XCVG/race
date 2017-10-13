@@ -925,8 +925,7 @@ private:
 		{
 			drawCamera(_lastScene_p);
 			drawObjects(_lastScene_p);
-			drawLighting(_lastScene_p);
-			
+			drawLighting(_lastScene_p);			
 		}
 
 		if (_lastOverlay_p == nullptr)
@@ -935,7 +934,7 @@ private:
 		}
 		else
 		{
-			drawOverlay();
+			drawOverlay(_lastOverlay_p);
 		}
 
 		//TODO vsync/no vsync
@@ -1089,7 +1088,7 @@ private:
 
 	}
 
-	void drawOverlay()
+	void drawOverlay(RenderableOverlay *overlay)
 	{
 		//TODO draw overlay
 	}
