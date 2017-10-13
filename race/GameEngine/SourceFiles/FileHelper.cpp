@@ -1,3 +1,15 @@
+#if defined __APPLE__
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_filesystem.h>
+#include <SDL2/SDL_image.h>
+#elif defined _WIN32 || defined _WIN64
+#include <SDL.h>
+#include <SDL_filesystem.h>
+#include <SDL_image.h>
+#endif
+
+#include <memory>
+
 #include "FileHelper.h"
 
 std::string FileHelper::loadFileFromString(std::string path)
@@ -62,6 +74,11 @@ std::vector<uint8_t> FileHelper::loadBinaryFileFromString(std::string path)
 	return data;
 }
 
+SDL_Surface * FileHelper::loadImageFileFromString(std::string path)
+{
+	return nullptr;
+}
+
 std::string FileHelper::loadFileFromStringRelative(std::string relativePath)
 {
 	std::string basePath = std::string(SDL_GetBasePath());
@@ -76,5 +93,13 @@ std::vector<uint8_t> FileHelper::loadBinaryFileFromStringRelative(std::string re
 	std::string fullPath = basePath + relativePath;
 
 	return loadBinaryFileFromString(fullPath);
+}
+
+SDL_Surface * FileHelper::loadImageFileFromStringRelative(std::string relativePath)
+{
+	std::string basePath = std::string(SDL_GetBasePath());
+	std::string fullPath = basePath + relativePath;
+
+	return loadImageFileFromString(fullPath);
 }
 

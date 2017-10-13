@@ -20,7 +20,9 @@ public:
 	static size_t HashFilePath(std::string path, bool relative);
 private:
 	void loop();
-	void HandleMessage(BaseMessageContent *inBaseMessage);
+	void HandleMessage(Message *inBaseMessage);
+	void HandleNormalMessage(FileLoadMessageContent inMessageContent);
+	void HandleImageMessage(FileLoadImageMessageContent inMessageContent);
 
 	std::atomic<bool> _isRunning;
 	std::thread *_thread_p;
