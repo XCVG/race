@@ -33,11 +33,12 @@ std::thread* Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
     try {
+		_fileEngine_p->start();
         _renderEngine_p->start(); // Render handles it's own thread
         _physicsThread_p = _physicsEngine_p->start();
         //_aiThread_p = _aiEngine_p->start();
         _inputEngine_p->start();
-        _soundEngine_p->start();
+        _soundEngine_p->start();		
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
@@ -63,14 +64,99 @@ void Engine::update() {
 }
 
 void Engine::loop() {
-    if (!_running) {
-        return;
-    }
-    while(_running) {
-        this->update();
-		
-    }
-	//SDL_Log("Engine::Out of Loop");
+	bool ran = false;
+
+	if (!_running) {
+		return;
+	}
+	while (_running) {
+		//SDL_Log("This one should work");
+
+		this->update();
+		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
+
+		if (ran)
+			continue;
+
+		SDL_Log("Doing a stupid befpre!");
+
+		//std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+		SDL_Log("Doing a stupid!");
+
+		//disgusting render test hack
+
+		MessagingSystem *ms = &MessagingSystem::instance();
+		{
+			RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
+			RenderableSetupData rsd;
+			rsd.models.push_back("cube");
+			rlmc->data = rsd;
+			Message *msg = new Message(MESSAGE_TYPE::RenderLoadMessageType, false, rlmc);
+			ms->postMessage(std::shared_ptr<Message>(msg));
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+		{
+			RenderDrawMessageContent *rdmc = new RenderDrawMessageContent();
+			RenderableScene *rs = new RenderableScene();
+			rdmc->scene_p = rs;
+
+			RenderableCamera rc;
+			rc.clearColor = glm::vec3(1, 1, 1);
+			rc.farPlane = 1000.0f;
+			rc.nearPlane = 0.1f;
+			rc.position = glm::vec3(0, 0, 5);
+			rc.rotation = glm::vec3(0, 0, 0); //x=pitch, y=yaw, z=roll
+			rc.viewAngle = 1.05f;
+			rs->camera = rc;
+
+			RenderableObject cube1;
+			cube1.albedoName = "crate";
+			cube1.normalName = "";
+			cube1.smoothness = 0.5;
+			cube1.modelName = "cube";
+			cube1.position = glm::vec3(0, 2, 2);
+			cube1.rotation = glm::vec3(0, 0, 0);
+			cube1.scale = glm::vec3(1, 1, 1);
+			rs->objects.push_back(cube1);
+
+			RenderableObject cube2;
+			cube2.albedoName = "crate";
+			cube2.normalName = "";
+			cube2.smoothness = 1;
+			cube2.modelName = "cube";
+			cube2.position = glm::vec3(1, 1, -1.5);
+			cube2.rotation = glm::vec3(0.5, 0.5, 0.5);
+			cube2.scale = glm::vec3(1.25, 1.25, 1.25);
+			rs->objects.push_back(cube2);
+
+			RenderableObject sphere;
+			sphere.modelName = "sphere";
+			sphere.albedoName = "rainbow";
+			sphere.normalName = "rainbow_n";
+			sphere.smoothness = 0;
+			sphere.position = glm::vec3(-1.5, -0.5, 0);
+			sphere.rotation = glm::vec3(0, 0, 0);
+			sphere.scale = glm::vec3(1, 1, 1);
+			rs->objects.push_back(sphere);
+
+			RenderableLight mainLight;
+			mainLight.type = RenderableLightType::AMBIENT;
+			mainLight.intensity = 0.5;
+			mainLight.color = glm::vec3(1, 1, 1);
+			rs->lights.push_back(mainLight);
+
+			Message *msg = new Message(MESSAGE_TYPE::RenderDrawMessageType, false, rdmc);
+			ms->postMessage(std::shared_ptr<Message>(msg));
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+
+		ran = true;
+
+	}
 };
 ///
 /// <title>
@@ -89,6 +175,7 @@ void Engine::stop() {
 	//_aiEngine_p->~AIEngine();
 	_physicsEngine_p->~PhysicsEngine();
 	_renderEngine_p->~RenderEngine();
+	_fileEngine_p->~FileEngine();
 	_physicsThread_p->join();
     _running = false;
     //_physicsEngine_p->stop();
