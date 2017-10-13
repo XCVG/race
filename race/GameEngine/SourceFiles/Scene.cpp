@@ -2,9 +2,7 @@
 
 Scene::Scene()
 {
-	GameObject *go = new GameObject();
-	go->addComponent(new RenderComponent("Cube", "", "", 0));
-	addGameObject("Cube", go);
+	setUpSceneOne();
 }
 
 Scene::~Scene()
@@ -25,5 +23,11 @@ void Scene::deleteGameObject(std::string id)
 GameObject* Scene::getGameObject(std::string id)
 {
 	return _worldObjects.find(id)->second;
+}
+
+void Scene::setUpSceneOne() {
+	GameObject *go = new GameObject();
+	go->addComponent(new RenderComponent("Cube", "", "", 0));
+	addGameObject("Cube", go);
 }
 

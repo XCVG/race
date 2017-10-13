@@ -12,6 +12,6 @@ public:
 	void deleteGameObject(std::string);
 	GameObject* getGameObject(std::string);
 private:
-	
+	void setUpSceneOne();
 
 };
