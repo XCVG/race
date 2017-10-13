@@ -575,6 +575,7 @@ private:
 					ModelLoadingData mld = _modelAwaitQueue_p->at(j);
 					if (mld.hash == flmc->hash)
 					{
+						foundMLD = mld;
 						foundModel = j;
 						break;
 					}
@@ -592,6 +593,7 @@ private:
 					TextureLoadingData tld = _textureAwaitQueue_p->at(j);
 					if (tld.hash == flmc->hash)
 					{
+						foundTLD = tld;
 						foundTexture = j;
 						break;
 					}
@@ -622,6 +624,7 @@ private:
 	void doSingleLoad()
 	{
 		//load one thing during drawing process
+		//TODO implementation
 
 		//dispatch ONE model and ONE texture from load queues (if nonempty)
 
@@ -647,7 +650,9 @@ private:
 		glGenBuffers(1, &glVboId);
 		glBindBuffer(GL_ARRAY_BUFFER, glVboId);
 		glBufferData(GL_ARRAY_BUFFER, (objData.size() * sizeof(GLfloat)), objPtr, GL_STATIC_DRAW);
-		//will break but shouldn't break other things
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, 0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
@@ -693,11 +698,47 @@ private:
 	void unloadGL()
 	{
 		//unbind all OGL
+
+		//delete VBOs and VAOs
+		for (std::map<std::string, ModelData>::iterator itr = _models_p->begin(); itr != _models_p->end(); itr++)
+		{
+			ModelData md = itr->second;
+			glDeleteVertexArrays(1, &md.vaoID);
+			glDeleteBuffers(1, &md.vboID);
+		}
+
+		//delete textures
+		for (std::map<std::string, TextureData>::iterator itr = _textures_p->begin(); itr != _textures_p->end(); itr++)
+		{
+			TextureData td = itr->second;
+			glDeleteTextures(1, &td.texID);
+		}
 	}
 
 	void unloadData()
 	{
 		//clear (but DO NOT DELETE) data structures
+
+		//purge load queues
+		_modelLoadQueue_p->clear();
+		_textureLoadQueue_p->clear();
+
+		//purge await queues
+		_modelAwaitQueue_p->clear();
+		_textureAwaitQueue_p->clear();
+
+		//purge model and texture lists
+		_models_p->clear();
+		_textures_p->clear();
+
+		//purge current scene and overlay
+		if(_lastScene_p != nullptr)
+			delete(_lastScene_p);
+		_lastScene_p = nullptr;
+
+		if(_lastOverlay_p != nullptr)
+			delete(_lastOverlay_p);
+		_lastOverlay_p = nullptr;
 	}
 
 	void drawLoadScreen()
@@ -845,21 +886,6 @@ private:
 
 	void setupFramebufferDraw()
 	{
-		/*
-		glGenBuffers(1, &_cubeVertexBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-		glGenVertexArrays(1, &_cubeVertexArrayID);
-		glBindVertexArray(_cubeVertexArrayID);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-				
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		*/
-
 		glGenVertexArrays(1, &_framebufferDrawVertexArrayID);
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 
@@ -889,10 +915,6 @@ private:
 	/// </summary>
 	void doRender()
 	{
-		//temporary
-		//updateCube();
-
-		//drawCube();
 
 		//will remain in final
 		if (_lastScene_p == nullptr)
@@ -903,8 +925,6 @@ private:
 		{
 			drawCamera(_lastScene_p);
 			drawObjects(_lastScene_p);
-			//updateCube();
-			//drawCube();
 			drawLighting(_lastScene_p);
 			
 		}
@@ -984,20 +1004,60 @@ private:
 		//set shader program
 		glUseProgram(_programID);
 
-		//bind cube, set properties, and draw
-		glBindVertexArray(_cubeVertexArrayID);
+		//check if a model exists
+		bool hasModel = false;
+		ModelData modelData;
+
+		if (_models_p->count(object->modelName) > 0)
+			hasModel = true;
+		else
+			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model is missing!");
+
+		//try to bind model
+		if (hasModel)
+		{
+			modelData = _models_p->find(object->modelName)->second;
+			if (modelData.vaoID != 0)
+			{
+				glBindVertexArray(modelData.vaoID);
+			}
+			else
+			{
+				hasModel = 0;
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model has no VAO!");
+			}
+				
+		}
+		
+		if(!hasModel)
+		{			
+			glBindVertexArray(_cubeVertexArrayID);
+		}
+			
 
 		//transform!
-		glm::mat4 cubeMVM = glm::mat4();
-		cubeMVM = glm::translate(cubeMVM, object->position);
-		cubeMVM = glm::scale(cubeMVM, object->scale);
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.y, glm::vec3(0, 1, 0));
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.x, glm::vec3(1, 0, 0));
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.z, glm::vec3(0, 0, 1));
-		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  cubeMVM;
-		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
+		glm::mat4 objectMVM = glm::mat4();
+		objectMVM = glm::translate(objectMVM, object->position);
+		objectMVM = glm::scale(objectMVM, object->scale);
+		objectMVM = glm::rotate(objectMVM, object->rotation.y, glm::vec3(0, 1, 0));
+		objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
+		objectMVM = glm::rotate(objectMVM, object->rotation.z, glm::vec3(0, 0, 1));
+		glm::mat4 objectMVPM = _baseModelViewProjectionMatrix *  objectMVM;
+		objectMVM = _baseModelViewMatrix * objectMVM;
+		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &objectMVPM[0][0]);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//draw!
+		if (hasModel)
+		{
+			glDrawArrays(GL_TRIANGLES, 0, modelData.numVerts);
+		}
+		else
+		{
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
+
+
 		glBindVertexArray(0);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -1121,4 +1181,4 @@ void RenderEngine::update()
 RenderEngine::~RenderEngine()
 {
 	delete(_impl);
-}
+};

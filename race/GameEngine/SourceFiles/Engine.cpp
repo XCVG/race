@@ -91,6 +91,7 @@ void Engine::loop() {
 			RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
 			RenderableSetupData rsd;
 			rsd.models.push_back("cube");
+			rsd.models.push_back("sphere");
 			rlmc->data = rsd;
 			Message *msg = new Message(MESSAGE_TYPE::RenderLoadMessageType, false, rlmc);
 			ms->postMessage(std::shared_ptr<Message>(msg));
