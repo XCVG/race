@@ -2,7 +2,8 @@
 #include <string>
 #include <map>
 #include <assert.h>
-
+/// TODO: Update the file handler system so that it will send erros to a 
+/// .log file
 class ErrorHandler {
 public:
     ErrorHandler(int _value, const std::string& _str) {

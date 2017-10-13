@@ -12,23 +12,30 @@
 #endif
 #include <string>
 #include <iostream>
-#include "RenderEngine.h"
-#include "PhysicsEngine.h"
-#include "AIEngine.h"
-#include "InputEngine.h"
-#include "SoundEngine.h"
-
+#include <thread>
+#include "EngineHeaders.h"
+#include "ComponentHeaders.h"
+#include "GameObject.h"
 class Engine {
 public:
-    void start();
-    void update();
+    std::thread* start();
     Engine();
     ~Engine();
+    void update();
+    void stop();
+    std::thread *_engineThread_p;
 private:
-    RenderEngine* _renderEngine;
-    PhysicsEngine* _physicsEngine;
-    AIEngine* _aiEngine;
-    InputEngine* _inputEngine;
-    SoundEngine* _soundEngine;
+	FileEngine *_fileEngine_p;
+    RenderEngine *_renderEngine_p;
+    PhysicsEngine *_physicsEngine_p;
+    AIEngine *_aiEngine_p;
+    InputEngine *_inputEngine_p;
+    SoundEngine *_soundEngine_p;	
+    std::thread *_physicsThread_p;
+	std::thread *_renderThread_p;
+    //std::thread *_aiThread_p;
+    bool _running = false;
+	PhysicsCallMessageContent* content;
+	float i = 0;
     void loop();
 };

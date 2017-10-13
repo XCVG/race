@@ -1,8 +1,7 @@
 /*===================================================================================*//**
-	BaseMessage
+	Message
 	
-	The base class for all messages to be sent by the MessagingSystem.
-	Specific message classes should inherit from this one.
+	A message to be sent by the MessagingSystem.
     
     Copyright 2017 Erick Fernandez de Arteaga. All rights reserved.
         https://www.linkedin.com/in/erick-fda
@@ -12,82 +11,70 @@
 	@version 0.0.0
 	@file
 	
-	@see BaseMessage
-	@see BaseMessage.cpp
+	@see Message
+	@see Message.cpp
 	
 *//*====================================================================================*/
 
-#ifndef BASE_MESSAGE_H
-#define BASE_MESSAGE_H
+#ifndef MESSAGE_H
+#define MESSAGE_H
+#ifdef __APPLE__
+#include <SDL2/SDL.h>
+#elif defined _WIN32 || defined _WIN64
+#include <SDL.h>
+#endif
 
 /*========================================================================================
 	Dependencies
 ========================================================================================*/
-#include <iostream>
-using namespace std;
+#include "MessageTypes.h"
 
 /*========================================================================================
-	Enums
-========================================================================================*/
-/**
-	List of all message types.
-	
-	Each type should correspond to [existing subclass of BaseMessage] + "Type".
-	
-	Each subclass of BaseMessage should initialize the message type to be that which 
-	corresponds with its class in its constructor.
-
-	This seems redundant, but allows the other messsaging system classes to avoid the 
-	inherent difficulties of using type detection to differentiate between messages.
-*/
-enum MESSAGE_TYPE
-{
-	BaseMessageType
-};
-
-/*========================================================================================
-	BaseMessage	
+	Message	
 ========================================================================================*/
 /**
 	The base class for all messages to be sent by the MessagingSystem.
 	Specific message classes should inherit from this one.
 	
-	@see BaseMessage
-	@see BaseMessage.cpp
+	@see Message
+	@see Message.cpp
 */
-class BaseMessage
+class Message
 {
 	/*------------------------------------------------------------------------------------
 		Class Fields
 	------------------------------------------------------------------------------------*/
 	private:
-		MESSAGE_TYPE _type;
 
     /*------------------------------------------------------------------------------------
 		Instance Fields
     ------------------------------------------------------------------------------------*/
     private:
+		MESSAGE_TYPE _type;
+		bool _isUrgent;
+		BaseMessageContent* _content_p;
 
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
     ------------------------------------------------------------------------------------*/
     public:
-		BaseMessage();
-
-        ~BaseMessage();
+		Message(MESSAGE_TYPE type = MESSAGE_TYPE::BaseMessageType, bool isUrgent = false, BaseMessageContent* content_p = nullptr);
+        ~Message();
 
 	/*------------------------------------------------------------------------------------
 		Instance Getter Methods
     ------------------------------------------------------------------------------------*/
     public:
 		MESSAGE_TYPE getType();
+		bool getIsUrgent();
+		BaseMessageContent* getContent();
     
 	/*------------------------------------------------------------------------------------
 		Instance Setter Methods
 	------------------------------------------------------------------------------------*/
     public:
-
+		void setContent(BaseMessageContent* newContent);
 
 	/*------------------------------------------------------------------------------------
 		Instance Methods

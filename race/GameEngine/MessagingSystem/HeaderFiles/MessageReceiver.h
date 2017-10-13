@@ -1,65 +1,68 @@
 /*===================================================================================*//**
-	PhysicsEngine
-
-	The physics engine for the RACE game engine.
+	MessageReceiver
+	
+	Superclass for all classes that will subscribe to messaging system messages.
     
     Copyright 2017 Erick Fernandez de Arteaga. All rights reserved.
         https://www.linkedin.com/in/erick-fda
         https://bitbucket.org/erick-fda
 
-    @author Erick Fernandez de Arteaga, John Janzen
+    @author Erick Fernandez de Arteaga
 	@version 0.0.0
 	@file
 	
-	@see PhysicsEngine
-	@see PhysicsEngine.cpp
+	@see MessageReceiver
+	@see MessageReceiver.cpp
 	
 *//*====================================================================================*/
 
-#pragma once
-#ifdef __APPLE__
-#include <SDL2/SDL.h>
-#elif defined _WIN32 || defined _WIN64
-#include <SDL.h>
-#endif
-#include <thread>
-#include "MessageReceiver.h"
+#ifndef MESSAGE_RECEIVER_H
+#define MESSAGE_RECEIVER_H
 
 /*========================================================================================
 	Dependencies
 ========================================================================================*/
-
+#include "Message.h"
+#include <iostream>
+#include <memory>
+#include <mutex>
+#include <queue>
 
 /*========================================================================================
-	PhysicsEngine	
+	MessageReceiver	
 ========================================================================================*/
 /**
-	The physics engine for the RACE game engine.
+	Superclass for all classes that will subscribe to messaging system messages.
 	
-	@see PhysicsEngine
-	@see PhysicsEngine.cpp
+	@see MessageReceiver
+	@see MessageReceiver.cpp
 */
-class PhysicsEngine : public MessageReceiver
+class MessageReceiver
 {
     /*------------------------------------------------------------------------------------
 		Instance Fields
     ------------------------------------------------------------------------------------*/
-    private:
-		bool _running = false;
+    protected:
+		bool _isDead;
+		std::vector<MESSAGE_TYPE> _subscriptions;
+		std::queue<std::shared_ptr<Message>> _messageQueue;
+		std::queue<std::shared_ptr<Message>> _urgentMessageQueue;
+		std::mutex* _subscriptionsMutex_p;
+		std::mutex* _messageQueueMutex_p;
+		std::mutex* _urgentMessageQueueMutex_p;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
     ------------------------------------------------------------------------------------*/
     public:
-		PhysicsEngine();
-
-		~PhysicsEngine();
+		MessageReceiver();
+		~MessageReceiver();
 
 	/*------------------------------------------------------------------------------------
 		Instance Getter Methods
     ------------------------------------------------------------------------------------*/
     public:
-        
+
     
 	/*------------------------------------------------------------------------------------
 		Instance Setter Methods
@@ -71,9 +74,12 @@ class PhysicsEngine : public MessageReceiver
 		Instance Methods
 	------------------------------------------------------------------------------------*/
     public:
-		std::thread* start();
-		void stop();
+		virtual bool messageHandler(std::shared_ptr<Message> message);
+		void subscribe(MESSAGE_TYPE messageType);
+		void unsubscribe(MESSAGE_TYPE messageType);
 
-    private:
-		void loop();
+    protected:
+		
 };
+
+#endif

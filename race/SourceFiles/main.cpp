@@ -2,10 +2,12 @@
 #include "Engine.h"
 #include <SDL_gamecontroller.h>
 #include "InputEngine.h"
+#include "MessagingSystem.h"
 
 uint32_t TICKS_TO_WAIT = 17;
 SDL_Window *g_window_p;
 SDL_GLContext g_context;
+std::thread* engineThread_p;
 
 /// <summary>
 /// Application entry point
@@ -33,8 +35,9 @@ int main(int argc, char ** argv) {
 	SDL_Log("It worked!");
 
 	//it doesn't start Engine on a separate thread yet; Spencer I'll let you do that
+	MessagingSystem::instance().start();
 	Engine *e = new Engine();
-	e->start();
+	engineThread_p = e->start();
 
 	//*****temporary loop stolen from racerender
 
@@ -67,15 +70,19 @@ int main(int argc, char ** argv) {
 		uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
 		if (ticksSinceLast >= TICKS_TO_WAIT)
 		{
-			e->update();
+			//e->update();
 		}
 	}
 
+	//SDL_Log("Main::Out of Loop");
+	e->stop();
+	//SDL_Log("Main::Wait for Engine Join");
+	engineThread_p->join();
+	delete(e);
+	MessagingSystem::instance().kill();
 	SDL_DestroyWindow(g_window_p);
 
 	//*****temporary loop section ends
-
-	delete(e);
 
 	SDL_Quit();
 
