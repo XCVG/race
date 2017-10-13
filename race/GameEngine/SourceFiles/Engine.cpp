@@ -56,8 +56,18 @@ std::thread* Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
+
 	_sceneObj = new Scene();
+
 	ticksAtLast = SDL_GetTicks();
+
+	RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
+	RenderableSetupData rsd;
+	rsd.models.push_back("Cube");
+	rlmc->data = rsd;
+	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderLoadMessageType, false, rlmc));
+	MessagingSystem::instance().postMessage(std::shared_ptr<Message>(msg));
+
 	return new std::thread(&Engine::loop, this);
 };
 void Engine::update() {
@@ -66,11 +76,17 @@ void Engine::update() {
 	uint32_t currentTime = SDL_GetTicks();
 	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND) 
 	{
-		SDL_Log("Ticked");
+		//SDL_Log("Ticked");
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
 	    myMessage->setContent(new PhysicsCallMessageContent("Test"));
 
 		MessagingSystem::instance().postMessage(myMessage);
+
+		RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
+		renderContent->scene_p = _sceneObj->getRenderInformation();
+		std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false, renderContent));
+		MessagingSystem::instance().postMessage(msg);
+
 		ticksAtLast = currentTime;
 	}
 	

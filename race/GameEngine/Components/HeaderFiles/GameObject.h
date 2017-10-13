@@ -43,17 +43,6 @@ public:
 			return NULL;
 		}
 	};
-	std::map<std::string, Component *> getComponentList();
-private:
-	Vector3 *_position_p;
-	Vector3 *_rotation_p;
-	GLfloat _scale;
-	std::map<std::string, Component *> *_components_p;
-	template <typename T>
-	std::string getType()
-	{
-		return typeid(T).name();
-	};
 	template <typename T>
 	bool hasComponent()
 	{
@@ -66,4 +55,16 @@ private:
 			return true;
 		}
 	};
+	std::map<std::string, Component *> getComponentList();
+private:
+	Vector3 *_position_p;
+	Vector3 *_rotation_p;
+	GLfloat _scale;
+	std::map<std::string, Component *> *_components_p;
+	template <typename T>
+	std::string getType()
+	{
+		return typeid(T).name();
+	};
+	
 };
