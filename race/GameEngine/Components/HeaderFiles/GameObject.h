@@ -9,7 +9,7 @@ class GameObject
 {
 public:
 	GameObject();
-	GameObject(Vector3 _position, Vector3 _rotation, GLfloat _scale);
+	GameObject(Vector3 *_position, Vector3 *_rotation, GLfloat _scale);
 	void setPosition(Vector3 _position);
 	void setRotation(Vector3 _rotation);
 	void setScale(GLfloat _scale);
@@ -43,17 +43,6 @@ public:
 			return NULL;
 		}
 	};
-	std::map<std::string, Component *> getComponentList();
-private:
-	Vector3 *_position_p;
-	Vector3 *_rotation_p;
-	GLfloat _scale;
-	std::map<std::string, Component *> *_components_p;
-	template <typename T>
-	std::string getType()
-	{
-		return typeid(T).name();
-	};
 	template <typename T>
 	bool hasComponent()
 	{
@@ -66,4 +55,28 @@ private:
 			return true;
 		}
 	};
+	std::map<std::string, Component *> getComponentList();
+private:
+	Vector3 *_position_p;
+	Vector3 *_rotation_p;
+	GLfloat _scale;
+	std::map<std::string, Component *> *_components_p;
+	template <typename T>
+	std::string getType()
+	{
+		return typeid(T).name();
+	};
+	/*template <typename T>
+	std::string getType()
+	{
+		int status;
+		std::string tname = typeid(T).name();
+		char *demangled_name = abi::__cxa_demangle(tname.c_str(), NULL, NULL, &status);
+		if (status == 0) {
+			tname = demangled_name;
+			std::free(demangled_name);
+		}
+		return tname;
+	};*/
+	
 };
