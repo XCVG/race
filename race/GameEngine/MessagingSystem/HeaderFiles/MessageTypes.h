@@ -24,6 +24,7 @@
 	Dependencies
 ========================================================================================*/
 
+#include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
 #include <string>
 
 /*========================================================================================
@@ -40,7 +41,14 @@ enum class MESSAGE_TYPE
 	BaseMessageType,
 	PhysicsCallMessageType,
 	FileLoadMessageType,
-	FileLoadedMessageType
+	FileLoadedMessageType,
+	RenderLoadMessageType,
+	RenderReadyMessageType,
+	RenderLoadSingleMessageType,
+	RenderDrawMessageType,
+	RenderDrawOverlayMessageType,
+	RenderUnloadMessageType,
+	RenderFinishedMessageType
 };
 
 /*========================================================================================
@@ -60,6 +68,50 @@ enum class MESSAGE_TYPE
 
 class BaseMessageContent
 {};
+
+//*****RENDERER MESSAGES
+
+class RenderLoadMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableSetupData data;
+};
+
+class RenderReadyMessageContent : public BaseMessageContent
+{
+
+};
+
+class RenderLoadSingleMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableModel model;
+		RenderableTexture texture;
+};
+
+class RenderDrawMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableScene *scene_p; //renderer will ALWAYS be responsible for deletion
+};
+
+class RenderDrawOverlayMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableOverlay *overlay_p; //renderer will ALWAYS be responsible for deletion
+};
+
+class RenderUnloadMessageContent : public BaseMessageContent
+{
+
+};
+
+class RenderFinishedMessageContent : public BaseMessageContent
+{
+	
+};
+
+//*****FILE MESSAGES
 
 class PhysicsCallMessageContent: public BaseMessageContent
 {

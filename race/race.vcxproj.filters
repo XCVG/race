@@ -7,6 +7,7 @@
     <ClCompile Include="GameEngine\SourceFiles\FileHelper.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\InputEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\OBJImport.cpp" />
+    <ClCompile Include="GameEngine\PhysicsEngine\SourceFiles\PhysicsEngine.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\SoundEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Window.cpp" />
@@ -16,6 +17,9 @@
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\Message.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessageReceiver.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
+	<ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderFileMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\GlobalPrefs.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\FileEngine.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\AccelerationComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\BoxColliderComponent.cpp" />
@@ -37,6 +41,7 @@
     <ClInclude Include="GameEngine\HeaderFiles\FileHelper.h" />
     <ClInclude Include="GameEngine\HeaderFiles\InputEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\OBJImport.h" />
+    <ClInclude Include="GameEngine\PhysicsEngine\HeaderFiles\PhysicsEngine.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Quad.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderEngine.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Shaders.h" />
@@ -44,11 +49,17 @@
     <ClInclude Include="GameEngine\HeaderFiles\Window.h" />
     <ClInclude Include="HeaderFiles\main.h" />
     <ClInclude Include="HeaderFiles\Object.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RendererInternalTypes.h" />
     <ClInclude Include="GameEngine\PhysicsEngine\HeaderFiles\PhysicsEngine.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\Message.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageReceiver.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageTypes.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessagingSystem.h" />
+<<<<<<< HEAD
+    <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderMessageReceiver.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderFileMessageReceiver.h" />
+=======
     <ClInclude Include="GameEngine\HeaderFiles\FileEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
     <ClInclude Include="GameEngine\HeaderFiles\EngineHeaders.h" />
