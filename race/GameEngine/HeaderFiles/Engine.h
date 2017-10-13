@@ -16,6 +16,7 @@
 #include "EngineHeaders.h"
 #include "ComponentHeaders.h"
 #include "GameObject.h"
+#include "Scene.h"
 class Engine {
 public:
     std::thread* start();
@@ -35,7 +36,7 @@ private:
 	std::thread *_renderThread_p;
     //std::thread *_aiThread_p;
     bool _running = false;
-	PhysicsCallMessageContent* content;
+	Scene* _sceneObj;
 	float i = 0;
     void loop();
 };

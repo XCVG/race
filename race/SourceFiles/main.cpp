@@ -2,7 +2,6 @@
 #include "Engine.h"
 #include "MessagingSystem.h"
 
-uint32_t TICKS_TO_WAIT = 17;
 SDL_Window *g_window_p;
 SDL_GLContext g_context;
 std::thread* engineThread_p;
@@ -53,11 +52,11 @@ int main(int argc, char ** argv) {
 		}
 
 		//run the renderer every tick
-		uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
+		/*uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
 		if (ticksSinceLast >= TICKS_TO_WAIT)
 		{
 			//e->update();
-		}
+		}*/
 	}
 
 	//SDL_Log("Main::Out of Loop");
