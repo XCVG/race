@@ -177,22 +177,24 @@ private:
 			switch (_state)
 			{
 			case RendererState::idle:
+				//SDL_Log("Idle");
 				doIdle();
 				std::this_thread::sleep_for(std::chrono::milliseconds(IDLE_DELAY_CONST)); //don't busywait!
 				break;
 			case RendererState::loading:
+				//SDL_Log("Loading");
 				doLoad();
 				break;
 			case RendererState::rendering:
+				//SDL_Log("Rendering");
 				doSingleLoad();
 				doRender(); //this should run really absurdly fast
 				break;
 			case RendererState::unloading:
+				//SDL_Log("Unloading");
 				doUnload();
 				break;
 			}
-
-
 
 			//std::this_thread::sleep_for(std::chrono::milliseconds(17));
 		}
@@ -602,6 +604,7 @@ private:
 		//loading is done if and only if both load and await queues are empty and we have context
 		if (_textureLoadQueue_p->empty() && _textureAwaitQueue_p->empty() && _modelLoadQueue_p->empty() && _modelAwaitQueue_p->empty() && haveContext())
 		{
+			ms->postMessage(std::shared_ptr<Message>(new Message(RenderReadyMessageType,false,new RenderReadyMessageContent())));
 			SDL_Log("Renderer: Entering render state");
 			_state = RendererState::rendering;
 		}
@@ -677,12 +680,12 @@ private:
 
 	void unloadGL()
 	{
-
+		//unbind all OGL
 	}
 
 	void unloadData()
 	{
-
+		//clear (but DO NOT DELETE) data structures
 	}
 
 	void drawLoadScreen()
@@ -744,6 +747,7 @@ private:
 	void setupProgram()
 	{
 		_programID = LoadShaders();
+		_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
 	}
 
 	void cleanupProgram()
@@ -774,7 +778,7 @@ private:
 		_baseModelViewProjectionMatrix = projection * view * model;
 
 		//don't delete this, we still need this
-		_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
+		//_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
 	}
 
 	void setupFramebuffers()
@@ -862,9 +866,12 @@ private:
 		}
 		else
 		{
-			drawCamera(_lastScene_p);
-			drawObjects(_lastScene_p);
+			//drawCamera(_lastScene_p);
+			//drawObjects(_lastScene_p);
+			updateCube();
+			drawCube();
 			drawLighting(_lastScene_p);
+			
 		}
 
 		if (_lastOverlay_p == nullptr)
@@ -901,11 +908,20 @@ private:
 		//"draw" the camera, actually just set up base matrices
 
 		//THIS IS FINE
+		/*
 		glm::mat4 projection = glm::perspective(camera->viewAngle, (float)_renderWidth / (float)_renderHeight, camera->nearPlane, camera->farPlane);
 		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, 1), glm::vec3(0, 1, 0));
 		glm::mat4 translation = glm::translate(glm::mat4(), camera->position * -1.0f);
 		glm::mat4 rotation = glm::eulerAngleYXZ(-camera->rotation.y, -camera->rotation.x, -camera->rotation.z);
 		glm::mat4 view = translation * rotation;
+		//view = look;
+		glm::mat4 model = glm::mat4(1.0f);
+		_baseModelViewMatrix = view * model;
+		_baseModelViewProjectionMatrix = projection * view * model;
+		*/
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)16 / (float)9, 0.1f, 100.0f);
+		//glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)_renderWidth / (float)_renderHeight, 0.1f, 100.0f); //TODO deal with near/far plane
+		glm::mat4 view = glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		glm::mat4 model = glm::mat4(1.0f);
 		_baseModelViewMatrix = view * model;
 		_baseModelViewProjectionMatrix = projection * view * model;
@@ -918,11 +934,11 @@ private:
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//set shader program (here?)
-		glUseProgram(_programID);
+		//glUseProgram(_programID);
 
 		//TODO draw objects
 		for (int i = 0; i < scene->objects.size(); i++)
@@ -937,18 +953,14 @@ private:
 	{
 		//TODO draw one arbitraty object
 		//NOTE: should always be tolerant of missing resources!
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glViewport(0, 0, _renderWidth, _renderHeight);
+
 
 		//below: temporary cube code
 
 		//set shader program
 		glUseProgram(_programID);
-
-		//bind framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
-		glViewport(0, 0, _renderWidth, _renderHeight);
-
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//bind cube, set properties, and draw
 		glEnableVertexAttribArray(0);
@@ -959,10 +971,10 @@ private:
 		//transform!
 		glm::mat4 cubeMVM = glm::mat4();
 		cubeMVM = glm::translate(cubeMVM, object->position);
-		cubeMVM = glm::scale(cubeMVM, object->scale);
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.y, glm::vec3(0, 1, 0));
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.x, glm::vec3(1, 0, 0));
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.z, glm::vec3(0, 0, 1));
+		//cubeMVM = glm::scale(cubeMVM, object->scale);
+		//cubeMVM = glm::rotate(cubeMVM, object->rotation.y, glm::vec3(0, 1, 0));
+		//cubeMVM = glm::rotate(cubeMVM, object->rotation.x, glm::vec3(1, 0, 0));
+		//cubeMVM = glm::rotate(cubeMVM, object->rotation.z, glm::vec3(0, 0, 1));
 		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  cubeMVM;
 		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
 
@@ -971,7 +983,7 @@ private:
 
 		//unbind
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void drawLighting(RenderableScene *scene)
@@ -983,7 +995,7 @@ private:
 		SDL_GL_GetDrawableSize(_window_p, &w, &h);
 		glViewport(0, 0, w, h);
 
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClearColor(0, 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//setup shader
@@ -1022,7 +1034,8 @@ private:
 		glUseProgram(_programID);
 
 		//bind framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);		
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
 		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -1041,7 +1054,7 @@ private:
 
 		//unbind
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	void updateCube()
