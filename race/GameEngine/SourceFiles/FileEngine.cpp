@@ -73,20 +73,19 @@ void FileEngine::loop()
 }
 
 void FileEngine::HandleMessage(Message *inBaseMessage)
-{
-	
+{	
 	MESSAGE_TYPE contentType = inBaseMessage->getType();
 	switch (contentType)
 	{
 		case MESSAGE_TYPE::FileLoadMessageType:
 		{
-			FileLoadMessageContent inMessage = *static_cast<FileLoadMessageContent*>(inBaseMessage->getContent()); //this seems safe
+			FileLoadMessageContent inMessage = *static_cast<FileLoadMessageContent*>(inBaseMessage->getContent());
 			HandleNormalMessage(inMessage);
 			break;
 		}
 		case MESSAGE_TYPE::FileLoadImageMessageType:
 		{
-			FileLoadImageMessageContent inMessage = *static_cast<FileLoadImageMessageContent*>(inBaseMessage->getContent()); //this seems safe
+			FileLoadImageMessageContent inMessage = *static_cast<FileLoadImageMessageContent*>(inBaseMessage->getContent());
 			HandleImageMessage(inMessage);
 			break;
 		}
@@ -143,7 +142,7 @@ void FileEngine::HandleImageMessage(FileLoadImageMessageContent inMessage)
 	FileLoadedImageMessageContent *outMessage = new FileLoadedImageMessageContent();
 
 	outMessage->hash = hash;
-	outMessage->image = std::shared_ptr<SDL_Surface>(content);
+	outMessage->image = std::shared_ptr<SDL_Surface>(content); //leave it this way
 	outMessage->path = inMessage.path;
 	outMessage->relative = inMessage.relative;
 

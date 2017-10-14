@@ -99,7 +99,7 @@ void Engine::update() {
 }
 
 void Engine::loop() {
-	bool ran = false;
+	bool ran = true;
 
 	if (!_running) {
 		return;
@@ -128,7 +128,8 @@ void Engine::loop() {
 			rsd.models.push_back("cube");
 			rsd.models.push_back("sphere");
 			rlmc->data = rsd;
-			Message *msg = new Message(MESSAGE_TYPE::RenderLoadMessageType, false, rlmc);
+			Message *msg = new Message(MESSAGE_TYPE::RenderLoadMessageType, false);
+			msg->setContent(rlmc);
 			ms->postMessage(std::shared_ptr<Message>(msg));
 		}
 
@@ -184,7 +185,8 @@ void Engine::loop() {
 			mainLight.color = glm::vec3(1, 1, 1);
 			rs->lights.push_back(mainLight);
 
-			Message *msg = new Message(MESSAGE_TYPE::RenderDrawMessageType, false, rdmc);
+			Message *msg = new Message(MESSAGE_TYPE::RenderDrawMessageType, false);
+			msg->setContent(rdmc);
 			ms->postMessage(std::shared_ptr<Message>(msg));
 		}
 

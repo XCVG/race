@@ -5,10 +5,10 @@
 #include <SDL.h>
 #endif
 
-RenderMessageReceiver::RenderMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p)
+RenderMessageReceiver::RenderMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p, std::mutex *mutex)
 {
 	_mq_p = mq_p;
-	_mqMutex_p = new std::mutex();
+	_mqMutex_p = mutex;
 }
 
 void RenderMessageReceiver::subscribeAll()
@@ -22,7 +22,7 @@ void RenderMessageReceiver::subscribeAll()
 
 bool RenderMessageReceiver::messageHandler(std::shared_ptr<Message> message)
 {
-	SDL_Log("Renderer: Received a message!");
+	//SDL_Log("Renderer: Received a message!");
 
 	_mqMutex_p->lock();
 	_mq_p->push_back(message);

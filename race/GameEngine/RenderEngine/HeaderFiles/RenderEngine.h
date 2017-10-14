@@ -1,10 +1,5 @@
 #pragma once
 
-//temporary consts, will replace with config system
-static const float CUBE_ROTATE_STEP_CONST = 0.1f;
-static const int RENDER_WIDTH_CONST = 1280;
-static const int RENDER_HEIGHT_CONST = 720;
-
 //forward declaration of class makes PIMPL possible
 class RenderEngineImplementation;
 

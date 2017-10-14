@@ -5,10 +5,10 @@
 #include <SDL.h>
 #endif
 
-RenderFileMessageReceiver::RenderFileMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p)
+RenderFileMessageReceiver::RenderFileMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p, std::mutex *mutex_p)
 {
 	_mq_p = mq_p;
-	_mqMutex_p = new std::mutex();
+	_mqMutex_p = mutex_p;
 }
 
 void RenderFileMessageReceiver::subscribeAll()

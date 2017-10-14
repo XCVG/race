@@ -62,15 +62,17 @@ public:
 
 		//create message queue and handler, then subscribe to messaging
 		_mq_p = new std::vector<std::shared_ptr<Message>>();
-		_mr_p = new RenderMessageReceiver(_mq_p);
-		_mr_p->subscribeAll();
 		_mqMutex_p = new std::mutex();
+		_mr_p = new RenderMessageReceiver(_mq_p, _mqMutex_p);
+		_mr_p->subscribeAll();
+		
 
 		//create file handling message queue and handler, then subscribe to messaging
 		_fmq_p = new std::vector<std::shared_ptr<Message>>();
-		_fmr_p = new RenderFileMessageReceiver(_fmq_p);
-		_fmr_p->subscribeAll();
 		_fmqMutex_p = new std::mutex();
+		_fmr_p = new RenderFileMessageReceiver(_fmq_p, _fmqMutex_p);
+		_fmr_p->subscribeAll();
+		
 
 		//spawn thread
 		_isRunning = true;
@@ -1102,40 +1104,6 @@ private:
 	{
 		//fallback overlay draw if no overlay is available
 
-	}
-
-	void drawCube()
-	{
-
-		//set shader program
-		glUseProgram(_programID);
-
-		//bind framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);		
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, _renderWidth, _renderHeight);
-
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//bind cube, set properties, and draw
-		glBindVertexArray(_cubeVertexArrayID);		
-		//glBindVertexArray(_cubeVertexArrayID);
-		//glm::mat4 testView = glm::translate(glm::mat4(), glm::vec3(0,0,-2));
-		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  _cubeModelViewMatrix;
-		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glBindVertexArray(0);
-	}
-
-	void updateCube()
-	{
-		_cubeAngle += CUBE_ROTATE_STEP_CONST;
-		glm::mat4 identity = glm::mat4();
-		glm::mat4 rotate = glm::rotate(identity, _cubeAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-		_cubeModelViewMatrix = rotate;
 	}
 
 	bool acquireContext()
