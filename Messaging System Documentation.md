@@ -75,17 +75,6 @@ The steps to define a new message type are as follows:
    }
    ```
 
-3. Add a check/cast to the `Message` destructor so that your new type of content is deleted correctly.
-
-   ```cpp
-   // Many other similar checks precede this. Just tack yours onto the end.
-	else if (_type == MESSAGE_TYPE::MyMessageType)
-	{
-		MyMessageContent* contentToDelete = static_cast<MyMessageContent*>(_content_p);
-		delete contentToDelete;
-	}
-   ```
-
 <br>
 
 <!--======================================================================================

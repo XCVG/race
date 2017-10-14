@@ -70,7 +70,14 @@ enum class MESSAGE_TYPE
 */
 
 class BaseMessageContent
-{};
+{
+	public:
+		///
+		///	Virtual destructor allows for derived content types to be deleted via
+		///	a BaseMessageContent*.
+		///
+		virtual ~BaseMessageContent() {};
+};
 
 //*****RENDERER MESSAGES
 
