@@ -14,6 +14,7 @@ RenderFileMessageReceiver::RenderFileMessageReceiver(std::vector<std::shared_ptr
 void RenderFileMessageReceiver::subscribeAll()
 {
 	this->subscribe(MESSAGE_TYPE::FileLoadedMessageType);
+	this->subscribe(MESSAGE_TYPE::FileLoadedImageMessageType);
 }
 
 bool RenderFileMessageReceiver::messageHandler(std::shared_ptr<Message> message)

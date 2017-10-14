@@ -86,7 +86,7 @@ SDL_Surface * FileHelper::loadImageFileFromString(std::string path)
 		throw FileNotFoundException(msg);
 	}
 
-	IMG_Load_RW(rwop_p, 0);
+	surface = IMG_Load_RW(rwop_p, 0);
 
 	SDL_RWclose(rwop_p);
 

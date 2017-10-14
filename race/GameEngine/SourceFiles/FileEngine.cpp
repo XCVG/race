@@ -142,7 +142,7 @@ void FileEngine::HandleImageMessage(FileLoadImageMessageContent inMessage)
 	FileLoadedImageMessageContent *outMessage = new FileLoadedImageMessageContent();
 
 	outMessage->hash = hash;
-	outMessage->image = std::shared_ptr<SDL_Surface>(content); //leave it this way
+	outMessage->image = std::shared_ptr<SDL_Surface>(content, SDL_FreeSurface); //leave it this way
 	outMessage->path = inMessage.path;
 	outMessage->relative = inMessage.relative;
 

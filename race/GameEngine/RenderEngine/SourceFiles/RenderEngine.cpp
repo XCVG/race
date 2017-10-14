@@ -40,7 +40,7 @@ const int_least64_t IDLE_DELAY_CONST = 10;
 const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
 const std::string TEXTURE_BASEPATH_CONST = "ResourceFiles/Textures/";
 const std::string MODEL_EXTENSION_CONST = ".obj";
-const std::string TEXTURE_EXTENSION_CONST = ".tga";
+const std::string TEXTURE_EXTENSION_CONST = ".png";
 
 class RenderEngineImplementation
 {
@@ -345,6 +345,7 @@ private:
 				int latestSceneIndex = 0;
 				RenderableOverlay *latestOverlay = nullptr;
 				int latestOverlayIndex = 0;
+				bool forceAbort = false;
 				int abortIndex = -1;
 
 				for (int i = 0; i < _mq_p->size(); i++)
@@ -368,6 +369,7 @@ private:
 					else if (t == MESSAGE_TYPE::RenderUnloadMessageType)
 					{
 						abortIndex = i;
+						forceAbort = true;
 						break;
 					}
 					else if (t == MESSAGE_TYPE::RenderLoadSingleMessageType)
@@ -390,6 +392,8 @@ private:
 					{
 						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Received load message while scene is loaded!");
 						abortIndex = i - 1;
+						forceAbort = true;
+						break;
 					}
 					else
 					{
@@ -397,10 +401,14 @@ private:
 					}
 				}
 
-				if (abortIndex > 0)
+				if (forceAbort)
 				{
-					//if abortIndex is a thing, purge everything up and including abortIndex					
-					_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex + 1);
+					if (abortIndex >= 0)
+					{
+						//if abortIndex is a thing, purge everything up and including abortIndex					
+						_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex + 1);						
+					}
+
 					startUnload();
 				}
 				else
@@ -542,20 +550,20 @@ private:
 			{
 				TextureLoadingData tld = _textureLoadQueue_p->at(i);
 
-				FileLoadMessageContent *flmc = new FileLoadMessageContent();
-				flmc->path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
-				flmc->relative = true;
+				FileLoadImageMessageContent *flimc = new FileLoadImageMessageContent();
+				flimc->path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
+				flimc->relative = true;
 
-				tld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
+				tld.hash = FileEngine::HashFilePath(flimc->path, flimc->relative);
 
-				std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::FileLoadMessageType, false);
-				msg->setContent(flmc);
+				std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::FileLoadImageMessageType, false);
+				msg->setContent(flimc);
 				ms->postMessage(msg);
 
 				_textureAwaitQueue_p->push_back(tld);
 			}
 
-			_textureAwaitQueue_p->clear();
+			_textureLoadQueue_p->clear();
 		}
 
 		//process results from file return queue
@@ -568,46 +576,24 @@ private:
 			{
 				Message *msg = _fmq_p->at(i).get();
 				BaseMessageContent * bmc = msg->getContent();
-				FileLoadedMessageContent *flmc = static_cast<FileLoadedMessageContent*>(bmc);
 
-				int64_t foundModel = -1;
-				ModelLoadingData foundMLD;
-				int64_t foundTexture = -1;
-				TextureLoadingData foundTLD;
-
-				for (int j = 0; j < _modelAwaitQueue_p->size(); j++)
+				switch (msg->getType())
 				{
-					ModelLoadingData mld = _modelAwaitQueue_p->at(j);
-					if (mld.hash == flmc->hash)
+				case MESSAGE_TYPE::FileLoadedMessageType:
 					{
-						foundMLD = mld;
-						foundModel = j;
-						break;
+						FileLoadedMessageContent *flmc = static_cast<FileLoadedMessageContent*>(bmc);
+						findAndLoadModel(flmc);
 					}
-				}
-
-				if (foundModel >= 0)
-				{
-					loadOneModel(foundMLD, &flmc->content);
-					_modelAwaitQueue_p->erase(_modelAwaitQueue_p->begin() + foundModel);
-					continue;
-				}
-
-				for (int j = 0; j < _textureAwaitQueue_p->size(); j++)
-				{
-					TextureLoadingData tld = _textureAwaitQueue_p->at(j);
-					if (tld.hash == flmc->hash)
+					break;
+				case MESSAGE_TYPE::FileLoadedImageMessageType:
 					{
-						foundTLD = tld;
-						foundTexture = j;
-						break;
+						FileLoadedImageMessageContent *flimc = static_cast<FileLoadedImageMessageContent*>(bmc);
+						findAndLoadTexture(flimc);
 					}
-				}
-
-				if (foundTexture >= 0)
-				{
-					loadOneTexture(foundTLD, &flmc->content);
-					_textureAwaitQueue_p->erase(_textureAwaitQueue_p->begin() + foundTexture);
+					break;
+				default:
+					SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Received unknown message content type ");
+					break;
 				}
 			}
 
@@ -637,6 +623,52 @@ private:
 		//dispatch ONE model and ONE texture from load queues (if nonempty)
 
 		//check the file return queue for ONE file
+	}
+
+	void findAndLoadModel(FileLoadedMessageContent *flmc)
+	{
+		int64_t foundModel = -1;
+		ModelLoadingData foundMLD;
+
+		for (int j = 0; j < _modelAwaitQueue_p->size(); j++)
+		{
+			ModelLoadingData mld = _modelAwaitQueue_p->at(j);
+			if (mld.hash == flmc->hash)
+			{
+				foundMLD = mld;
+				foundModel = j;
+				break;
+			}
+		}
+
+		if (foundModel >= 0)
+		{
+			loadOneModel(foundMLD, &flmc->content);
+			_modelAwaitQueue_p->erase(_modelAwaitQueue_p->begin() + foundModel);
+		}
+	}
+
+	void findAndLoadTexture(FileLoadedImageMessageContent *flimc)
+	{
+		int64_t foundTexture = -1;
+		TextureLoadingData foundTLD;
+
+		for (int j = 0; j < _textureAwaitQueue_p->size(); j++)
+		{
+			TextureLoadingData tld = _textureAwaitQueue_p->at(j);
+			if (tld.hash == flimc->hash)
+			{
+				foundTLD = tld;
+				foundTexture = j;
+				break;
+			}
+		}
+
+		if (foundTexture >= 0)
+		{
+			loadOneTexture(foundTLD, flimc->image.get());
+			_textureAwaitQueue_p->erase(_textureAwaitQueue_p->begin() + foundTexture);
+		}
 	}
 
 	void loadOneModel(ModelLoadingData mld, std::string *data_p)
@@ -674,10 +706,31 @@ private:
 
 	}
 
-	void loadOneTexture(TextureLoadingData tld, std::string *data_p)
+	void loadOneTexture(TextureLoadingData tld, SDL_Surface *image_p)
 	{
-		//does nothing yet
+		TextureData td;
 
+		GLint mode = GL_RGB;
+
+		if (image_p->format->BytesPerPixel == 4)
+			mode = GL_RGBA;
+
+		GLuint glTexId;
+
+		glGenTextures(1, &glTexId);
+		glBindTexture(GL_TEXTURE_2D, glTexId);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, mode, image_p->w, image_p->h, 0, mode, GL_UNSIGNED_BYTE, image_p->pixels);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		td.texID = glTexId;
+
+		_textures_p->emplace(tld.name, td);
+		
 	}
 
 	/// <summary>
