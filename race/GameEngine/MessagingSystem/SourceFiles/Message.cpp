@@ -29,32 +29,16 @@
 ///
 Message::Message(MESSAGE_TYPE type, bool isUrgent):
 	_type(type), _isUrgent(isUrgent), _content_p(nullptr)
-{
-	//SDL_Log("New Message Created");
-}
+{}
 
 ///
 ///	Default Message destructor.
 ///
 Message::~Message()
 {
-	/* Check the type of this message and cast and delete the content accordingly. */
+	/* Delete content. The destructor is virtual, so subclasses of BaseMessageContent 
+		will have their own destructors called appropriately. */
 	delete _content_p;
-	/*if (_type == MESSAGE_TYPE::BaseMessageType)
-	{
-		BaseMessageContent* contentToDelete = static_cast<BaseMessageContent*>(_content_p);
-		delete contentToDelete;
-	}
-	else if (_type == MESSAGE_TYPE::FileLoadMessageType)
-	{
-		FileLoadMessageContent* contentToDelete = static_cast<FileLoadMessageContent*>(_content_p);
-		delete contentToDelete;
-	}
-	else if (_type == MESSAGE_TYPE::PhysicsCallMessageType)
-	{
-		PhysicsCallMessageContent* contentToDelete = static_cast<PhysicsCallMessageContent*>(_content_p);
-		delete contentToDelete;
-	}*/
 }
 
 /*----------------------------------------------------------------------------------------
