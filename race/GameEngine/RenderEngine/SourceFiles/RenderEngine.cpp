@@ -93,13 +93,14 @@ public:
 		_renderThread_p->join();
 		delete(_renderThread_p);
 
+		delete(_mqMutex_p);
 		delete(_mr_p); //rely on destructor to take care of resource release
 		delete(_mq_p); //this also deletes everything in the message queue
-		delete(_mqMutex_p);
-
+		
+		delete(_fmqMutex_p);
 		delete(_fmr_p);
 		delete(_fmq_p);
-		delete(_fmqMutex_p);
+		
 	}
 
 private:

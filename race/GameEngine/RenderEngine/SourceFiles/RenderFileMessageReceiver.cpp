@@ -18,7 +18,7 @@ void RenderFileMessageReceiver::subscribeAll()
 
 bool RenderFileMessageReceiver::messageHandler(std::shared_ptr<Message> message)
 {
-	SDL_Log("Renderer: Received a file message");
+	//SDL_Log("Renderer: Received a file message");
 
 	_mqMutex_p->lock();
 	_mq_p->push_back(message);
