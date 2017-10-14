@@ -119,7 +119,9 @@ void FileEngine::HandleNormalMessage(FileLoadMessageContent inMessage)
 	outMessage->path = inMessage.path;
 	outMessage->relative = inMessage.relative;
 
-	MessagingSystem::instance().postMessage(std::make_shared<Message>(Message(MESSAGE_TYPE::FileLoadedMessageType, false, outMessage)));
+	std::shared_ptr<Message> message = std::make_shared<Message>(MESSAGE_TYPE::FileLoadedMessageType, false);
+	message->setContent(outMessage);
+	MessagingSystem::instance().postMessage(message);
 }
 
 void FileEngine::HandleImageMessage(FileLoadImageMessageContent inMessage)
@@ -145,7 +147,9 @@ void FileEngine::HandleImageMessage(FileLoadImageMessageContent inMessage)
 	outMessage->path = inMessage.path;
 	outMessage->relative = inMessage.relative;
 
-	MessagingSystem::instance().postMessage(std::make_shared<Message>(Message(MESSAGE_TYPE::FileLoadedImageMessageType, false, outMessage)));
+	std::shared_ptr<Message> message = std::make_shared<Message>(MESSAGE_TYPE::FileLoadedImageMessageType, false);
+	message->setContent(outMessage);
+	MessagingSystem::instance().postMessage(message);
 }
 
 size_t FileEngine::HashFilePath(std::string path, bool relative)

@@ -65,7 +65,9 @@ std::thread* Engine::start() {
 	RenderableSetupData rsd;
 	rsd.models.push_back("Cube");
 	rlmc->data = rsd;
-	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderLoadMessageType, false, rlmc));
+
+	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
+	msg->setContent(rlmc);
 	MessagingSystem::instance().postMessage(std::shared_ptr<Message>(msg));
 
 	return new std::thread(&Engine::loop, this);
@@ -85,7 +87,9 @@ void Engine::update() {
 
 		RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
 		renderContent->scene_p = _sceneObj->getRenderInformation();
-		std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false, renderContent));
+
+		std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderDrawMessageType, false);
+		msg->setContent(renderContent);
 		MessagingSystem::instance().postMessage(msg);
 
 		ticksAtLast = currentTime;

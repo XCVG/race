@@ -27,8 +27,8 @@
 ///
 ///	Message constructor.
 ///
-Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p):
-	_type(type), _isUrgent(isUrgent), _content_p(content_p)
+Message::Message(MESSAGE_TYPE type, bool isUrgent):
+	_type(type), _isUrgent(isUrgent), _content_p(nullptr)
 {
 	//SDL_Log("New Message Created");
 }
@@ -39,7 +39,8 @@ Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p
 Message::~Message()
 {
 	/* Check the type of this message and cast and delete the content accordingly. */
-	if (_type == MESSAGE_TYPE::BaseMessageType)
+	delete _content_p;
+	/*if (_type == MESSAGE_TYPE::BaseMessageType)
 	{
 		BaseMessageContent* contentToDelete = static_cast<BaseMessageContent*>(_content_p);
 		delete contentToDelete;
@@ -53,7 +54,7 @@ Message::~Message()
 	{
 		PhysicsCallMessageContent* contentToDelete = static_cast<PhysicsCallMessageContent*>(_content_p);
 		delete contentToDelete;
-	}
+	}*/
 }
 
 /*----------------------------------------------------------------------------------------
