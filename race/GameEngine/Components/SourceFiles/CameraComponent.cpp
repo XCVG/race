@@ -6,9 +6,9 @@ CameraComponent::CameraComponent()
 	this->_farPlane = 0;
 	this->_angle = 0;
 };
-CameraComponent::CameraComponent(Vector3 _clearColor, GLfloat _nearPlane, GLfloat _farPlane, GLfloat _angle)
+CameraComponent::CameraComponent(Vector3* _clearColor, GLfloat _nearPlane, GLfloat _farPlane, GLfloat _angle)
 {
-	this->_clearColor = _clearColor;
+	this->_clearColor = *_clearColor;
 	this->_nearPlane = _nearPlane;
 	this->_farPlane = _farPlane;
 	this->_angle = _angle;
@@ -36,19 +36,19 @@ void CameraComponent::setAngle(GLfloat _angle)
 {
     this->_angle = _angle;
 };
-Vector3 CameraComponent::setClearColor()
+Vector3 CameraComponent::getClearColor()
 {
     return this->_clearColor;
 };
-GLfloat CameraComponent::setNearPlane()
+GLfloat CameraComponent::getNearPlane()
 {
     return this->_nearPlane;
 };
-GLfloat CameraComponent::setFarPlane()
+GLfloat CameraComponent::getFarPlane()
 {
     return this->_farPlane;
 };
-GLfloat CameraComponent::setAngle()
+GLfloat CameraComponent::getAngle()
 {
     return this->_angle;
 };

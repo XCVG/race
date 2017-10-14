@@ -95,6 +95,8 @@ void PhysicsEngine::loop()
 				{
 					std::shared_ptr<Message> myMessage = _messageQueue.front();
 					PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
+					GameObject* go = content->go;
+					go->addRotate();
 					//SDL_Log(content->contentVar.c_str());
 					// process a normal message
 					_messageQueue.pop();

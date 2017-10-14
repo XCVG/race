@@ -523,8 +523,9 @@ private:
 
 				mld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
 
-				Message *msg = new Message(MESSAGE_TYPE::FileLoadMessageType, false, flmc);
-				ms->postMessage(std::shared_ptr<Message>(msg));
+				std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::FileLoadMessageType, false);
+				msg->setContent(flmc);
+				ms->postMessage(msg);
 
 				_modelAwaitQueue_p->push_back(mld);
 			}
@@ -544,8 +545,9 @@ private:
 
 				tld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
 
-				Message *msg = new Message(MESSAGE_TYPE::FileLoadMessageType, false, flmc);
-				ms->postMessage(std::shared_ptr<Message>(msg));
+				std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::FileLoadMessageType, false);
+				msg->setContent(flmc);
+				ms->postMessage(msg);
 
 				_textureAwaitQueue_p->push_back(tld);
 			}
@@ -614,7 +616,10 @@ private:
 		//loading is done if and only if both load and await queues are empty and we have context
 		if (_textureLoadQueue_p->empty() && _textureAwaitQueue_p->empty() && _modelLoadQueue_p->empty() && _modelAwaitQueue_p->empty() && haveContext())
 		{
-			ms->postMessage(std::shared_ptr<Message>(new Message(MESSAGE_TYPE::RenderReadyMessageType,false,new RenderReadyMessageContent())));
+			std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderReadyMessageType, false);
+			msg->setContent(new RenderReadyMessageContent());
+			ms->postMessage(msg);
+			
 			SDL_Log("Renderer: Entering render state");
 			_state = RendererState::rendering;
 		}

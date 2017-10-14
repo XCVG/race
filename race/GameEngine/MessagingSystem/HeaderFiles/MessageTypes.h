@@ -24,6 +24,7 @@
 ========================================================================================*/
 
 #include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
+#include "../../Components/HeaderFiles/GameObject.h"
 #include <string>
 #include <memory>
 
@@ -69,7 +70,14 @@ enum class MESSAGE_TYPE
 */
 
 class BaseMessageContent
-{};
+{
+	public:
+		///
+		///	Virtual destructor allows for derived content types to be deleted via
+		///	a BaseMessageContent*.
+		///
+		virtual ~BaseMessageContent() {};
+};
 
 //*****RENDERER MESSAGES
 
@@ -120,6 +128,7 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	public:
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
 	std::string contentVar;
+	GameObject *go;
 	PhysicsCallMessageContent(std::string s) { contentVar = s; }
 };
 
