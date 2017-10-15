@@ -40,7 +40,7 @@ const int_least64_t IDLE_DELAY_CONST = 10;
 const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
 const std::string TEXTURE_BASEPATH_CONST = "ResourceFiles/Textures/";
 const std::string MODEL_EXTENSION_CONST = ".obj";
-const std::string TEXTURE_EXTENSION_CONST = ".tga";
+const std::string TEXTURE_EXTENSION_CONST = ".png";
 
 class RenderEngineImplementation
 {
@@ -58,19 +58,19 @@ public:
 
 		_state = RendererState::idle;
 
-		_cubeAngle = 0;
-
 		//create message queue and handler, then subscribe to messaging
 		_mq_p = new std::vector<std::shared_ptr<Message>>();
-		_mr_p = new RenderMessageReceiver(_mq_p);
-		_mr_p->subscribeAll();
 		_mqMutex_p = new std::mutex();
+		_mr_p = new RenderMessageReceiver(_mq_p, _mqMutex_p);
+		_mr_p->subscribeAll();
+		
 
 		//create file handling message queue and handler, then subscribe to messaging
 		_fmq_p = new std::vector<std::shared_ptr<Message>>();
-		_fmr_p = new RenderFileMessageReceiver(_fmq_p);
-		_fmr_p->subscribeAll();
 		_fmqMutex_p = new std::mutex();
+		_fmr_p = new RenderFileMessageReceiver(_fmq_p, _fmqMutex_p);
+		_fmr_p->subscribeAll();
+		
 
 		//spawn thread
 		_isRunning = true;
@@ -91,13 +91,14 @@ public:
 		_renderThread_p->join();
 		delete(_renderThread_p);
 
+		delete(_mqMutex_p);
 		delete(_mr_p); //rely on destructor to take care of resource release
 		delete(_mq_p); //this also deletes everything in the message queue
-		delete(_mqMutex_p);
-
+		
+		delete(_fmqMutex_p);
 		delete(_fmr_p);
 		delete(_fmq_p);
-		delete(_fmqMutex_p);
+		
 	}
 
 private:
@@ -133,8 +134,10 @@ private:
 	bool _isRunning;
 	std::thread *_renderThread_p;
 
-	//honestly not sure
+	//shader stuff
 	GLuint _programID = 0;
+	GLuint _shaderMVPMatrixID = 0;
+	GLuint _shaderTextureID = 0;
 
 	//framebuffer stuff
 	int _renderWidth = 0;
@@ -152,11 +155,10 @@ private:
 	//temporary cube stuff
 	GLuint _cubeVertexArrayID = 0;
 	GLuint _cubeVertexBufferID = 0;
-	glm::mat4 _cubeModelViewMatrix;
-	float _cubeAngle;
+	GLuint _cubeTextureID = 0;
 
 	//base MVP, may keep or remove
-	GLuint _shaderMVPMatrixID = 0;
+	
 	glm::mat4 _baseModelViewMatrix;
 	glm::mat4 _baseModelViewProjectionMatrix;
 
@@ -339,9 +341,10 @@ private:
 				//if we hit a loadsingle instruction, queue it and continue
 				//if we hit a load instruction, log warning, start unload, store index, and break
 				RenderableScene *latestScene = nullptr;
-				int latestSceneIndex = 0;
+				int latestSceneIndex = -1;
 				RenderableOverlay *latestOverlay = nullptr;
-				int latestOverlayIndex = 0;
+				int latestOverlayIndex = -1;
+				bool forceAbort = false;
 				int abortIndex = -1;
 
 				for (int i = 0; i < _mq_p->size(); i++)
@@ -353,18 +356,24 @@ private:
 					if (t == MESSAGE_TYPE::RenderDrawMessageType)
 					{
 						RenderableScene *scn = static_cast<RenderDrawMessageContent*>(msg_sp.get()->getContent())->scene_p;
+						if (latestScene != nullptr)
+							delete latestScene;
 						latestScene = scn;
 						latestSceneIndex = i;
+						
 					}
 					else if (t == MESSAGE_TYPE::RenderDrawOverlayMessageType)
 					{
 						RenderableOverlay *ovl = static_cast<RenderDrawOverlayMessageContent*>(msg_sp.get()->getContent())->overlay_p;
+						if (latestOverlay != nullptr)
+							delete latestOverlay;
 						latestOverlay = ovl;
 						latestOverlayIndex = i;
 					}
 					else if (t == MESSAGE_TYPE::RenderUnloadMessageType)
 					{
 						abortIndex = i;
+						forceAbort = true;
 						break;
 					}
 					else if (t == MESSAGE_TYPE::RenderLoadSingleMessageType)
@@ -387,6 +396,8 @@ private:
 					{
 						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Received load message while scene is loaded!");
 						abortIndex = i - 1;
+						forceAbort = true;
+						break;
 					}
 					else
 					{
@@ -394,10 +405,31 @@ private:
 					}
 				}
 
-				if (abortIndex > 0)
+				if (forceAbort)
 				{
-					//if abortIndex is a thing, purge everything up and including abortIndex					
-					_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex + 1);
+					if (abortIndex >= 0)
+					{
+						//if abortIndex is a thing, purge everything up and including abortIndex
+						for (int i = 0; i < abortIndex; i++)
+						{
+							std::shared_ptr<Message> msg_sp = _mq_p->at(i);
+							MESSAGE_TYPE t = msg_sp->getType();
+							if (t == MESSAGE_TYPE::RenderDrawMessageType)
+							{
+								RenderableScene *scn = static_cast<RenderDrawMessageContent*>(msg_sp.get()->getContent())->scene_p;
+								if (scn != nullptr)
+									delete scn;
+							}
+							else if (t == MESSAGE_TYPE::RenderDrawOverlayMessageType)
+							{
+								RenderableOverlay *ovl = static_cast<RenderDrawOverlayMessageContent*>(msg_sp.get()->getContent())->overlay_p;
+								if (ovl != nullptr)
+									delete ovl;
+							}
+						}
+						_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex + 1);						
+					}
+
 					startUnload();
 				}
 				else
@@ -539,20 +571,20 @@ private:
 			{
 				TextureLoadingData tld = _textureLoadQueue_p->at(i);
 
-				FileLoadMessageContent *flmc = new FileLoadMessageContent();
-				flmc->path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
-				flmc->relative = true;
+				FileLoadImageMessageContent *flimc = new FileLoadImageMessageContent();
+				flimc->path = TEXTURE_BASEPATH_CONST + tld.name + TEXTURE_EXTENSION_CONST;
+				flimc->relative = true;
 
-				tld.hash = FileEngine::HashFilePath(flmc->path, flmc->relative);
+				tld.hash = FileEngine::HashFilePath(flimc->path, flimc->relative);
 
-				std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::FileLoadMessageType, false);
-				msg->setContent(flmc);
+				std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::FileLoadImageMessageType, false);
+				msg->setContent(flimc);
 				ms->postMessage(msg);
 
 				_textureAwaitQueue_p->push_back(tld);
 			}
 
-			_textureAwaitQueue_p->clear();
+			_textureLoadQueue_p->clear();
 		}
 
 		//process results from file return queue
@@ -565,44 +597,24 @@ private:
 			{
 				Message *msg = _fmq_p->at(i).get();
 				BaseMessageContent * bmc = msg->getContent();
-				FileLoadedMessageContent *flmc = static_cast<FileLoadedMessageContent*>(bmc);
 
-				int64_t foundModel = -1;
-				ModelLoadingData foundMLD;
-				int64_t foundTexture = -1;
-				TextureLoadingData foundTLD;
-
-				for (int j = 0; j < _modelAwaitQueue_p->size(); j++)
+				switch (msg->getType())
 				{
-					ModelLoadingData mld = _modelAwaitQueue_p->at(j);
-					if (mld.hash == flmc->hash)
+				case MESSAGE_TYPE::FileLoadedMessageType:
 					{
-						foundModel = j;
-						break;
+						FileLoadedMessageContent *flmc = static_cast<FileLoadedMessageContent*>(bmc);
+						findAndLoadModel(flmc);
 					}
-				}
-
-				if (foundModel >= 0)
-				{
-					loadOneModel(foundMLD, &flmc->content);
-					_modelAwaitQueue_p->erase(_modelAwaitQueue_p->begin() + foundModel);
-					continue;
-				}
-
-				for (int j = 0; j < _textureAwaitQueue_p->size(); j++)
-				{
-					TextureLoadingData tld = _textureAwaitQueue_p->at(j);
-					if (tld.hash == flmc->hash)
+					break;
+				case MESSAGE_TYPE::FileLoadedImageMessageType:
 					{
-						foundTexture = j;
-						break;
+						FileLoadedImageMessageContent *flimc = static_cast<FileLoadedImageMessageContent*>(bmc);
+						findAndLoadTexture(flimc);
 					}
-				}
-
-				if (foundTexture >= 0)
-				{
-					loadOneTexture(foundTLD, &flmc->content);
-					_textureAwaitQueue_p->erase(_textureAwaitQueue_p->begin() + foundTexture);
+					break;
+				default:
+					SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Received unknown message content type ");
+					break;
 				}
 			}
 
@@ -627,10 +639,57 @@ private:
 	void doSingleLoad()
 	{
 		//load one thing during drawing process
+		//TODO implementation
 
 		//dispatch ONE model and ONE texture from load queues (if nonempty)
 
 		//check the file return queue for ONE file
+	}
+
+	void findAndLoadModel(FileLoadedMessageContent *flmc)
+	{
+		int64_t foundModel = -1;
+		ModelLoadingData foundMLD;
+
+		for (int j = 0; j < _modelAwaitQueue_p->size(); j++)
+		{
+			ModelLoadingData mld = _modelAwaitQueue_p->at(j);
+			if (mld.hash == flmc->hash)
+			{
+				foundMLD = mld;
+				foundModel = j;
+				break;
+			}
+		}
+
+		if (foundModel >= 0)
+		{
+			loadOneModel(foundMLD, &flmc->content);
+			_modelAwaitQueue_p->erase(_modelAwaitQueue_p->begin() + foundModel);
+		}
+	}
+
+	void findAndLoadTexture(FileLoadedImageMessageContent *flimc)
+	{
+		int64_t foundTexture = -1;
+		TextureLoadingData foundTLD;
+
+		for (int j = 0; j < _textureAwaitQueue_p->size(); j++)
+		{
+			TextureLoadingData tld = _textureAwaitQueue_p->at(j);
+			if (tld.hash == flimc->hash)
+			{
+				foundTLD = tld;
+				foundTexture = j;
+				break;
+			}
+		}
+
+		if (foundTexture >= 0)
+		{
+			loadOneTexture(foundTLD, flimc->image.get());
+			_textureAwaitQueue_p->erase(_textureAwaitQueue_p->begin() + foundTexture);
+		}
 	}
 
 	void loadOneModel(ModelLoadingData mld, std::string *data_p)
@@ -642,7 +701,7 @@ private:
 
 		//does nothing yet
 		auto objData = OBJImport::importObjInfo(*data_p);
-		GLuint numVertices = objData.size() / 8;
+		GLuint numVertices = (GLuint)objData.size() / 8;
 
 		GLfloat *objPtr = &objData[0];
 		GLuint glVaoId, glVboId;
@@ -652,8 +711,13 @@ private:
 		glGenBuffers(1, &glVboId);
 		glBindBuffer(GL_ARRAY_BUFFER, glVboId);
 		glBufferData(GL_ARRAY_BUFFER, (objData.size() * sizeof(GLfloat)), objPtr, GL_STATIC_DRAW);
-		//will break but shouldn't break other things
 
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
@@ -666,10 +730,31 @@ private:
 
 	}
 
-	void loadOneTexture(TextureLoadingData tld, std::string *data_p)
+	void loadOneTexture(TextureLoadingData tld, SDL_Surface *image_p)
 	{
-		//does nothing yet
+		TextureData td;
 
+		GLint mode = GL_RGB;
+
+		if (image_p->format->BytesPerPixel == 4)
+			mode = GL_RGBA;
+
+		GLuint glTexId;
+
+		glGenTextures(1, &glTexId);
+		glBindTexture(GL_TEXTURE_2D, glTexId);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, mode, image_p->w, image_p->h, 0, mode, GL_UNSIGNED_BYTE, image_p->pixels);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		td.texID = glTexId;
+
+		_textures_p->emplace(tld.name, td);
+		
 	}
 
 	/// <summary>
@@ -698,11 +783,47 @@ private:
 	void unloadGL()
 	{
 		//unbind all OGL
+
+		//delete VBOs and VAOs
+		for (std::map<std::string, ModelData>::iterator itr = _models_p->begin(); itr != _models_p->end(); itr++)
+		{
+			ModelData md = itr->second;
+			glDeleteVertexArrays(1, &md.vaoID);
+			glDeleteBuffers(1, &md.vboID);
+		}
+
+		//delete textures
+		for (std::map<std::string, TextureData>::iterator itr = _textures_p->begin(); itr != _textures_p->end(); itr++)
+		{
+			TextureData td = itr->second;
+			glDeleteTextures(1, &td.texID);
+		}
 	}
 
 	void unloadData()
 	{
 		//clear (but DO NOT DELETE) data structures
+
+		//purge load queues
+		_modelLoadQueue_p->clear();
+		_textureLoadQueue_p->clear();
+
+		//purge await queues
+		_modelAwaitQueue_p->clear();
+		_textureAwaitQueue_p->clear();
+
+		//purge model and texture lists
+		_models_p->clear();
+		_textures_p->clear();
+
+		//purge current scene and overlay
+		if(_lastScene_p != nullptr)
+			delete(_lastScene_p);
+		_lastScene_p = nullptr;
+
+		if(_lastOverlay_p != nullptr)
+			delete(_lastOverlay_p);
+		_lastOverlay_p = nullptr;
 	}
 
 	void drawLoadScreen()
@@ -765,6 +886,7 @@ private:
 	{
 		_programID = LoadShaders();
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
+		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
 	}
 
 	void cleanupProgram()
@@ -776,6 +898,7 @@ private:
 
 	void setupCube()
 	{
+		//setup cube (fallback) VAO TODO CHANGE TO LOAD FROM FILE
 		glGenVertexArrays(1, &_cubeVertexArrayID);
 		glBindVertexArray(_cubeVertexArrayID);
 
@@ -783,11 +906,43 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(0);		
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
 				
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+
+		//setup cube (fallback) texture
+
+		std::string texturePath = TEXTURE_BASEPATH_CONST + "default" + TEXTURE_EXTENSION_CONST;
+
+		SDL_Surface *image_p = FileHelper::loadImageFileFromStringRelative(texturePath);
+
+		GLint mode = GL_RGB;
+
+		if (image_p->format->BytesPerPixel == 4)
+			mode = GL_RGBA;
+
+		GLuint glTexId;
+
+		glGenTextures(1, &glTexId);
+		glBindTexture(GL_TEXTURE_2D, glTexId);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, mode, image_p->w, image_p->h, 0, mode, GL_UNSIGNED_BYTE, image_p->pixels);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		SDL_FreeSurface(image_p);
+		image_p = nullptr;
+
+		_cubeTextureID = glTexId;
 	}
 
 	void setupBaseMatrices()
@@ -850,21 +1005,6 @@ private:
 
 	void setupFramebufferDraw()
 	{
-		/*
-		glGenBuffers(1, &_cubeVertexBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-		glGenVertexArrays(1, &_cubeVertexArrayID);
-		glBindVertexArray(_cubeVertexArrayID);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-				
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-		*/
-
 		glGenVertexArrays(1, &_framebufferDrawVertexArrayID);
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 
@@ -894,10 +1034,6 @@ private:
 	/// </summary>
 	void doRender()
 	{
-		//temporary
-		//updateCube();
-
-		//drawCube();
 
 		//will remain in final
 		if (_lastScene_p == nullptr)
@@ -908,10 +1044,7 @@ private:
 		{
 			drawCamera(_lastScene_p);
 			drawObjects(_lastScene_p);
-			//updateCube();
-			//drawCube();
-			drawLighting(_lastScene_p);
-			
+			drawLighting(_lastScene_p);			
 		}
 
 		if (_lastOverlay_p == nullptr)
@@ -920,7 +1053,7 @@ private:
 		}
 		else
 		{
-			drawOverlay();
+			drawOverlay(_lastOverlay_p);
 		}
 
 		//TODO vsync/no vsync
@@ -964,6 +1097,9 @@ private:
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //TODO use camera color
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -981,29 +1117,99 @@ private:
 
 	void drawObject(RenderableObject *object)
 	{
-		//TODO draw one arbitraty object
+		//draw one arbitraty object
 		//NOTE: should always be tolerant of missing resources!
-		
-		//below: temporary cube code
 
 		//set shader program
 		glUseProgram(_programID);
 
-		//bind cube, set properties, and draw
-		glBindVertexArray(_cubeVertexArrayID);
+		//check if a model exists
+		bool hasModel = false;
+		bool hasTexture = false;
+		ModelData modelData;
+		TextureData texData;
+
+		if (_models_p->count(object->modelName) > 0)
+			hasModel = true;
+		//else
+		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model is missing!");
+
+		if (_textures_p->count(object->albedoName) > 0)
+			hasTexture = true;
+		//else
+		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture is missing!");
+
+		//try to bind model
+		if (hasModel)
+		{
+			modelData = _models_p->find(object->modelName)->second;
+			if (modelData.vaoID != 0)
+			{
+				glBindVertexArray(modelData.vaoID);
+			}
+			else
+			{
+				hasModel = false;
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model has no VAO!");
+			}
+				
+		}
+		
+		if(!hasModel)
+		{			
+			glBindVertexArray(_cubeVertexArrayID);
+		}
+
+
+		//try to bind texture
+		if (hasTexture)
+		{
+			texData = _textures_p->find(object->albedoName)->second;
+			if (texData.texID != 0)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, texData.texID);
+				glUniform1i(_shaderTextureID, 0);
+			}
+			else
+			{
+				hasTexture = false;
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture has no texID!");
+			}
+		}	
+
+		if (!hasTexture)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, _cubeTextureID);
+			glUniform1i(_shaderTextureID, 0);
+		}
 
 		//transform!
-		glm::mat4 cubeMVM = glm::mat4();
-		cubeMVM = glm::translate(cubeMVM, object->position);
-		cubeMVM = glm::scale(cubeMVM, object->scale);
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.y, glm::vec3(0, 1, 0));
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.x, glm::vec3(1, 0, 0));
-		cubeMVM = glm::rotate(cubeMVM, object->rotation.z, glm::vec3(0, 0, 1));
-		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  cubeMVM;
-		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
+		glm::mat4 objectMVM = glm::mat4();
+		objectMVM = glm::translate(objectMVM, object->position);
+		objectMVM = glm::scale(objectMVM, object->scale);
+		objectMVM = glm::rotate(objectMVM, object->rotation.y, glm::vec3(0, 1, 0));
+		objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
+		objectMVM = glm::rotate(objectMVM, object->rotation.z, glm::vec3(0, 0, 1));
+		glm::mat4 objectMVPM = _baseModelViewProjectionMatrix *  objectMVM;
+		objectMVM = _baseModelViewMatrix * objectMVM;
+		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &objectMVPM[0][0]);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		//draw!
+		if (hasModel)
+		{
+			glDrawArrays(GL_TRIANGLES, 0, modelData.numVerts);
+		}
+		else
+		{
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
+
+
 		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
@@ -1034,7 +1240,7 @@ private:
 
 	}
 
-	void drawOverlay()
+	void drawOverlay(RenderableOverlay *overlay)
 	{
 		//TODO draw overlay
 	}
@@ -1043,40 +1249,6 @@ private:
 	{
 		//fallback overlay draw if no overlay is available
 
-	}
-
-	void drawCube()
-	{
-
-		//set shader program
-		glUseProgram(_programID);
-
-		//bind framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);		
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glViewport(0, 0, _renderWidth, _renderHeight);
-
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//bind cube, set properties, and draw
-		glBindVertexArray(_cubeVertexArrayID);		
-		//glBindVertexArray(_cubeVertexArrayID);
-		//glm::mat4 testView = glm::translate(glm::mat4(), glm::vec3(0,0,-2));
-		glm::mat4 cubeMVPM = _baseModelViewProjectionMatrix *  _cubeModelViewMatrix;
-		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &cubeMVPM[0][0]);
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		glBindVertexArray(0);
-	}
-
-	void updateCube()
-	{
-		_cubeAngle += CUBE_ROTATE_STEP_CONST;
-		glm::mat4 identity = glm::mat4();
-		glm::mat4 rotate = glm::rotate(identity, _cubeAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-		_cubeModelViewMatrix = rotate;
 	}
 
 	bool acquireContext()
@@ -1126,4 +1298,4 @@ void RenderEngine::update()
 RenderEngine::~RenderEngine()
 {
 	delete(_impl);
-}
+};

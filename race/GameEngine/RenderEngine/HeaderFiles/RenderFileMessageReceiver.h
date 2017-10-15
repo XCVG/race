@@ -4,7 +4,7 @@
 class RenderFileMessageReceiver : MessageReceiver
 {
 public:
-	RenderFileMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p);
+	RenderFileMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p, std::mutex *mutex);
 
 	bool messageHandler(std::shared_ptr<Message> message) override;
 

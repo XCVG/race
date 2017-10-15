@@ -93,7 +93,7 @@ void Scene::setUpSceneOne() {
 	addGameObject("Camera", go);
 
 	GameObject *go2 = new GameObject(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f);
-	go2->addComponent(new RenderComponent("Cube", "crate", "", 0));
+	go2->addComponent(new RenderComponent("null", "rainbow", "", 0));
 	addGameObject("Cube", go2);
 
 	GameObject *go3 = new GameObject();
