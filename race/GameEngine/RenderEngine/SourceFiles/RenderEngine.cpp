@@ -691,10 +691,10 @@ private:
 		glBufferData(GL_ARRAY_BUFFER, (objData.size() * sizeof(GLfloat)), objPtr, GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
+		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
@@ -884,11 +884,11 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-		glEnableVertexAttribArray(0);
-		glEnableVertexAttribArray(1);
-		glEnableVertexAttribArray(2);
+		glEnableVertexAttribArray(0);		
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
+		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
 				
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -1074,6 +1074,9 @@ private:
 		//bind framebuffer and clear
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
 		glViewport(0, 0, _renderWidth, _renderHeight);
+
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //TODO use camera color
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
