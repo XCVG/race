@@ -11,8 +11,8 @@
 	@version 0.0.0
 	@file
 	
-	@see MyClass
-	@see MyClass.cpp
+	@see MessageTypes
+	@see MessageTypes.cpp
 	
 *//*====================================================================================*/
 
