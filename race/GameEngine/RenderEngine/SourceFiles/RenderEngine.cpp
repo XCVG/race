@@ -445,14 +445,12 @@ private:
 					//assign renderablescene and renderableoverlay if they exist
 					if (latestScene != nullptr)
 					{
-						if (_lastScene_p == nullptr)
-							delete(_lastScene_p);
+						delete(_lastScene_p);
 						_lastScene_p = latestScene;
 					}
 					if (latestOverlay != nullptr)
 					{
-						if (_lastOverlay_p == nullptr)
-							delete(_lastOverlay_p);
+						delete(_lastOverlay_p);
 						_lastOverlay_p = latestOverlay;
 					}
 				}
@@ -467,8 +465,8 @@ private:
 				//well, that shouldn't happen
 				SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Ended up in an impossible state");
 			}
+			
 		}
-
 		//if currently loading or unloading, ignore messages
 
 		//unlock mutexs

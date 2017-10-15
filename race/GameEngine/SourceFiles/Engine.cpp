@@ -89,7 +89,7 @@ void Engine::update() {
 		RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
 		renderContent->scene_p = _sceneObj->getRenderInformation();
 
-		std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderDrawMessageType, false);
+		std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false));
 		msg->setContent(renderContent);
 		MessagingSystem::instance().postMessage(msg);
 
@@ -122,7 +122,7 @@ void Engine::loop() {
 
 		//disgusting render test hack
 
-		MessagingSystem *ms = &MessagingSystem::instance();
+		/*MessagingSystem *ms = &MessagingSystem::instance();
 		{
 			RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
 			RenderableSetupData rsd;
@@ -194,7 +194,7 @@ void Engine::loop() {
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(5000));
 
-		ran = true;
+		ran = true;*/
 
 	}
 };
