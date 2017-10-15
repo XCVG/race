@@ -95,8 +95,7 @@ void PhysicsEngine::loop()
 				{
 					std::shared_ptr<Message> myMessage = _messageQueue.front();
 					PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-					GameObject* go = content->go;
-					go->addRotate();
+					rotate(content->go, Vector3(0.2, 0.3, 0.5) * content->deltaTime);
 					//SDL_Log(content->contentVar.c_str());
 					// process a normal message
 					_messageQueue.pop();
@@ -112,11 +111,78 @@ void PhysicsEngine::loop()
 	//SDL_Log("Physics::Out of loop");
 }
 
-///
-///	Stops the physics engine.
-///
+/**
+ *	Stops the physics engine.
+ */
 void PhysicsEngine::stop()
 {
     _running = false;
 	//SDL_Log("Physics::Stop");
 }
+/**
+ *  <summary>
+ *  Move the game object in a direciton. The translation should be modified by the delta time.
+ *  </summary>
+ */
+void PhysicsEngine::translate(GameObject *go, Vector3 translation)
+{
+	go->_transform._position = translation;
+};
+/**
+ *  <summary>
+ *  Move the game object in a direciton. Each axis should be modified by the delta time.
+ *  </summary>
+ */
+void PhysicsEngine::translate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
+{
+	go->_transform._position = Vector3(x, y, z);
+};
+/**
+ *  <summary>
+ *  Accelerate the game object. The amount should be modified by the delta time.
+ *  </summary>
+ */
+void PhysicsEngine::accelerate(GameObject *go, Vector3 amount)
+{
+	go->getComponent<AccelerationComponent*>()->_acceleration += amount;
+};
+/**
+ * <summary>
+ * Accelerate the game object. Each axis should be modified by the delta time.
+ * </summary>
+ */
+void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
+{
+	go->getComponent<AccelerationComponent*>()->_acceleration += Vector3(x, y, z);
+};
+void PhysicsEngine::decelerate(GameObject *go, Vector3 amount)
+{
+	go->getComponent<AccelerationComponent*>()->_acceleration -= amount;
+};
+void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
+{
+	go->getComponent<AccelerationComponent*>()->_acceleration -= Vector3(x, y, z);
+};
+/**
+ * <summary>
+ * Rotate the object by a set amount. This rotation is in radians only, 
+ * and is only ever increasing the rotation.
+ * Please specify positive/negative when calling. e.g., rotate(&go, -1.2);
+ * </summary>
+ */
+void PhysicsEngine::rotate(GameObject *go, Vector3 amount)
+{
+	go->_transform._rotation += amount;
+};
+void PhysicsEngine::rotateX(GameObject *go, GLfloat angle)
+{
+	go->_transform._rotation.x += angle;
+};
+void PhysicsEngine::rotateY(GameObject *go, GLfloat angle)
+{
+	go->_transform._rotation.y += angle;
+};
+void PhysicsEngine::rotateZ(GameObject *go, GLfloat angle)
+{
+	go->_transform._rotation.z += angle;
+};

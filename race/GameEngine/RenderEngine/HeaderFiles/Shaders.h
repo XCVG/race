@@ -12,12 +12,25 @@
 //everything here is temporary, waiting for the better shader loader
 
 const char *vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
+"layout (location = 0) in vec3 iPos;\n"
+"layout (location = 1) in vec3 iNorm;\n"
+"layout (location = 2) in vec2 iTexC;\n"
+"out vec2 oTexC;\n"
 "uniform mat4 MVP;\n"
 "void main()\n"
 "{\n"
-"   gl_Position = MVP * vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"   gl_Position = MVP * vec4(iPos.x, iPos.y, iPos.z, 1.0);\n"
+"   oTexC = iTexC;\n"
 "}\0";
+
+const char *fragmentShaderSource = "#version 330 core\n"
+"in vec2 oTexC;\n"
+"layout (location = 0) out vec3 FragColor;\n"
+"uniform sampler2D iTexImage;\n"
+"void main()\n"
+"{\n"
+"   FragColor = texture(iTexImage, oTexC).rgb;\n"
+"}\n\0";
 
 const char *vertexShader2Source = "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
@@ -27,14 +40,6 @@ const char *vertexShader2Source = "#version 330 core\n"
 "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
 "   uv = (aPos.xy + vec2(1, 1)) / 2.0;\n"
 "}\0";
-
-
-const char *fragmentShaderSource = "#version 330 core\n"
-"layout (location = 0) out vec3 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec3(1.0f, 0.5f, 0.2f);\n"
-"}\n\0";
 
 const char *fragmentShader2Source = "#version 330 core\n"
 "in vec2 uv;\n"

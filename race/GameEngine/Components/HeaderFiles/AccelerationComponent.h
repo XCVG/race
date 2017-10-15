@@ -11,7 +11,7 @@ public:
 	void setMaxAcceleration(GLfloat _maxAcceleration);
 	Vector3 getAccelerationVector();
 	GLfloat getMaxAcceleration();
-private:
 	Vector3 _acceleration;
 	GLfloat _maxAcceleration;
+private:
 };
