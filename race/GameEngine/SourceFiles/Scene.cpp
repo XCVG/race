@@ -92,7 +92,7 @@ void Scene::setUpSceneOne() {
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	GameObject *go2 = new GameObject(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f);
+	GameObject *go2 = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f));
 	go2->addComponent(new RenderComponent("null", "rainbow", "", 0));
 	addGameObject("Cube", go2);
 
