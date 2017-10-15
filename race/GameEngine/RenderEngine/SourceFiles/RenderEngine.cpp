@@ -58,8 +58,6 @@ public:
 
 		_state = RendererState::idle;
 
-		_cubeAngle = 0;
-
 		//create message queue and handler, then subscribe to messaging
 		_mq_p = new std::vector<std::shared_ptr<Message>>();
 		_mqMutex_p = new std::mutex();
@@ -136,8 +134,10 @@ private:
 	bool _isRunning;
 	std::thread *_renderThread_p;
 
-	//honestly not sure
+	//shader stuff
 	GLuint _programID = 0;
+	GLuint _shaderMVPMatrixID = 0;
+	GLuint _shaderTextureID = 0;
 
 	//framebuffer stuff
 	int _renderWidth = 0;
@@ -155,11 +155,10 @@ private:
 	//temporary cube stuff
 	GLuint _cubeVertexArrayID = 0;
 	GLuint _cubeVertexBufferID = 0;
-	glm::mat4 _cubeModelViewMatrix;
-	float _cubeAngle;
+	GLuint _cubeTextureID = 0;
 
 	//base MVP, may keep or remove
-	GLuint _shaderMVPMatrixID = 0;
+	
 	glm::mat4 _baseModelViewMatrix;
 	glm::mat4 _baseModelViewProjectionMatrix;
 
@@ -692,8 +691,11 @@ private:
 		glBufferData(GL_ARRAY_BUFFER, (objData.size() * sizeof(GLfloat)), objPtr, GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 32, 0);
-
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
@@ -862,6 +864,7 @@ private:
 	{
 		_programID = LoadShaders();
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
+		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
 	}
 
 	void cleanupProgram()
@@ -873,6 +876,7 @@ private:
 
 	void setupCube()
 	{
+		//setup cube (fallback) VAO TODO CHANGE TO LOAD FROM FILE
 		glGenVertexArrays(1, &_cubeVertexArrayID);
 		glBindVertexArray(_cubeVertexArrayID);
 
@@ -881,10 +885,42 @@ private:
 		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
 				
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
+
+		//setup cube (fallback) texture
+
+		std::string texturePath = TEXTURE_BASEPATH_CONST + "default" + TEXTURE_EXTENSION_CONST;
+
+		SDL_Surface *image_p = FileHelper::loadImageFileFromStringRelative(texturePath);
+
+		GLint mode = GL_RGB;
+
+		if (image_p->format->BytesPerPixel == 4)
+			mode = GL_RGBA;
+
+		GLuint glTexId;
+
+		glGenTextures(1, &glTexId);
+		glBindTexture(GL_TEXTURE_2D, glTexId);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, mode, image_p->w, image_p->h, 0, mode, GL_UNSIGNED_BYTE, image_p->pixels);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		SDL_FreeSurface(image_p);
+		image_p = nullptr;
+
+		_cubeTextureID = glTexId;
 	}
 
 	void setupBaseMatrices()
@@ -1056,22 +1092,27 @@ private:
 
 	void drawObject(RenderableObject *object)
 	{
-		//TODO draw one arbitraty object
+		//draw one arbitraty object
 		//NOTE: should always be tolerant of missing resources!
-		
-		//below: temporary cube code
 
 		//set shader program
 		glUseProgram(_programID);
 
 		//check if a model exists
 		bool hasModel = false;
+		bool hasTexture = false;
 		ModelData modelData;
+		TextureData texData;
 
 		if (_models_p->count(object->modelName) > 0)
 			hasModel = true;
-		else
-			SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model is missing!");
+		//else
+		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model is missing!");
+
+		if (_textures_p->count(object->albedoName) > 0)
+			hasTexture = true;
+		//else
+		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture is missing!");
 
 		//try to bind model
 		if (hasModel)
@@ -1083,7 +1124,7 @@ private:
 			}
 			else
 			{
-				hasModel = 0;
+				hasModel = false;
 				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model has no VAO!");
 			}
 				
@@ -1093,7 +1134,31 @@ private:
 		{			
 			glBindVertexArray(_cubeVertexArrayID);
 		}
-			
+
+
+		//try to bind texture
+		if (hasTexture)
+		{
+			texData = _textures_p->find(object->albedoName)->second;
+			if (texData.texID != 0)
+			{
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, texData.texID);
+				glUniform1i(_shaderTextureID, 0);
+			}
+			else
+			{
+				hasTexture = false;
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture has no texID!");
+			}
+		}	
+
+		if (!hasTexture)
+		{
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, _cubeTextureID);
+			glUniform1i(_shaderTextureID, 0);
+		}
 
 		//transform!
 		glm::mat4 objectMVM = glm::mat4();
@@ -1119,6 +1184,7 @@ private:
 
 
 		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
