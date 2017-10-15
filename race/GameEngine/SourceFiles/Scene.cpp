@@ -88,16 +88,28 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 };
 
 void Scene::setUpSceneOne() {
-	GameObject *go = new GameObject(new Transform(new Vector3(0, 0, 10), new Vector3(0, 0, 0), 1.0f));
+	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, 10), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	GameObject *go2 = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f));
-	go2->addComponent(new RenderComponent("null", "rainbow", "", 0));
-	addGameObject("Cube", go2);
+	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "test_texture", "", 0));
+	addGameObject("Cube", go);
 
-	GameObject *go3 = new GameObject();
-	go3->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f));
-	addGameObject("Light", go3);
+	go = new GameObject(new Transform());
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 0));
+	addGameObject("Sphere", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
+	go->addComponent(new RenderComponent("road_floor", "test_texture2", "", 0));
+	addGameObject("Road", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 0, -10), new Vector3(-1.5 * MATH_PI, 0, 0), 3.0f));
+	go->addComponent(new RenderComponent("road_floor", "test_texture", "", 0));
+	addGameObject("Road2", go);
+
+	go = new GameObject();
+	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f));
+	addGameObject("Light", go);
 };
 
