@@ -11,7 +11,7 @@ public:
 	void setMaxVelocity(GLfloat _maxVelocity);
 	Vector3 getVelocity();
 	GLfloat getMaxVelocity();
-private:
 	Vector3 _velocity;
 	GLfloat _maxVelocity;
+private:
 };

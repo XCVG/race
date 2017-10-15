@@ -17,7 +17,7 @@
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\Message.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessageReceiver.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
-	<ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderMessageReceiver.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderFileMessageReceiver.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\GlobalPrefs.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\FileEngine.cpp" />
@@ -32,6 +32,7 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\Vector3.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\VelocityComponent.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Scene.cpp" />
+    <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
@@ -80,5 +81,6 @@
     <ClInclude Include="GameEngine\Components\HeaderFiles\VelocityComponent.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderableTypes.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Scene.h" />
+    <ClInclude Include="GameEngine\Components\HeaderFiles\Transform.h" />
   </ItemGroup>
 </Project>
