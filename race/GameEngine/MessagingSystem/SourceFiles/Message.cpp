@@ -27,8 +27,8 @@
 ///
 ///	Message constructor.
 ///
-Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p):
-	_type(type), _isUrgent(isUrgent), _content_p(content_p)
+Message::Message(MESSAGE_TYPE type, bool isUrgent):
+	_type(type), _isUrgent(isUrgent), _content_p(nullptr)
 {}
 
 ///
@@ -36,6 +36,8 @@ Message::Message(MESSAGE_TYPE type, bool isUrgent, BaseMessageContent* content_p
 ///
 Message::~Message()
 {
+	/* Delete content. The destructor is virtual, so subclasses of BaseMessageContent 
+		will have their own destructors called appropriately. */
 	delete _content_p;
 }
 

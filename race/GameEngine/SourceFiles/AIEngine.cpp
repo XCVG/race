@@ -17,7 +17,7 @@ void AIEngine::loop() {
 }
 
 void AIEngine::update() {
-    SDL_Log("%s", "Running AIEngine::update");
+    //SDL_Log("%s", "Running AIEngine::update");
 }
 
 void AIEngine::stop() {

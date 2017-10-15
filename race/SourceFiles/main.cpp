@@ -1,9 +1,11 @@
 #include "main.h" 
 #include "Engine.h"
+#include "GlobalPrefs.h"
+#include "MessagingSystem.h"
 
-uint32_t TICKS_TO_WAIT = 17;
 SDL_Window *g_window_p;
 SDL_GLContext g_context;
+std::thread* engineThread_p;
 
 /// <summary>
 /// Application entry point
@@ -20,7 +22,7 @@ int main(int argc, char ** argv) {
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 	//SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	//SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-	g_window_p = SDL_CreateWindow("RACE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
+	g_window_p = SDL_CreateWindow("RACE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GlobalPrefs::windowWidth, GlobalPrefs::windowHeight, SDL_WINDOW_OPENGL);
 	//g_context = SDL_GL_CreateContext(g_window_p);
 	//SDL_GL_MakeCurrent(g_window_p, NULL);
 
@@ -29,8 +31,9 @@ int main(int argc, char ** argv) {
 	SDL_Log("It worked!");
 
 	//it doesn't start Engine on a separate thread yet; Spencer I'll let you do that
+	MessagingSystem::instance().start();
 	Engine *e = new Engine();
-	e->start();
+	engineThread_p = e->start();
 
 	//*****temporary loop stolen from racerender
 
@@ -50,14 +53,19 @@ int main(int argc, char ** argv) {
 		}
 
 		//run the renderer every tick
-		uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
+		/*uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
 		if (ticksSinceLast >= TICKS_TO_WAIT)
 		{
-			e->update();
-		}
+			//e->update();
+		}*/
 	}
 
+	//SDL_Log("Main::Out of Loop");
+	e->stop();
+	//SDL_Log("Main::Wait for Engine Join");
+	engineThread_p->join();
 	delete(e);
+	MessagingSystem::instance().kill();
 	SDL_DestroyWindow(g_window_p);
 
 	//*****temporary loop section ends

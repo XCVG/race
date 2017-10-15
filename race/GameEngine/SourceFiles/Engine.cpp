@@ -1,8 +1,23 @@
 #include "Engine.h"
 #include "ErrorHandler.h"
+#include <typeinfo>
 
-void Engine::start() {
+uint32_t ticksAtLast = 0;
+const int FRAMES_PER_SECOND = 120;
+
+Engine::Engine() {
+    
+};
+
+Engine::~Engine() {
+};
+
+std::thread* Engine::start() {
     // Create the other engines, or at least get pointer to them
+	_fileEngine_p = new FileEngine();
+	if (_fileEngine_p == nullptr) {
+		std::cout << ErrorHandler::getErrorString(1) << std::endl;
+	}
     _renderEngine_p = new RenderEngine();
     if (_renderEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
@@ -11,10 +26,10 @@ void Engine::start() {
     if (_physicsEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
-    _aiEngine_p = new AIEngine();
+    /**_aiEngine_p = new AIEngine();
     if (_aiEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
-    }
+    }**/
     _inputEngine_p = new InputEngine();
     if (_inputEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
@@ -24,15 +39,16 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
     try {
-        _renderEngine_p->start();
+        _fileEngine_p->start();
+        _renderEngine_p->start(); // Render handles it's own thread
         _physicsThread_p = _physicsEngine_p->start();
-        _aiThread_p = _aiEngine_p->start();
+        //_aiThread_p = _aiEngine_p->start();
         _inputEngine_p->start();
         _soundEngine_p->start();
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
-    _engineThread_p = new std::thread(&Engine::loop, this);
+
     if (!_running) {
         _running = true;
     } else {
@@ -40,10 +56,46 @@ void Engine::start() {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
         delete this;
     }
-}
 
+	_sceneObj = new Scene();
+
+	ticksAtLast = SDL_GetTicks();
+
+	RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
+	RenderableSetupData rsd;
+	rsd.models.push_back("Cube");
+	rlmc->data = rsd;
+
+	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
+	msg->setContent(rlmc);
+	MessagingSystem::instance().postMessage(std::shared_ptr<Message>(msg));
+
+	return new std::thread(&Engine::loop, this);
+};
 void Engine::update() {
-    SDL_Log("%s", "Running Engine::udpate");
+	
+	//run the renderer every tick
+	uint32_t currentTime = SDL_GetTicks();
+	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND) 
+	{
+		//SDL_Log("Ticked");
+		PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
+		physicsContent->go = _sceneObj->getGameObject("Cube");
+		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
+		myMessage->setContent(physicsContent);
+		MessagingSystem::instance().postMessage(myMessage);
+
+		RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
+		renderContent->scene_p = _sceneObj->getRenderInformation();
+
+		std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderDrawMessageType, false);
+		msg->setContent(renderContent);
+		MessagingSystem::instance().postMessage(msg);
+
+		ticksAtLast = currentTime;
+	}
+	
+	//SDL_Log("%s", "Running Engine::udpate");
 }
 
 void Engine::loop() {
@@ -52,9 +104,10 @@ void Engine::loop() {
     }
     while(_running) {
         this->update();
+		
     }
-}
-
+	//SDL_Log("Engine::Out of Loop");
+};
 ///
 /// <title>
 /// Engine Stop
@@ -66,19 +119,15 @@ void Engine::loop() {
 /// </summary>
 /// 
 void Engine::stop() {
-    _running = false;
-    _physicsEngine_p->stop();
-    _aiEngine_p->stop();
-}
-
-Engine::Engine() {
-
-}
-
-Engine::~Engine() {
-    _soundEngine_p->~SoundEngine();
-    _inputEngine_p->~InputEngine();
-    _aiEngine_p->~AIEngine();
-    _physicsEngine_p->~PhysicsEngine();
+	//SDL_Log("Engine::stop");
+	_soundEngine_p->~SoundEngine();
+	_inputEngine_p->~InputEngine();
+	//_aiEngine_p->~AIEngine();
+	_physicsEngine_p->~PhysicsEngine();
     _renderEngine_p->~RenderEngine();
+    _fileEngine_p->~FileEngine();
+	_physicsThread_p->join();
+    _running = false;
+    //_physicsEngine_p->stop();
+    //_aiEngine_p->stop();
 }

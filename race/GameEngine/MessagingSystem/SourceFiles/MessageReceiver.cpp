@@ -82,13 +82,13 @@ bool MessageReceiver::messageHandler(std::shared_ptr<Message> message)
 	if (message->getIsUrgent())
 	{
 		_urgentMessageQueueMutex_p->lock();
-		_urgentMessageQueue.push(*message);
+		_urgentMessageQueue.push(message);
 		_urgentMessageQueueMutex_p->unlock();
 	}
 	else
 	{
 		_messageQueueMutex_p->lock();
-		_messageQueue.push(*message);
+		_messageQueue.push(message);
 		_messageQueueMutex_p->unlock();
 	}
 

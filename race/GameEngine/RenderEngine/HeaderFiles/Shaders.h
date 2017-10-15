@@ -58,6 +58,7 @@ GLuint LoadShaders()
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		SDL_Log("%s", infoLog);
 	}
 	// fragment shader
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -102,6 +103,7 @@ GLuint LoadShadersFBDraw()
 	{
 		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
 		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		SDL_Log("%s", infoLog);
 	}
 	// fragment shader
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);

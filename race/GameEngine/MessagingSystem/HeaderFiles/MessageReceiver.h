@@ -45,8 +45,8 @@ class MessageReceiver
     protected:
 		bool _isDead;
 		std::vector<MESSAGE_TYPE> _subscriptions;
-		std::queue<Message> _messageQueue;
-		std::queue<Message> _urgentMessageQueue;
+		std::queue<std::shared_ptr<Message>> _messageQueue;
+		std::queue<std::shared_ptr<Message>> _urgentMessageQueue;
 		std::mutex* _subscriptionsMutex_p;
 		std::mutex* _messageQueueMutex_p;
 		std::mutex* _urgentMessageQueueMutex_p;

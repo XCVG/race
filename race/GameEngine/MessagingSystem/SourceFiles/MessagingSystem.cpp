@@ -34,9 +34,9 @@ MessagingSystem::MessagingSystem()
 	_isDead = false;
 }
 
-///
+/// <summary>
 ///	Creates and returns the MessagingSystem singleton instance.
-///
+/// </summary>
 MessagingSystem& MessagingSystem::instance()
 {
     static MessagingSystem _instance;
@@ -65,17 +65,25 @@ void MessagingSystem::loop()
 	/* Loop while the instance is alive. */
 	while (!_isDead)
 	{
-		_messageQueueMutex.lock();
-
-		/* If there are messages in the queue, send the next message. */
-		if (!_messageQueue.empty())
-		{
-			sendMessage(_messageQueue.front());
-			_messageQueue.pop();
-		}
-
-		_messageQueueMutex.unlock();
+		update();
 	}
+}
+
+///
+/// Sends out a single message from the message queue.
+///
+void MessagingSystem::update()
+{
+	_messageQueueMutex.lock();
+
+	/* If there are messages in the queue, send the next message. */
+	if (!_messageQueue.empty())
+	{
+		sendMessage(_messageQueue.front());
+		_messageQueue.pop();
+	}
+
+	_messageQueueMutex.unlock();
 }
 
 ///
@@ -90,12 +98,12 @@ void MessagingSystem::postMessage(std::shared_ptr<Message> messageToPost_p)
 		return;
 	}
 
-	/* If the message is not urgent, add it to the queue. */
+	/* If the message is urgent, skip the queue and send it immediately. */
 	if (messageToPost_p->getIsUrgent())
 	{
 		sendMessage(messageToPost_p);
 	}
-	/* If the message is urgent, skip the queue and send it immediately. */
+	/* If the message is not urgent, add it to the queue. */
 	else
 	{
 		_messageQueueMutex.lock();
@@ -129,7 +137,11 @@ void MessagingSystem::sendMessage(std::shared_ptr<Message> messageToSend_p)
 	ReceiverGroup& receivers = _receiverGroups[messageToSend_p->getType()];
 	for (MessageReceiver* const eachReceiver_p : receivers)
 	{
-		eachReceiver_p->messageHandler(messageToSend_p);
+		/* Send the message to the next receiver. Stop sending out the message if indicated. */
+		if (eachReceiver_p->messageHandler(messageToSend_p))
+		{
+			break;
+		}
 	}
 
 	_receiverGroupsMutex.unlock();

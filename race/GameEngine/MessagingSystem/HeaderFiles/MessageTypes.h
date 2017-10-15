@@ -23,6 +23,10 @@
 	Dependencies
 ========================================================================================*/
 
+#include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
+#include "../../Components/HeaderFiles/GameObject.h"
+#include <string>
+#include <memory>
 
 /*========================================================================================
 	Enums
@@ -33,9 +37,21 @@
 	-	Naming convention for message types is [Message type] + "Type".
 		For example, "BaseMessage" has type "BaseMessageType".
 */
-enum MESSAGE_TYPE
+enum class MESSAGE_TYPE
 {
-	BaseMessageType
+	BaseMessageType,
+	PhysicsCallMessageType,
+	FileLoadMessageType,
+	FileLoadImageMessageType,
+	FileLoadedMessageType,
+	FileLoadedImageMessageType,
+	RenderLoadMessageType,
+	RenderReadyMessageType,
+	RenderLoadSingleMessageType,
+	RenderDrawMessageType,
+	RenderDrawOverlayMessageType,
+	RenderUnloadMessageType,
+	RenderFinishedMessageType
 };
 
 /*========================================================================================
@@ -52,7 +68,101 @@ enum MESSAGE_TYPE
 	-	Setting a message's content deletes the old content's memory! Because of this, 
 		messages should not share pointers to the same content object!
 */
+
 class BaseMessageContent
-{};
+{
+	public:
+		///
+		///	Virtual destructor allows for derived content types to be deleted via
+		///	a BaseMessageContent*.
+		///
+		virtual ~BaseMessageContent() {};
+};
+
+//*****RENDERER MESSAGES
+
+class RenderLoadMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableSetupData data;
+};
+
+class RenderReadyMessageContent : public BaseMessageContent
+{
+
+};
+
+class RenderLoadSingleMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableModel model;
+		RenderableTexture texture;
+};
+
+class RenderDrawMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableScene *scene_p; //renderer will ALWAYS be responsible for deletion
+};
+
+class RenderDrawOverlayMessageContent : public BaseMessageContent
+{
+	public:
+		RenderableOverlay *overlay_p; //renderer will ALWAYS be responsible for deletion
+};
+
+class RenderUnloadMessageContent : public BaseMessageContent
+{
+
+};
+
+class RenderFinishedMessageContent : public BaseMessageContent
+{
+	
+};
+
+//*****FILE MESSAGES
+
+class PhysicsCallMessageContent: public BaseMessageContent
+{
+	public:
+	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
+	std::string contentVar;
+	GameObject *go;
+	PhysicsCallMessageContent(std::string s) { contentVar = s; }
+};
+
+class FileLoadMessageContent : public BaseMessageContent
+{
+public:
+	std::string path;
+	bool relative;
+};
+
+class FileLoadImageMessageContent : public BaseMessageContent
+{
+public:
+	std::string path;
+	bool relative;
+};
+
+
+class FileLoadedMessageContent : public BaseMessageContent
+{
+public:
+	size_t hash;
+	std::string path;
+	bool relative;
+	std::string content;
+};
+
+class FileLoadedImageMessageContent : public BaseMessageContent
+{
+public:
+	size_t hash;
+	std::string path;
+	bool relative;
+	std::shared_ptr<SDL_Surface> image;
+};
 
 #endif

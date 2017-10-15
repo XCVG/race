@@ -16,7 +16,7 @@ std::vector<GLfloat> OBJImport::importObjInfo(std::string string)
 		std::stringstream ss2(lines);
 		while (std::getline(ss2, lines2, ' '))
 		{
-			SDL_Log("%s", lines2.c_str());
+			//sSDL_Log("%s", lines2.c_str());
 			if (strcmp(lines2.c_str(), "v") == 0)
 			{
 				

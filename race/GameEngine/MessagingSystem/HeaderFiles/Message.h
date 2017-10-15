@@ -18,6 +18,11 @@
 
 #ifndef MESSAGE_H
 #define MESSAGE_H
+#ifdef __APPLE__
+#include <SDL2/SDL.h>
+#elif defined _WIN32 || defined _WIN64
+#include <SDL.h>
+#endif
 
 /*========================================================================================
 	Dependencies
@@ -54,7 +59,7 @@ class Message
 		Constructors and Destructors
     ------------------------------------------------------------------------------------*/
     public:
-		Message(MESSAGE_TYPE type = BaseMessageType, bool isUrgent = false, BaseMessageContent* content_p = nullptr);
+		Message(MESSAGE_TYPE type = MESSAGE_TYPE::BaseMessageType, bool isUrgent = false);
         ~Message();
 
 	/*------------------------------------------------------------------------------------
