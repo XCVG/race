@@ -27,6 +27,7 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\GameObject.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\RenderComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\RigidBodyComponent.cpp" />
+    <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Vector3.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\VelocityComponent.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\Message.cpp" />
@@ -67,6 +68,7 @@
     <ClInclude Include="GameEngine\Components\HeaderFiles\PlayerComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\RenderComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\RigidBodyComponent.h" />
+    <ClInclude Include="GameEngine\Components\HeaderFiles\Transform.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Vector3.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\VelocityComponent.h" />
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
