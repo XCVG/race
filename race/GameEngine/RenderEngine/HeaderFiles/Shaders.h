@@ -58,9 +58,10 @@ const char *fragmentShader2Source = "#version 330 core\n"
 "uniform sampler2D fColor;\n"
 "uniform sampler2D fPosition;\n"
 "uniform sampler2D fNormal;\n"
+"uniform sampler2D fDepth;\n"
 "void main()\n"
 "{\n"
-"   color = texture2D(fColor, uv).rgb;\n"
+"   color = texture(fColor, uv).rgb;\n"
 "}\n\0";
 
 GLuint LoadShaders()

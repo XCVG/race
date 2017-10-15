@@ -154,6 +154,7 @@ private:
 	GLuint _framebufferDrawTex0ID = 0;
 	GLuint _framebufferDrawTex1ID = 0;
 	GLuint _framebufferDrawTex2ID = 0;
+	GLuint _framebufferDrawTex3ID = 0;
 
 	//temporary cube stuff
 	GLuint _cubeVertexArrayID = 0;
@@ -986,10 +987,12 @@ private:
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, _framebufferTexture2ID, 0);
 
 		//gen depthbuffer
-		glGenRenderbuffers(1, &_framebufferDepthID);
-		glBindRenderbuffer(GL_RENDERBUFFER, _framebufferDepthID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _renderWidth, _renderHeight);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _framebufferDepthID);
+		glGenTextures(1, &_framebufferDepthID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, _renderWidth, _renderHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _framebufferDepthID, 0);
 
 		//configure FBO		
 		GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -1038,7 +1041,7 @@ private:
 		_framebufferDrawTex0ID = glGetUniformLocation(_framebufferDrawProgramID, "fColor");
 		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
-
+		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
 	}
 
 	void cleanupFramebufferDraw()
@@ -1261,6 +1264,10 @@ private:
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
 		glUniform1i(_framebufferDrawTex2ID, 2);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glUniform1i(_framebufferDrawTex3ID, 3);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
