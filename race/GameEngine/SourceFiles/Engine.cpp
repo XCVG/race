@@ -100,7 +100,7 @@ void Engine::update() {
 }
 
 void Engine::loop() {
-	bool ran = true;
+	bool ran = false;
 
 	if (!_running) {
 		return;
@@ -108,7 +108,7 @@ void Engine::loop() {
 	while (_running) {
 		//SDL_Log("This one should work");
 
-		this->update();
+		//this->update();
 		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
 
 		if (ran)

@@ -146,7 +146,7 @@ private:
 	GLuint _framebufferTexture0ID = 0;
 	GLuint _framebufferTexture1ID = 0;
 	GLuint _framebufferTexture2ID = 0;
-	GLuint _renderbufferDepthID = 0;
+	GLuint _framebufferDepthID = 0;
 
 	GLuint _framebufferDrawProgramID = 0;
 	GLuint _framebufferDrawVertexArrayID = 0;
@@ -718,9 +718,9 @@ private:
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(5 * sizeof(GL_FLOAT))); //normals
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //UVs
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
@@ -986,10 +986,10 @@ private:
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, _framebufferTexture2ID, 0);
 
 		//gen depthbuffer
-		glGenRenderbuffers(1, &_renderbufferDepthID);
-		glBindRenderbuffer(GL_RENDERBUFFER, _renderbufferDepthID);
+		glGenRenderbuffers(1, &_framebufferDepthID);
+		glBindRenderbuffer(GL_RENDERBUFFER, _framebufferDepthID);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _renderWidth, _renderHeight);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _renderbufferDepthID);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _framebufferDepthID);
 
 		//configure FBO		
 		GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
@@ -1010,7 +1010,7 @@ private:
 	void cleanupFramebuffers()
 	{
 		//delete FBOs
-		glDeleteRenderbuffers(1, &_renderbufferDepthID);
+		glDeleteRenderbuffers(1, &_framebufferDepthID);
 		glDeleteTextures(1, &_framebufferTexture0ID);
 		glDeleteTextures(1, &_framebufferTexture1ID);
 		glDeleteTextures(1, &_framebufferTexture2ID);
@@ -1212,8 +1212,9 @@ private:
 		objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
 		objectMVM = glm::rotate(objectMVM, object->rotation.z, glm::vec3(0, 0, 1));
 		glm::mat4 objectMVPM = _baseModelViewProjectionMatrix *  objectMVM;
-		objectMVM = _baseModelViewMatrix * objectMVM;
+		glm::mat4 objectMVM2 = _baseModelViewMatrix * objectMVM;
 		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &objectMVPM[0][0]);
+		glUniformMatrix4fv(_shaderModelMatrixID, 1, GL_FALSE, &objectMVM[0][0]);
 
 		//draw!
 		if (hasModel)
@@ -1246,18 +1247,20 @@ private:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//setup shader
-		glUseProgram(_framebufferDrawProgramID);
+		//fixed, but need a way to swap between buffers (TODO)
+		glUseProgram(_framebufferDrawProgramID);	
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
 		glUniform1i(_framebufferDrawTex0ID, 0);
-
+				
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
-		glUniform1i(_framebufferDrawTex1ID, 0);
-
+		glUniform1i(_framebufferDrawTex1ID, 1);		
+		
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
-		glUniform1i(_framebufferDrawTex2ID, 0);
+		glUniform1i(_framebufferDrawTex2ID, 2);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
