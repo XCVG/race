@@ -63,7 +63,8 @@ std::thread* Engine::start() {
 
 	RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
 	RenderableSetupData rsd;
-	rsd.models.push_back("Cube");
+	rsd.models.push_back("cube");
+	rsd.textures.push_back("rainbow");
 	rlmc->data = rsd;
 
 	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
@@ -99,7 +100,7 @@ void Engine::update() {
 }
 
 void Engine::loop() {
-	bool ran = false;
+	bool ran = true;
 
 	if (!_running) {
 		return;
@@ -107,7 +108,7 @@ void Engine::loop() {
 	while (_running) {
 		//SDL_Log("This one should work");
 
-		//this->update();
+		this->update();
 		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
 
 		if (ran)

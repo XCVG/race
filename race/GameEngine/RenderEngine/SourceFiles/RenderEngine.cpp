@@ -341,9 +341,9 @@ private:
 				//if we hit a loadsingle instruction, queue it and continue
 				//if we hit a load instruction, log warning, start unload, store index, and break
 				RenderableScene *latestScene = nullptr;
-				int latestSceneIndex = 0;
+				int latestSceneIndex = -1;
 				RenderableOverlay *latestOverlay = nullptr;
-				int latestOverlayIndex = 0;
+				int latestOverlayIndex = -1;
 				bool forceAbort = false;
 				int abortIndex = -1;
 
@@ -356,12 +356,17 @@ private:
 					if (t == MESSAGE_TYPE::RenderDrawMessageType)
 					{
 						RenderableScene *scn = static_cast<RenderDrawMessageContent*>(msg_sp.get()->getContent())->scene_p;
+						if (latestScene != nullptr)
+							delete latestScene;
 						latestScene = scn;
 						latestSceneIndex = i;
+						
 					}
 					else if (t == MESSAGE_TYPE::RenderDrawOverlayMessageType)
 					{
 						RenderableOverlay *ovl = static_cast<RenderDrawOverlayMessageContent*>(msg_sp.get()->getContent())->overlay_p;
+						if (latestOverlay != nullptr)
+							delete latestOverlay;
 						latestOverlay = ovl;
 						latestOverlayIndex = i;
 					}
@@ -404,7 +409,24 @@ private:
 				{
 					if (abortIndex >= 0)
 					{
-						//if abortIndex is a thing, purge everything up and including abortIndex					
+						//if abortIndex is a thing, purge everything up and including abortIndex
+						for (int i = 0; i < abortIndex; i++)
+						{
+							std::shared_ptr<Message> msg_sp = _mq_p->at(i);
+							MESSAGE_TYPE t = msg_sp->getType();
+							if (t == MESSAGE_TYPE::RenderDrawMessageType)
+							{
+								RenderableScene *scn = static_cast<RenderDrawMessageContent*>(msg_sp.get()->getContent())->scene_p;
+								if (scn != nullptr)
+									delete scn;
+							}
+							else if (t == MESSAGE_TYPE::RenderDrawOverlayMessageType)
+							{
+								RenderableOverlay *ovl = static_cast<RenderDrawOverlayMessageContent*>(msg_sp.get()->getContent())->overlay_p;
+								if (ovl != nullptr)
+									delete ovl;
+							}
+						}
 						_mq_p->erase(_mq_p->begin(), _mq_p->begin() + abortIndex + 1);						
 					}
 
@@ -679,7 +701,7 @@ private:
 
 		//does nothing yet
 		auto objData = OBJImport::importObjInfo(*data_p);
-		GLuint numVertices = objData.size() / 8;
+		GLuint numVertices = (GLuint)objData.size() / 8;
 
 		GLfloat *objPtr = &objData[0];
 		GLuint glVaoId, glVboId;
