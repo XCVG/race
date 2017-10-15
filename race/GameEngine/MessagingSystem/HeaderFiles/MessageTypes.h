@@ -129,6 +129,7 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
 	std::string contentVar;
 	GameObject *go;
+	float_t deltaTime;
 	PhysicsCallMessageContent(std::string s) { contentVar = s; }
 };
 

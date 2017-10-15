@@ -54,6 +54,13 @@ public:
     this->z = this->z - obj.z;
 	return *this;
   };
+  Vector3& operator*(const float_t& mult)
+  {
+	  this->x = this->x * mult;
+	  this->y = this->y * mult;
+	  this->z = this->z * mult;
+	  return *this;
+  };
   GLfloat x; 
   GLfloat y; 
   GLfloat z; 
