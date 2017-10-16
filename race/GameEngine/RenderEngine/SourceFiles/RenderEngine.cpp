@@ -445,12 +445,14 @@ private:
 					//assign renderablescene and renderableoverlay if they exist
 					if (latestScene != nullptr)
 					{
-						delete(_lastScene_p);
+						if (_lastScene_p != nullptr) 
+							delete(_lastScene_p);
 						_lastScene_p = latestScene;
 					}
 					if (latestOverlay != nullptr)
 					{
-						delete(_lastOverlay_p);
+						if (_lastOverlay_p != nullptr)
+							delete(_lastOverlay_p);
 						_lastOverlay_p = latestOverlay;
 					}
 				}
@@ -713,9 +715,9 @@ private:
 		glEnableVertexAttribArray(0);
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(5 * sizeof(GL_FLOAT))); //normals
 		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //UVs
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 

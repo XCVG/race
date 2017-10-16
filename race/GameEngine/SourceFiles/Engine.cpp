@@ -64,7 +64,11 @@ std::thread* Engine::start() {
 	RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
 	RenderableSetupData rsd;
 	rsd.models.push_back("cube");
+	rsd.models.push_back("sphere");
+	rsd.models.push_back("road_floor");
 	rsd.textures.push_back("rainbow");
+	rsd.textures.push_back("test_texture");
+	rsd.textures.push_back("test_texture2");
 	rlmc->data = rsd;
 
 	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
@@ -82,7 +86,7 @@ void Engine::update() {
 	{
 		//SDL_Log("Ticked");
 		PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
-		physicsContent->go = _sceneObj->getGameObject("Cube");
+		physicsContent->go = _sceneObj->getGameObject("Sphere");
 		physicsContent->deltaTime = ((float_t)(currentTime - ticksAtLast)) / 1000;
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
 		myMessage->setContent(physicsContent);
