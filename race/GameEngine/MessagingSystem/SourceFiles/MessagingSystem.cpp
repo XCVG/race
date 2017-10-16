@@ -65,7 +65,20 @@ void MessagingSystem::loop()
 	/* Loop while the instance is alive. */
 	while (!_isDead)
 	{
-		update();
+		_messageQueueMutex.lock();
+		
+		/* If there are no queued messages, yield. */
+		if (_messageQueue.empty())
+		{
+			_messageQueueMutex.unlock();
+			std::this_thread::yield();
+		}
+		/* If there are queued messages, send the next message. */
+		else
+		{
+			_messageQueueMutex.unlock();
+			update();
+		}
 	}
 }
 
@@ -76,12 +89,8 @@ void MessagingSystem::update()
 {
 	_messageQueueMutex.lock();
 
-	/* If there are messages in the queue, send the next message. */
-	if (!_messageQueue.empty())
-	{
-		sendMessage(_messageQueue.front());
-		_messageQueue.pop();
-	}
+	sendMessage(_messageQueue.front());
+	_messageQueue.pop();
 
 	_messageQueueMutex.unlock();
 }

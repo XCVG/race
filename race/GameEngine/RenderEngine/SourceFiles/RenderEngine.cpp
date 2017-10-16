@@ -71,6 +71,7 @@ public:
 		_fmr_p = new RenderFileMessageReceiver(_fmq_p, _fmqMutex_p);
 		_fmr_p->subscribeAll();
 		
+		_lastOverlay_p = nullptr;
 
 		//spawn thread
 		_isRunning = true;
@@ -473,8 +474,8 @@ private:
 				//well, that shouldn't happen
 				SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: Ended up in an impossible state");
 			}
+			
 		}
-
 		//if currently loading or unloading, ignore messages
 
 		//unlock mutexs

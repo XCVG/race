@@ -33,6 +33,7 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\VelocityComponent.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Scene.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
+    <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
@@ -81,5 +82,7 @@
     <ClInclude Include="GameEngine\Components\HeaderFiles\VelocityComponent.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderableTypes.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Scene.h" />
+    <ClInclude Include="GameEngine\Components\HeaderFiles\Transform.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\InputTypes.h" />
   </ItemGroup>
 </Project>

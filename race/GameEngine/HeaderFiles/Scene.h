@@ -1,7 +1,11 @@
 #pragma once
 #include <vector>
 #include "../RenderEngine/HeaderFiles/RenderableTypes.h"
-#include "../../GameEngine/Components/HeaderFiles/GameObject.h"
+#include "../Components/HeaderFiles/GameObject.h"
+#include "../Components/HeaderFiles/Transform.h"
+#include "../MessagingSystem/HeaderFiles/MessageReceiver.h"
+#include "../../HeaderFiles/InputTypes.h"
+#include "../MessagingSystem/HeaderFiles/MessagingSystem.h"
 
 
 class Scene

@@ -11,8 +11,8 @@
 	@version 0.0.0
 	@file
 	
-	@see MyClass
-	@see MyClass.cpp
+	@see MessageTypes
+	@see MessageTypes.cpp
 	
 *//*====================================================================================*/
 
@@ -25,6 +25,7 @@
 
 #include "../../RenderEngine/HeaderFiles/RenderableTypes.h" //should probably fix that path
 #include "../../Components/HeaderFiles/GameObject.h"
+#include "../../HeaderFiles/InputTypes.h"
 #include <string>
 #include <memory>
 
@@ -41,7 +42,9 @@ enum class MESSAGE_TYPE
 {
 	BaseMessageType,
 	PhysicsCallMessageType,
+	PhysicsInitializeCallType,
 	FileLoadMessageType,
+	InputMessageType,
 	FileLoadImageMessageType,
 	FileLoadedMessageType,
 	FileLoadedImageMessageType,
@@ -129,7 +132,14 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
 	std::string contentVar;
 	GameObject *go;
+	float_t deltaTime;
 	PhysicsCallMessageContent(std::string s) { contentVar = s; }
+};
+
+class PhysicsInitializeContent : public BaseMessageContent
+{
+	public:
+		GameObject* camera;
 };
 
 class FileLoadMessageContent : public BaseMessageContent
@@ -145,7 +155,6 @@ public:
 	std::string path;
 	bool relative;
 };
-
 
 class FileLoadedMessageContent : public BaseMessageContent
 {
@@ -163,6 +172,13 @@ public:
 	std::string path;
 	bool relative;
 	std::shared_ptr<SDL_Surface> image;
+};
+
+class InputMessageContent : public BaseMessageContent
+{
+public:
+	INPUT_TYPES buttonPressed;
+	float valueOfInput;
 };
 
 #endif
