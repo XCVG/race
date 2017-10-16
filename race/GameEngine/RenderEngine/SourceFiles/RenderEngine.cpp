@@ -71,6 +71,7 @@ public:
 		_fmr_p = new RenderFileMessageReceiver(_fmq_p, _fmqMutex_p);
 		_fmr_p->subscribeAll();
 		
+		_lastOverlay_p = nullptr;
 
 		//spawn thread
 		_isRunning = true;
@@ -103,8 +104,6 @@ public:
 
 private:
 
-	//TODO: some should be std::atomic
-
 	//context and window
 	SDL_Window *_window_p;
 	SDL_GLContext _context_p;
@@ -136,6 +135,7 @@ private:
 
 	//shader stuff
 	GLuint _programID = 0;
+	GLuint _shaderModelMatrixID = 0;
 	GLuint _shaderMVPMatrixID = 0;
 	GLuint _shaderTextureID = 0;
 
@@ -144,13 +144,18 @@ private:
 	int _renderHeight = 0;
 
 	GLuint _framebufferID = 0;
-	GLuint _framebufferTextureID = 0;
-	GLuint _renderbufferDepthID = 0;
+	GLuint _framebufferTexture0ID = 0;
+	GLuint _framebufferTexture1ID = 0;
+	GLuint _framebufferTexture2ID = 0;
+	GLuint _framebufferDepthID = 0;
 
 	GLuint _framebufferDrawProgramID = 0;
 	GLuint _framebufferDrawVertexArrayID = 0;
 	GLuint _framebufferDrawVertexBufferID = 0;
-	GLuint _framebufferDrawTexID = 0;
+	GLuint _framebufferDrawTex0ID = 0;
+	GLuint _framebufferDrawTex1ID = 0;
+	GLuint _framebufferDrawTex2ID = 0;
+	GLuint _framebufferDrawTex3ID = 0;
 
 	//temporary cube stuff
 	GLuint _cubeVertexArrayID = 0;
@@ -268,11 +273,12 @@ private:
 		cleanupProgram();
 		cleanupFramebuffers();
 		cleanupFramebufferDraw();
+		cleanupCube();
 	}
 
 	void cleanupGLOnThread()
 	{
-		//TODO cleanup all the GL gunk
+		//TODO cleanup all the GL gunk (necessary?)
 	}
 
 	void cleanupStructuresOnThread()
@@ -318,6 +324,7 @@ private:
 					{
 						//remove and log warning
 						SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: found a message before load");
+						//potential for leak here if it's a render message, but not the culprit in this case
 						iter = _mq_p->erase(iter);
 					}
 				}
@@ -445,7 +452,7 @@ private:
 					//assign renderablescene and renderableoverlay if they exist
 					if (latestScene != nullptr)
 					{
-						if (_lastScene_p != nullptr) 
+						if (_lastScene_p != nullptr)
 							delete(_lastScene_p);
 						_lastScene_p = latestScene;
 					}
@@ -695,8 +702,6 @@ private:
 	void loadOneModel(ModelLoadingData mld, std::string *data_p)
 	{
 
-		//return;
-
 		ModelData md;
 
 		//does nothing yet
@@ -885,7 +890,8 @@ private:
 	void setupProgram()
 	{
 		_programID = LoadShaders();
-		_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
+		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
+		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
 		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
 	}
 
@@ -945,16 +951,11 @@ private:
 		_cubeTextureID = glTexId;
 	}
 
-	void setupBaseMatrices()
+	void cleanupCube()
 	{
-		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)_renderWidth / (float)_renderHeight, 0.1f, 100.0f); //TODO deal with near/far plane
-		glm::mat4 view = glm::lookAt(glm::vec3(4, 3, 3), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		glm::mat4 model = glm::mat4(1.0f);
-		_baseModelViewMatrix = view * model;
-		_baseModelViewProjectionMatrix = projection * view * model;
-
-		//don't delete this, we still need this
-		//_shaderMVPMatrixID = glGetUniformLocation(_programID, "MVP");
+		glDeleteBuffers(1, &_cubeVertexBufferID);
+		glDeleteVertexArrays(1, &_cubeVertexArrayID);
+		glDeleteTextures(1, &_cubeTextureID);
 	}
 
 	void setupFramebuffers()
@@ -964,42 +965,59 @@ private:
 		glGenFramebuffers(1, &_framebufferID);
 		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
 
-		//gen framebuffer texture
-		glGenTextures(1, &_framebufferTextureID);
-		glBindTexture(GL_TEXTURE_2D, _framebufferTextureID);
+		//gen framebuffer textures
+		glGenTextures(1, &_framebufferTexture0ID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _framebufferTexture0ID, 0);
+
+		glGenTextures(1, &_framebufferTexture1ID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _framebufferTexture1ID, 0);
+
+		glGenTextures(1, &_framebufferTexture2ID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, _framebufferTexture2ID, 0);
 
 		//gen depthbuffer
-		glGenRenderbuffers(1, &_renderbufferDepthID);
-		glBindRenderbuffer(GL_RENDERBUFFER, _renderbufferDepthID);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _renderWidth, _renderHeight);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, _renderbufferDepthID);
+		glGenTextures(1, &_framebufferDepthID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, _renderWidth, _renderHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _framebufferDepthID, 0);
 
-		//configure FBO
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _framebufferTextureID, 0);
-		GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-		glDrawBuffers(1, drawBuffers);
+		//configure FBO		
+		GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+		glDrawBuffers(3, drawBuffers);
 
 		//quick check
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		{
-			SDL_Log("Failed to setup framebuffer!");
+			SDL_Log("Renderer: Failed to setup framebuffer!");
 			throw;
 		}
 
 		//unbind all
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		_framebufferDrawTexID = glGetUniformLocation(_framebufferDrawProgramID, "texture");
 
 	}
 
 	void cleanupFramebuffers()
 	{
 		//delete FBOs
-		glDeleteRenderbuffers(1, &_renderbufferDepthID);
-		glDeleteTextures(1, &_framebufferTextureID);
+		glDeleteRenderbuffers(1, &_framebufferDepthID);
+		glDeleteTextures(1, &_framebufferTexture0ID);
+		glDeleteTextures(1, &_framebufferTexture1ID);
+		glDeleteTextures(1, &_framebufferTexture2ID);
 		glDeleteFramebuffers(1, &_framebufferID);
 	}
 
@@ -1020,6 +1038,11 @@ private:
 
 		_framebufferDrawProgramID = LoadShadersFBDraw();
 
+		//get locations
+		_framebufferDrawTex0ID = glGetUniformLocation(_framebufferDrawProgramID, "fColor");
+		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
+		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
+		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
 	}
 
 	void cleanupFramebufferDraw()
@@ -1042,9 +1065,9 @@ private:
 		}
 		else
 		{
-			drawCamera(_lastScene_p);
-			drawObjects(_lastScene_p);
-			drawLighting(_lastScene_p);			
+			drawCamera(_lastScene_p); //set up the camera
+			drawObjects(_lastScene_p); //do the geometry pass
+			drawLighting(_lastScene_p); //do the lighting pass
 		}
 
 		if (_lastOverlay_p == nullptr)
@@ -1193,8 +1216,9 @@ private:
 		objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
 		objectMVM = glm::rotate(objectMVM, object->rotation.z, glm::vec3(0, 0, 1));
 		glm::mat4 objectMVPM = _baseModelViewProjectionMatrix *  objectMVM;
-		objectMVM = _baseModelViewMatrix * objectMVM;
+		glm::mat4 objectMVM2 = _baseModelViewMatrix * objectMVM;
 		glUniformMatrix4fv(_shaderMVPMatrixID, 1, GL_FALSE, &objectMVPM[0][0]);
+		glUniformMatrix4fv(_shaderModelMatrixID, 1, GL_FALSE, &objectMVM[0][0]);
 
 		//draw!
 		if (hasModel)
@@ -1216,6 +1240,7 @@ private:
 	void drawLighting(RenderableScene *scene)
 	{
 		//setup framebuffer
+		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferID);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 		int w, h;
@@ -1226,23 +1251,42 @@ private:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//setup shader
-		glUseProgram(_framebufferDrawProgramID);
+		//fixed, but need a way to swap between buffers (TODO)
+		glUseProgram(_framebufferDrawProgramID);	
+
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, _framebufferTextureID);
-		glUniform1i(_framebufferDrawTexID, 0);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
+		glUniform1i(_framebufferDrawTex0ID, 0);
+				
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
+		glUniform1i(_framebufferDrawTex1ID, 1);		
+		
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
+		glUniform1i(_framebufferDrawTex2ID, 2);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glUniform1i(_framebufferDrawTex3ID, 3);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 
 		//draw
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//unbind
 		glBindVertexArray(0);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	}
 
 	void drawOverlay(RenderableOverlay *overlay)
 	{
 		//TODO draw overlay
+
+		//need to make sure right framebuffer is set, clear depth but not color
 	}
 
 	void drawNullOverlay()

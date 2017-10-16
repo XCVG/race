@@ -106,19 +106,17 @@ void Engine::update() {
 }
 
 void Engine::loop() {
-	bool ran = true;
 
-	if (!_running) {
+	if (!_running) 
+	{
 		return;
 	}
-	while (_running) {
+	while (_running) 
+	{
 		//SDL_Log("This one should work");
 
 		this->update();
 		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
-
-		if (ran)
-			continue;
 
 		SDL_Log("Doing a stupid befpre!");
 
