@@ -889,7 +889,7 @@ private:
 
 	void setupProgram()
 	{
-		_programID = LoadShaders();
+		_programID = Shaders::LoadShaders();
 		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
 		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
@@ -1036,7 +1036,7 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
-		_framebufferDrawProgramID = LoadShadersFBDraw();
+		_framebufferDrawProgramID = Shaders::LoadShadersFBDraw();
 
 		//get locations
 		_framebufferDrawTex0ID = glGetUniformLocation(_framebufferDrawProgramID, "fColor");

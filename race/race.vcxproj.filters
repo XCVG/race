@@ -32,6 +32,7 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\Vector3.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\VelocityComponent.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Scene.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
   </ItemGroup>
   <ItemGroup>
