@@ -149,7 +149,9 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 		rotateX(_camera_p, content->valueOfInput * _deltaTime);
 	}
 		break;
-
+	case INPUT_TYPES::RIGHT_ANALOG_X: {
+		rotateY(_camera_p, content->valueOfInput * _deltaTime);
+	}
 	default:
 		break;
 	}
