@@ -93,14 +93,15 @@ int main(int argc, char ** argv) {
 		SDL_GameControllerClose(gameController);
 	}
 
-	delete(gameController);
+	
 
 	//SDL_JoystickClose(joystick);
 
-	//SDL_Log("Main::Out of Loop");
-	e->stop();
-	//SDL_Log("Main::Wait for Engine Join");
+	SDL_Log("Main::Out of Loop");
+	e->flagLoop();
+	SDL_Log("Main::Wait for Engine Join");
 	engineThread_p->join();
+	SDL_Log("Engine::Thread Join");
 	delete(e);
 	delete(IE);
 	MessagingSystem::instance().kill();

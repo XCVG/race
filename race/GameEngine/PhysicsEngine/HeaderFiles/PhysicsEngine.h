@@ -78,6 +78,7 @@ class PhysicsEngine : public MessageReceiver
     public:
 			std::thread* start();
 			void stop();
+			void flagLoop();
 			// TODO: Physics function calls
 	#pragma region Physics Calculation Methods
 			void translate(GameObject *go, Vector3 translation);

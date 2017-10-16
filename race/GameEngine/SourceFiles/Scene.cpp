@@ -9,6 +9,7 @@ Scene::Scene()
 Scene::~Scene()
 {
 	_worldObjects.clear();
+	//_worldObjects.clear();
 }
 
 void Scene::addGameObject(std::string id, GameObject *obj)
@@ -31,7 +32,7 @@ RenderableScene* Scene::getRenderInformation()
 	RenderableScene* rs = new RenderableScene();
 
 	for (std::map<std::string, GameObject*>::iterator it = _worldObjects.begin(); it != _worldObjects.end(); ++it) {
-		if (it->first == "Camera") 
+		if (it->first == "Camera" && it->second->getComponent<CameraComponent*>() != nullptr) 
 		{
 			RenderableCamera rc;
 			CameraComponent *cc = it->second->getComponent<CameraComponent*>();

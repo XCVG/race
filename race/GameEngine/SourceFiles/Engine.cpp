@@ -10,7 +10,7 @@ Engine::Engine() {
 };
 
 Engine::~Engine() {
-	delete(_sceneObj);
+
 };
 
 std::thread* Engine::start() {
@@ -87,24 +87,24 @@ void Engine::update() {
 	{
 
 		//SDL_Log("Ticked");
-		PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
-		physicsContent->go = _sceneObj->getGameObject("Sphere");
-		physicsContent->deltaTime = ((float_t)(currentTime - ticksAtLast)) / 1000;
-		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
-		myMessage->setContent(physicsContent);
-		MessagingSystem::instance().postMessage(myMessage);
+		if (_sceneObj != nullptr) {
+			PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
+			physicsContent->go = _sceneObj->getGameObject("Sphere");
+			physicsContent->deltaTime = ((float_t)(currentTime - ticksAtLast)) / 1000;
+			std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
+			myMessage->setContent(physicsContent);
+			MessagingSystem::instance().postMessage(myMessage);
 
-		RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
-		if (_sceneObj != nullptr) 
+			RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
 			renderContent->scene_p = _sceneObj->getRenderInformation();
 
-		std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false));
-		msg->setContent(renderContent);
-		MessagingSystem::instance().postMessage(msg);
-
+			std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false));
+			msg->setContent(renderContent);
+			MessagingSystem::instance().postMessage(msg);
+		}
+		
 		ticksAtLast = currentTime;
 	}
-	
 	//SDL_Log("%s", "Running Engine::udpate");
 }
 
@@ -130,6 +130,7 @@ void Engine::loop() {
 		SDL_Log("Doing a stupid!");
 
 	}
+	this->stop();
 };
 ///
 /// <title>
@@ -141,17 +142,25 @@ void Engine::loop() {
 /// catch-all for other cleanup that is required in a stop/start of the game.
 /// </summary>
 /// 
-void Engine::stop() {
+void Engine::stop() 
+{
 	//SDL_Log("Engine::stop");
 	_soundEngine_p->~SoundEngine();
 	//_inputEngine_p->~InputEngine();
 	//_aiEngine_p->~AIEngine();
+	_physicsEngine_p->flagLoop();
 	_physicsEngine_p->~PhysicsEngine();
     _renderEngine_p->~RenderEngine();
+	
     _fileEngine_p->~FileEngine();
 
 	_physicsThread_p->join();
-    _running = false;
+	delete(_sceneObj);
     //_physicsEngine_p->stop();
     //_aiEngine_p->stop();
+}
+
+void Engine::flagLoop() 
+{
+	_running = false;
 }

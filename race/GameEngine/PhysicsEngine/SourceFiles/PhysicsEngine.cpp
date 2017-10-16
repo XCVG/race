@@ -40,7 +40,6 @@ PhysicsEngine::PhysicsEngine()
 PhysicsEngine::~PhysicsEngine()
 {
 	SDL_Log("%s", "Running Physics::Destructor");
-	this->stop();
 }
 
 /*----------------------------------------------------------------------------------------
@@ -77,13 +76,20 @@ void PhysicsEngine::loop()
 	while (_running) {
 		_urgentMessageQueueMutex_p->lock();
 		_messageQueueMutex_p->lock();
-		if (_messageQueue.empty() && _urgentMessageQueue.empty() && _running) {
+		if (_messageQueue.empty() && _urgentMessageQueue.empty() && _running) 
+		{
 			_urgentMessageQueueMutex_p->unlock();
 			_messageQueueMutex_p->unlock();
 			std::this_thread::yield();
 		}
+		else if (!_running) 
+		{
+			_urgentMessageQueueMutex_p->unlock();
+			_messageQueueMutex_p->unlock();
+		}
 		else {
-			if (!_urgentMessageQueue.empty()) {
+			if (!_urgentMessageQueue.empty())
+			{
 				_messageQueueMutex_p->unlock();
 				// process an urgent message
 
@@ -104,7 +110,8 @@ void PhysicsEngine::loop()
 			}
 		}
 	}
-	//SDL_Log("Physics::Out of loop");
+	this->stop();
+	SDL_Log("Physics::Out of loop");
 }
 
 void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
@@ -137,7 +144,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 
 void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 	switch (content->buttonPressed) {
-	case INPUT_TYPES::RIGHT_ANALOG_X: {
+	case INPUT_TYPES::RIGHT_ANALOG_Y: {
 		//SDL_Log("A Button Pressed");
 		rotateX(_camera_p, content->valueOfInput * _deltaTime);
 	}
@@ -153,12 +160,15 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
  */
 void PhysicsEngine::stop()
 {
-    _running = false;
 	if (_camera_p != nullptr)
 		delete(_camera_p);
 	if (_player_p != nullptr)
 		delete(_player_p);
 	//SDL_Log("Physics::Stop");
+}
+
+void PhysicsEngine::flagLoop() {
+	_running = false;
 }
 /**
  *  <summary>
