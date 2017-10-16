@@ -35,6 +35,7 @@
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderFileMessageReceiver.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\AIEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Engine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\ErrorHandler.cpp" />

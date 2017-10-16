@@ -889,7 +889,7 @@ private:
 
 	void setupProgram()
 	{
-		_programID = LoadShaders();
+		_programID = Shaders::LoadShaders();
 		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
 		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
@@ -1036,7 +1036,7 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
-		_framebufferDrawProgramID = LoadShadersFBDraw();
+		_framebufferDrawProgramID = Shaders::LoadShadersFBDraw();
 
 		//get locations
 		_framebufferDrawTex0ID = glGetUniformLocation(_framebufferDrawProgramID, "fColor");
@@ -1106,7 +1106,10 @@ private:
 		glm::mat4 projection = glm::perspective(camera->viewAngle, (float)_renderWidth / (float)_renderHeight, camera->nearPlane, camera->farPlane);
 		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
 		glm::mat4 translation = glm::translate(look, camera->position * -1.0f);
-		glm::mat4 rotation = glm::eulerAngleYXZ(camera->rotation.y, camera->rotation.x, camera->rotation.z);
+		glm::mat4 rotation = glm::mat4();
+		rotation = glm::rotate(rotation, camera->rotation.z, glm::vec3(0, 0, 1));
+		rotation = glm::rotate(rotation, camera->rotation.x, glm::vec3(1, 0, 0));
+		rotation = glm::rotate(rotation, camera->rotation.y, glm::vec3(0, 1, 0));
 		glm::mat4 view = rotation * translation;
 		_baseModelViewMatrix = view;
 		_baseModelViewProjectionMatrix = projection * view;
@@ -1125,9 +1128,6 @@ private:
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //TODO use camera color
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//set shader program (here?)
-		//glUseProgram(_programID);
 
 		//TODO draw objects
 		for (int i = 0; i < scene->objects.size(); i++)
