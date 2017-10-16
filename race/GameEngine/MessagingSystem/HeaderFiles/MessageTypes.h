@@ -177,8 +177,8 @@ public:
 class InputMessageContent : public BaseMessageContent
 {
 public:
-	INPUT_TYPES buttonPressed;
-	float valueOfInput;
+	INPUT_TYPES type;
+	float lookX, lookY;
 };
 
 #endif

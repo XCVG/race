@@ -143,14 +143,13 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 }
 
 void PhysicsEngine::getControllerInput(InputMessageContent *content) {
-	switch (content->buttonPressed) {
-	case INPUT_TYPES::RIGHT_ANALOG_Y: {
-		//SDL_Log("A Button Pressed");
-		rotateX(_camera_p, content->valueOfInput * _deltaTime);
-	}
-		break;
+	switch (content->type) {
+	case INPUT_TYPES::RIGHT_ANALOG_Y:
 	case INPUT_TYPES::RIGHT_ANALOG_X: {
-		rotateY(_camera_p, content->valueOfInput * _deltaTime);
+		//SDL_Log("A Button Pressed");
+		rotateX(_camera_p, content->lookY * _deltaTime);
+		rotateY(_camera_p, content->lookX * _deltaTime);
+		break;
 	}
 	default:
 		break;

@@ -10,7 +10,7 @@ InputEngine::~InputEngine() {
 
 void InputEngine::buttonEventHandler(SDL_Event ev)
 {
-	InputMessageContent *inputContent = new InputMessageContent();
+	/*InputMessageContent *inputContent = new InputMessageContent();
 	switch (ev.cbutton.button)
 	{
 		case SDL_CONTROLLER_BUTTON_A:
@@ -56,48 +56,19 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 
 	std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::InputMessageType, false));
 	inputMessage->setContent(inputContent);
-	MessagingSystem::instance().postMessage(inputMessage);
+	MessagingSystem::instance().postMessage(inputMessage);*/
 }
 
-void InputEngine::axisEventHandler(SDL_Event ev)
+void InputEngine::axisEventHandler(SDL_GameController* controller)
 {
 	std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::InputMessageType));
 	InputMessageContent *inputContent = new InputMessageContent();
-
-	switch (ev.caxis.axis)
-	{
-	case SDL_CONTROLLER_AXIS_LEFTX:
-		//SDL_Log("LEFT AXIS X");
-		inputContent->buttonPressed = INPUT_TYPES::LEFT_ANALOG_X;
-		inputContent->valueOfInput = ev.caxis.value * 0.0001;
-		break;
-	case SDL_CONTROLLER_AXIS_LEFTY:
-		//SDL_Log("LEFT AXIS Y");
-		inputContent->buttonPressed = INPUT_TYPES::LEFT_ANALOG_Y;
-		inputContent->valueOfInput = ev.caxis.value * 0.0001;
-		break;
-	case SDL_CONTROLLER_AXIS_RIGHTX:
-		//SDL_Log("RIGHT AXIS X");
-		inputContent->buttonPressed = INPUT_TYPES::RIGHT_ANALOG_X;
-		inputContent->valueOfInput = ev.caxis.value * 0.0001;
-		break;
-	case SDL_CONTROLLER_AXIS_RIGHTY:
-		//SDL_Log("RIGHT AXIS Y");
-		inputContent->buttonPressed = INPUT_TYPES::RIGHT_ANALOG_Y;
-		inputContent->valueOfInput = ev.caxis.value * 0.0001;
-		break;
-	case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-		//SDL_Log("TRIGGER LEFT");
-		inputContent->buttonPressed = INPUT_TYPES::LEFT_TRIGGER;
-		break;
-	case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-		//SDL_Log("TRIGGER RIGHT");
-		inputContent->buttonPressed = INPUT_TYPES::RIGHT_TRIGGER;
-		break;
-	default:
-		break;
-	}
+	inputContent->type = INPUT_TYPES::RIGHT_ANALOG_X;
+	_lookX = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX);
+	_lookY = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY);
 	
+	inputContent->lookX = _lookX;
+	inputContent->lookY = _lookY;
 	inputMessage->setContent(inputContent);
 	MessagingSystem::instance().postMessage(inputMessage);
 }

@@ -7,7 +7,6 @@
 SDL_Window *g_window_p;
 SDL_GLContext g_context;
 std::thread* engineThread_p;
-const int CONTROLLER_DEADZONE = 8000;
 SDL_GameController *gameController;
 
 /// <summary>
@@ -70,9 +69,7 @@ int main(int argc, char ** argv) {
 					IE->buttonEventHandler(ev);
 					break;
 				case SDL_CONTROLLERAXISMOTION:
-					if ((ev.jaxis.value < -CONTROLLER_DEADZONE) || (ev.jaxis.value > CONTROLLER_DEADZONE)) {
-						IE->axisEventHandler(ev);
-					}
+						IE->axisEventHandler(gameController);
 					break;
 				default:
 					break;
