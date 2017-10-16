@@ -119,13 +119,6 @@ void Engine::loop() {
 		//SDL_Log("This one should work");
 
 		this->update();
-		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
-
-		SDL_Log("Doing a stupid befpre!");
-
-		//std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-		SDL_Log("Doing a stupid!");
 
 	}
 	this->stop();
