@@ -30,6 +30,8 @@
 PhysicsEngine::PhysicsEngine()
 {
 	subscribe(MESSAGE_TYPE::PhysicsCallMessageType);
+	subscribe(MESSAGE_TYPE::InputMessageType);
+	subscribe(MESSAGE_TYPE::PhysicsInitializeCallType);
 }
 
 ///
@@ -38,7 +40,6 @@ PhysicsEngine::PhysicsEngine()
 PhysicsEngine::~PhysicsEngine()
 {
 	SDL_Log("%s", "Running Physics::Destructor");
-	this->stop();
 }
 
 /*----------------------------------------------------------------------------------------
@@ -75,13 +76,20 @@ void PhysicsEngine::loop()
 	while (_running) {
 		_urgentMessageQueueMutex_p->lock();
 		_messageQueueMutex_p->lock();
-		if (_messageQueue.empty() && _urgentMessageQueue.empty() && _running) {
+		if (_messageQueue.empty() && _urgentMessageQueue.empty() && _running) 
+		{
 			_urgentMessageQueueMutex_p->unlock();
 			_messageQueueMutex_p->unlock();
 			std::this_thread::yield();
 		}
+		else if (!_running) 
+		{
+			_urgentMessageQueueMutex_p->unlock();
+			_messageQueueMutex_p->unlock();
+		}
 		else {
-			if (!_urgentMessageQueue.empty()) {
+			if (!_urgentMessageQueue.empty())
+			{
 				_messageQueueMutex_p->unlock();
 				// process an urgent message
 
@@ -93,22 +101,60 @@ void PhysicsEngine::loop()
 				_urgentMessageQueueMutex_p->unlock();
 				if (!_messageQueue.empty())
 				{
-					std::shared_ptr<Message> myMessage = _messageQueue.front();
-					PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-					rotate(content->go, Vector3(0.2, 0.3, 0.5) * content->deltaTime);
-					//SDL_Log(content->contentVar.c_str());
-					// process a normal message
+					// process a normal messages
+					checkMessage(_messageQueue.front());
 					_messageQueue.pop();
-					//SDL_Log("After pop()");
-
-					//SDL_Log("Message Processed");
 					
 				}
 				_messageQueueMutex_p->unlock();
 			}
 		}
 	}
-	//SDL_Log("Physics::Out of loop");
+	this->stop();
+	SDL_Log("Physics::Out of loop");
+}
+
+void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
+	
+
+	switch (myMessage->getType()) {
+	case MESSAGE_TYPE::PhysicsCallMessageType:
+	{
+		PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
+		rotate(content->go, Vector3(0.2, 0.3, 0.5) * content->deltaTime);
+		_deltaTime = content->deltaTime;
+		break;
+	}
+	case MESSAGE_TYPE::InputMessageType:
+	{
+		InputMessageContent* content = static_cast<InputMessageContent*>(myMessage->getContent());
+		getControllerInput(content);
+	}
+		break;
+	case MESSAGE_TYPE::PhysicsInitializeCallType:
+	{
+		PhysicsInitializeContent* content = static_cast<PhysicsInitializeContent*>(myMessage->getContent());
+		_camera_p = content->camera;
+	}
+	break;
+	default:
+		break;
+	}
+}
+
+void PhysicsEngine::getControllerInput(InputMessageContent *content) {
+	switch (content->buttonPressed) {
+	case INPUT_TYPES::RIGHT_ANALOG_Y: {
+		//SDL_Log("A Button Pressed");
+		rotateX(_camera_p, content->valueOfInput * _deltaTime);
+	}
+		break;
+	case INPUT_TYPES::RIGHT_ANALOG_X: {
+		rotateY(_camera_p, content->valueOfInput * _deltaTime);
+	}
+	default:
+		break;
+	}
 }
 
 /**
@@ -116,8 +162,15 @@ void PhysicsEngine::loop()
  */
 void PhysicsEngine::stop()
 {
-    _running = false;
+	if (_camera_p != nullptr)
+		delete(_camera_p);
+	if (_player_p != nullptr)
+		delete(_player_p);
 	//SDL_Log("Physics::Stop");
+}
+
+void PhysicsEngine::flagLoop() {
+	_running = false;
 }
 /**
  *  <summary>
@@ -126,7 +179,7 @@ void PhysicsEngine::stop()
  */
 void PhysicsEngine::translate(GameObject *go, Vector3 translation)
 {
-	go->_transform._position = translation;
+	go->_transform._position += translation;
 };
 /**
  *  <summary>
@@ -135,7 +188,7 @@ void PhysicsEngine::translate(GameObject *go, Vector3 translation)
  */
 void PhysicsEngine::translate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {
-	go->_transform._position = Vector3(x, y, z);
+	go->_transform._position += Vector3(x, y, z);
 };
 /**
  *  <summary>

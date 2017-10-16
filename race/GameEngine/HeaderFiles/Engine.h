@@ -24,6 +24,7 @@ public:
     ~Engine();
     void update();
     void stop();
+	void flagLoop();
     std::thread *_engineThread_p;
 private:
 	FileEngine *_fileEngine_p;
@@ -39,4 +40,5 @@ private:
 	Scene* _sceneObj;
 	float i = 0;
     void loop();
+	
 };

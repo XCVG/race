@@ -82,5 +82,6 @@
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderableTypes.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Scene.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Transform.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\InputTypes.h" />
   </ItemGroup>
 </Project>
