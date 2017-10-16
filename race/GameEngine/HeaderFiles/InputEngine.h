@@ -9,10 +9,10 @@ public:
     InputEngine();
     ~InputEngine();
 	void buttonEventHandler(SDL_Event ev);
-	void axisEventHandler(SDL_GameController*);
+	void lookEventHandler(Sint16 X, Sint16 Y);
 
 private:
 	int16_t _moveX, _moveY;
 	int16_t _lookX, _lookY;
-	const int CONTROLLER_DEADZONE = 8000;
+	
 };

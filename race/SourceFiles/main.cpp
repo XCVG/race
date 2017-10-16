@@ -8,7 +8,7 @@ SDL_Window *g_window_p;
 SDL_GLContext g_context;
 std::thread* engineThread_p;
 SDL_GameController *gameController;
-
+const int CONTROLLER_DEADZONE = 8000;
 /// <summary>
 /// Application entry point
 /// </summary>
@@ -58,23 +58,23 @@ int main(int argc, char ** argv) {
 
 	while (!quit)
 	{
-		while (SDL_PollEvent(&ev))
+		SDL_PollEvent(&ev);
+		switch (ev.type)
 		{
-			switch (ev.type)
-			{
-				case SDL_QUIT:
-					quit = true;
-					break;
-				case SDL_CONTROLLERBUTTONDOWN:
-					IE->buttonEventHandler(ev);
-					break;
-				case SDL_CONTROLLERAXISMOTION:
-						IE->axisEventHandler(gameController);
-					break;
-				default:
-					break;
-			}
+			case SDL_QUIT:
+				quit = true;
+				break;
 		}
+		Sint16 xLook = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTX);
+		Sint16 yLook = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTY);
+		if (xLook < CONTROLLER_DEADZONE && xLook > -CONTROLLER_DEADZONE)
+			xLook = 0;
+
+		if (yLook < CONTROLLER_DEADZONE && yLook > -CONTROLLER_DEADZONE)
+			yLook = 0;
+
+		if (yLook != 0 || xLook != 0) 
+			IE->lookEventHandler(xLook, yLook);
 
 		//run the renderer every tick
 		/*uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;

@@ -90,7 +90,7 @@ void Engine::update() {
 		if (_sceneObj != nullptr) {
 			PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
 			physicsContent->go = _sceneObj->getGameObject("Sphere");
-			physicsContent->deltaTime = ((float_t)(currentTime - ticksAtLast)) / 1000;
+			physicsContent->deltaTime = (((float_t)(currentTime - ticksAtLast)) / 1000) / FRAMES_PER_SECOND;
 			std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
 			myMessage->setContent(physicsContent);
 			MessagingSystem::instance().postMessage(myMessage);

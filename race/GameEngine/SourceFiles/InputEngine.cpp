@@ -59,17 +59,17 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 	MessagingSystem::instance().postMessage(inputMessage);*/
 }
 
-void InputEngine::axisEventHandler(SDL_GameController* controller)
+void InputEngine::lookEventHandler(Sint16 X, Sint16 Y)
 {
-	std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::InputMessageType));
-	InputMessageContent *inputContent = new InputMessageContent();
-	inputContent->type = INPUT_TYPES::RIGHT_ANALOG_X;
-	_lookX = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTX);
-	_lookY = SDL_GameControllerGetAxis(controller, SDL_CONTROLLER_AXIS_RIGHTY);
 	
-	inputContent->lookX = _lookX;
-	inputContent->lookY = _lookY;
+	InputMessageContent *inputContent = new InputMessageContent();
+	inputContent->type = INPUT_TYPES::LOOK_AXIS;
+	inputContent->lookX = X * 0.0001f;
+	inputContent->lookY = Y * 0.0001f;
+
+	std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::InputMessageType));
 	inputMessage->setContent(inputContent);
 	MessagingSystem::instance().postMessage(inputMessage);
+	//SDL_Log("Axis Handled %d, %d", X, Y);
 }
 
