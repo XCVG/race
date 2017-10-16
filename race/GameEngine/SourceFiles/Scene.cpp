@@ -1,4 +1,5 @@
 #include "../HeaderFiles/Scene.h"
+
 const float MATH_PI = 3.14159;
 Scene::Scene()
 {
@@ -91,6 +92,12 @@ void Scene::setUpSceneOne() {
 	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, 10), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
+
+	PhysicsInitializeContent* content = new PhysicsInitializeContent();
+	content->camera = go;
+	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsInitializeCallType, false));
+	msg->setContent(content);
+	MessagingSystem::instance().postMessage(msg);
 
 	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "test_texture", "", 0));

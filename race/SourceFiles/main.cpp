@@ -8,6 +8,8 @@
 SDL_Window *g_window_p;
 SDL_GLContext g_context;
 std::thread* engineThread_p;
+const int CONTROLLER_DEADZONE = 8000;
+SDL_GameController *gameController;
 
 /// <summary>
 /// Application entry point
@@ -44,6 +46,16 @@ int main(int argc, char ** argv) {
 	bool quit = false;
 	SDL_Event ev;
 
+	for (int x = 0; x < SDL_NumJoysticks(); x++)
+	{
+		if (SDL_IsGameController(x))
+		{
+			gameController = SDL_GameControllerOpen(x);
+			break;
+		}
+	}
+	
+
 	uint32_t ticksAtLast = SDL_GetTicks();
 
 	while (!quit)
@@ -59,7 +71,9 @@ int main(int argc, char ** argv) {
 					IE->buttonEventHandler(ev);
 					break;
 				case SDL_CONTROLLERAXISMOTION:
-					IE->axisEventHandler(ev);
+					if ((ev.jaxis.value < -CONTROLLER_DEADZONE) || (ev.jaxis.value > CONTROLLER_DEADZONE)) {
+						IE->axisEventHandler(ev);
+					}
 					break;
 				default:
 					break;
@@ -74,11 +88,21 @@ int main(int argc, char ** argv) {
 		}*/
 	}
 
+	if (gameController != NULL)
+	{
+		SDL_GameControllerClose(gameController);
+	}
+
+	delete(gameController);
+
+	//SDL_JoystickClose(joystick);
+
 	//SDL_Log("Main::Out of Loop");
 	e->stop();
 	//SDL_Log("Main::Wait for Engine Join");
 	engineThread_p->join();
 	delete(e);
+	delete(IE);
 	MessagingSystem::instance().kill();
 	SDL_DestroyWindow(g_window_p);
 

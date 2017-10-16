@@ -25,6 +25,7 @@
 #include <thread>
 #include "MessageReceiver.h"
 #include "GameObject.h"
+#include "../../HeaderFiles/InputTypes.h"
 
 /*========================================================================================
 	Dependencies
@@ -47,6 +48,9 @@ class PhysicsEngine : public MessageReceiver
     ------------------------------------------------------------------------------------*/
     private:
 		bool _running = false;
+		GameObject* _player_p;
+		GameObject* _camera_p;
+		GLfloat _deltaTime;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -90,4 +94,6 @@ class PhysicsEngine : public MessageReceiver
 
     private:
 		void loop();
+		void checkMessage(std::shared_ptr<Message>);
+		void getControllerInput(InputMessageContent*);
 };
