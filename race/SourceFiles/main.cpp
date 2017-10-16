@@ -1,7 +1,6 @@
 #include "main.h" 
 #include "Engine.h"
 #include "GlobalPrefs.h"
-#include <SDL_gamecontroller.h>
 #include "InputEngine.h"
 #include "MessagingSystem.h"
 
