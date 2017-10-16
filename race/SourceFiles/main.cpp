@@ -1,6 +1,8 @@
 #include "main.h" 
 #include "Engine.h"
 #include "GlobalPrefs.h"
+#include <SDL_gamecontroller.h>
+#include "InputEngine.h"
 #include "MessagingSystem.h"
 
 SDL_Window *g_window_p;
@@ -14,7 +16,9 @@ std::thread* engineThread_p;
 /// <param name="argv">Array containg string arguments passed to the application</param>
 /// <return>Status code on application exit.</return>
 int main(int argc, char ** argv) {
-	SDL_Init(SDL_INIT_VIDEO);
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+
+	InputEngine *IE = new InputEngine();
 
 	//open opengl and window
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -46,9 +50,19 @@ int main(int argc, char ** argv) {
 	{
 		while (SDL_PollEvent(&ev))
 		{
-			if (ev.type == SDL_QUIT)
+			switch (ev.type)
 			{
-				quit = true;
+				case SDL_QUIT:
+					quit = true;
+					break;
+				case SDL_CONTROLLERBUTTONDOWN:
+					IE->buttonEventHandler(ev);
+					break;
+				case SDL_CONTROLLERAXISMOTION:
+					IE->axisEventHandler(ev);
+					break;
+				default:
+					break;
 			}
 		}
 

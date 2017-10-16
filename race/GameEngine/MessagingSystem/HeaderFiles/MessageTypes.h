@@ -42,6 +42,7 @@ enum class MESSAGE_TYPE
 	BaseMessageType,
 	PhysicsCallMessageType,
 	FileLoadMessageType,
+	InputMessageType,
 	FileLoadImageMessageType,
 	FileLoadedMessageType,
 	FileLoadedImageMessageType,
@@ -155,6 +156,13 @@ public:
 	std::string path;
 	bool relative;
 	std::string content;
+};
+
+class InputMessageContent : public BaseMessageContent
+{
+public:
+	std::string buttonPressed;
+	float valueOfInput;
 };
 
 class FileLoadedImageMessageContent : public BaseMessageContent
