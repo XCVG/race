@@ -198,7 +198,6 @@ private:
 		setupSceneOnThread();
 
 		//for testing
-		SDL_Log("%s", std::to_string(SDL_GL_GetSwapInterval()).c_str());
 		_state = RendererState::idle;
 
 		//loop: on RenderEngine thread
@@ -214,7 +213,7 @@ private:
 			case RendererState::idle:
 				//SDL_Log("Idle");
 				doIdle();
-				std::this_thread::sleep_for(std::chrono::milliseconds(IDLE_DELAY_CONST)); //don't busywait!
+				//std::this_thread::sleep_for(std::chrono::milliseconds(IDLE_DELAY_CONST)); //don't busywait!
 				break;
 			case RendererState::loading:
 				//SDL_Log("Loading");
@@ -232,6 +231,7 @@ private:
 			}
 
 			//std::this_thread::sleep_for(std::chrono::milliseconds(17));
+			SDL_GL_SwapWindow(_window_p);
 		}
 
 		//force unload/release if we're not already unloaded
@@ -267,15 +267,22 @@ private:
 		//which would slow things down
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+		//SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 		//SDL_GL_CreateContext(_window_p);
 		_context_p = SDL_GL_CreateContext(_window_p); //we will need to modify this to release/acquire context in concert with the UI thread
 		SDL_GL_SetSwapInterval(1);
-		//SDL_GL_MakeCurrent(g_window_p, g_context);
+		//SDL_GL_MakeCurrent(g_window_p, _context_p);
 		glewExperimental = GL_TRUE;
-		glewInit();
+		GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			/* Problem: glewInit failed, something is seriously wrong. */
+			SDL_Log("Renderer: %s\n", glewGetErrorString(err));
+		}
+		SDL_Log((char*)glGetString(GL_VERSION));
+		SDL_Log((char*)glGetString(GL_RENDERER));
 	}
 
 	void setupSceneOnThread()
@@ -867,7 +874,7 @@ private:
 		if (!haveContext())
 			return;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
 		glClearColor(0.1f, 0.75f, 0.1f, 1.0f);
@@ -879,11 +886,12 @@ private:
 		if (!haveContext())
 			return;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
 		glClearColor(0.1f, 0.25f, 0.75f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	}
 
 	void drawIdleScreen()
@@ -891,7 +899,7 @@ private:
 		if (!haveContext())
 			return;
 
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport(0, 0, _renderWidth, _renderHeight);
 
 		glClearColor(0.75f, 0.5f, 0.1f, 1.0f);
@@ -1114,7 +1122,7 @@ private:
 		}
 
 		//TODO vsync/no vsync
-		SDL_GL_SwapWindow(_window_p);
+		//SDL_GL_SwapWindow(_window_p);
 	}
 
 	void drawNullScene()
