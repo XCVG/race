@@ -155,7 +155,7 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 		glm::mat4x4 matrix = glm::eulerAngleXYZ(_camera_p->_transform.getRotation().x, _camera_p->_transform.getRotation().y, _camera_p->_transform.getRotation().z);
 		glm::vec4 temp = glm::vec4(content->lookX, 0, content->lookY, 1) * matrix;
 		Vector3 newVector = Vector3(temp.x, 0, temp.z);
-		translateForward(_camera_p, newVector * 2.0f * _deltaTime);
+		translate(_camera_p, newVector * 2.0f * _deltaTime);
 		
 	}
 	default:
