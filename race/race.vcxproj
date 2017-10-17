@@ -34,6 +34,7 @@
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessageReceiver.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderFileMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderInputMessageReceiver.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderMessageReceiver.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\AIEngine.cpp" />
@@ -94,6 +95,7 @@
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderEngine.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RendererInternalTypes.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderFileMessageReceiver.h" />
+    <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderInputMessageReceiver.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderMessageReceiver.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\Shaders.h" />
     <ClInclude Include="GameEngine\HeaderFiles\SoundEngine.h" />

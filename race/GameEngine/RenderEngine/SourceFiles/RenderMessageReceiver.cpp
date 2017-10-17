@@ -1,9 +1,4 @@
 #include "RenderMessageReceiver.h"
-#ifdef __APPLE__
-#include <SDL2/SDL.h>
-#elif defined _WIN32 || defined _WIN64
-#include <SDL.h>
-#endif
 
 RenderMessageReceiver::RenderMessageReceiver(std::vector<std::shared_ptr<Message>> *mq_p, std::mutex *mutex)
 {
@@ -22,8 +17,6 @@ void RenderMessageReceiver::subscribeAll()
 
 bool RenderMessageReceiver::messageHandler(std::shared_ptr<Message> message)
 {
-	//SDL_Log("Renderer: Received a message!");
-
 	_mqMutex_p->lock();
 	_mq_p->push_back(message);
 	_mqMutex_p->unlock();

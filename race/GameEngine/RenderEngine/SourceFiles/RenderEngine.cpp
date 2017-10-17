@@ -20,11 +20,13 @@
 #include "GlobalPrefs.h"
 #include "FileEngine.h"
 #include "OBJImport.h"
+#include "main.h"
 
 #include "RenderableTypes.h"
 #include "RendererInternalTypes.h"
 #include "RenderMessageReceiver.h"
 #include "RenderFileMessageReceiver.h"
+#include "RenderInputMessageReceiver.h"
 
 #include "MessagingSystem.h"
 #include "MessageTypes.h"
@@ -34,7 +36,6 @@
 #include "Shaders.h"
 #include "Quad.h"
 #include "Cube.h"
-#include "main.h"
 
 const int_least64_t IDLE_DELAY_CONST = 10;
 const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
@@ -64,13 +65,20 @@ public:
 		_mr_p = new RenderMessageReceiver(_mq_p, _mqMutex_p);
 		_mr_p->subscribeAll();
 		
-
 		//create file handling message queue and handler, then subscribe to messaging
 		_fmq_p = new std::vector<std::shared_ptr<Message>>();
 		_fmqMutex_p = new std::mutex();
 		_fmr_p = new RenderFileMessageReceiver(_fmq_p, _fmqMutex_p);
 		_fmr_p->subscribeAll();
+
+		//create input message queue and handler, then subscribe to messaging
+		_imq_p = new std::vector<std::shared_ptr<Message>>();
+		_imqMutex_p = new std::mutex();
+		_imr_p = new RenderInputMessageReceiver(_imq_p, _imqMutex_p);
+		_imr_p->subscribeAll();
 		
+		//necessary protection on macOS
+		_lastScene_p = nullptr;
 		_lastOverlay_p = nullptr;
 
 		//spawn thread
@@ -93,12 +101,16 @@ public:
 		delete(_renderThread_p);
 
 		delete(_mqMutex_p);
-		delete(_mr_p); //rely on destructor to take care of resource release
-		delete(_mq_p); //this also deletes everything in the message queue
+		delete(_mr_p);
+		delete(_mq_p);
 		
 		delete(_fmqMutex_p);
 		delete(_fmr_p);
 		delete(_fmq_p);
+
+		delete(_imqMutex_p);
+		delete(_imr_p);
+		delete(_imq_p);
 		
 	}
 
@@ -112,14 +124,18 @@ private:
 	std::atomic<RendererState> _state;
 	RenderableScene *_lastScene_p;
 	RenderableOverlay *_lastOverlay_p;
+	RendererBuffer _buffer;
 
 	//messaging stuff
 	RenderMessageReceiver *_mr_p;
 	RenderFileMessageReceiver *_fmr_p;
+	RenderInputMessageReceiver *_imr_p;
 	std::vector<std::shared_ptr<Message>> *_mq_p;
 	std::vector<std::shared_ptr<Message>> *_fmq_p;
+	std::vector<std::shared_ptr<Message>> *_imq_p;
 	std::mutex *_mqMutex_p;
 	std::mutex *_fmqMutex_p;
+	std::mutex *_imqMutex_p;
 
 	//resource lists
 	std::map<std::string, ModelData> *_models_p;
@@ -156,6 +172,7 @@ private:
 	GLuint _framebufferDrawTex1ID = 0;
 	GLuint _framebufferDrawTex2ID = 0;
 	GLuint _framebufferDrawTex3ID = 0;
+	GLuint _framebufferDrawBufferID = 0;
 
 	//temporary cube stuff
 	GLuint _cubeVertexArrayID = 0;
@@ -513,6 +530,9 @@ private:
 		//grab context
 		acquireContext();
 
+		//TESTONLY set default buffer
+		_buffer = RendererBuffer::color;
+
 		//DON'T DO ANYTHING LONG IN HERE BECAUSE THE QUEUE IS STILL BLOCKED
 	}
 
@@ -809,6 +829,14 @@ private:
 	{
 		//clear (but DO NOT DELETE) data structures
 
+		//purge input and file, but NOT main message queue
+		_imqMutex_p->lock();
+		_imq_p->clear();
+		_imqMutex_p->unlock();
+		_fmqMutex_p->lock();
+		_fmq_p->clear();
+		_fmqMutex_p->unlock();
+
 		//purge load queues
 		_modelLoadQueue_p->clear();
 		_textureLoadQueue_p->clear();
@@ -1043,6 +1071,7 @@ private:
 		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
 		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
+		_framebufferDrawBufferID = glGetUniformLocation(_framebufferDrawProgramID, "testBuffer");
 	}
 
 	void cleanupFramebufferDraw()
@@ -1065,6 +1094,7 @@ private:
 		}
 		else
 		{
+			testBuffers(); //check input, swap buffers if need be
 			drawCamera(_lastScene_p); //set up the camera
 			drawObjects(_lastScene_p); //do the geometry pass
 			drawLighting(_lastScene_p); //do the lighting pass
@@ -1094,6 +1124,41 @@ private:
 
 		glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	}
+
+	void testBuffers()
+	{
+		//check input queue, if we have a Y button pressed, change buffer
+		bool wasPressed = false;
+
+		_imqMutex_p->lock();
+
+		if (!_imq_p->empty())
+		{
+			Message *msg = _imq_p->front().get();
+			if (msg->getType() == MESSAGE_TYPE::InputMessageType)
+			{
+				InputMessageContent *imc = static_cast<InputMessageContent*>(msg->getContent());
+				if (imc->buttonPressed == INPUT_TYPES::Y_BUTTON)
+					wasPressed = true;
+			}
+			_imq_p->clear();
+		}
+
+		_imqMutex_p->unlock();
+
+		if (wasPressed)
+		{
+			SDL_Log("Renderer: changing buffer type");
+
+			//set the renderer buffer type
+			int pos = static_cast<int>(_buffer);
+			pos++;
+			if (pos >= static_cast<int>(RendererBuffer::LENGTH))
+				pos = 0;
+			_buffer = static_cast<RendererBuffer>(pos);
+		}	
 
 	}
 
@@ -1250,10 +1315,10 @@ private:
 		glClearColor(0, 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//setup shader
-		//fixed, but need a way to swap between buffers (TODO)
+		//bind shader
 		glUseProgram(_framebufferDrawProgramID);	
 
+		//bind buffers
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
 		glUniform1i(_framebufferDrawTex0ID, 0);
@@ -1269,6 +1334,9 @@ private:
 		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
 		glUniform1i(_framebufferDrawTex3ID, 3);
+
+		//"select" buffer (yes it's done in the shader itself, sue me)
+		glUniform1i(_framebufferDrawBufferID, static_cast<int>(_buffer));
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
