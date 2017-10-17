@@ -59,13 +59,13 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 	MessagingSystem::instance().postMessage(inputMessage);*/
 }
 
-void InputEngine::lookEventHandler(Sint16 X, Sint16 Y)
+void InputEngine::axisEventHandler(Sint16 X, Sint16 Y, INPUT_TYPES type)
 {
 	
 	InputMessageContent *inputContent = new InputMessageContent();
-	inputContent->type = INPUT_TYPES::LOOK_AXIS;
-	inputContent->lookX = X * 0.0001f;
-	inputContent->lookY = Y * 0.0001f;
+	inputContent->type = type;
+	inputContent->lookX = X * 0.00001f;
+	inputContent->lookY = Y * 0.00001f;
 
 	std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::InputMessageType));
 	inputMessage->setContent(inputContent);

@@ -8,8 +8,8 @@ class InputEngine {
 public:
     InputEngine();
     ~InputEngine();
-	void buttonEventHandler(SDL_Event ev);
-	void lookEventHandler(Sint16 X, Sint16 Y);
+	void buttonEventHandler(SDL_Event);
+	void axisEventHandler(Sint16, Sint16, INPUT_TYPES);
 
 private:
 	int16_t _moveX, _moveY;

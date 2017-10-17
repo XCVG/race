@@ -47,3 +47,7 @@ GLfloat Transform::getScale()
 {
     return this->_scale;
 };
+Vector3 Transform::getForward()
+{
+	return this->_forward;
+};

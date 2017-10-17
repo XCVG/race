@@ -61,6 +61,13 @@ public:
 	  this->z = this->z * mult;
 	  return *this;
   };
+  Vector3& operator*(Vector3 vec)
+  {
+	  this->x *= vec.x;
+	  this->y *= vec.y;
+	  this->z *= vec.z;
+	  return *this;
+  }
   GLfloat x; 
   GLfloat y; 
   GLfloat z; 

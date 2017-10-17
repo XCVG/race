@@ -65,16 +65,27 @@ int main(int argc, char ** argv) {
 				quit = true;
 				break;
 		}
-		Sint16 xLook = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTX);
-		Sint16 yLook = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTY);
-		if (xLook < CONTROLLER_DEADZONE && xLook > -CONTROLLER_DEADZONE)
-			xLook = 0;
+		Sint16 x = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTX);
+		Sint16 y = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTY);
+		if (x < CONTROLLER_DEADZONE && x > -CONTROLLER_DEADZONE)
+			x = 0;
 
-		if (yLook < CONTROLLER_DEADZONE && yLook > -CONTROLLER_DEADZONE)
-			yLook = 0;
+		if (y < CONTROLLER_DEADZONE && y > -CONTROLLER_DEADZONE)
+			y = 0;
 
-		if (yLook != 0 || xLook != 0) 
-			IE->lookEventHandler(xLook, yLook);
+		if (y != 0 || x != 0) 
+			IE->axisEventHandler(x, y, INPUT_TYPES::LOOK_AXIS);
+
+		x = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTX);
+		y = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTY);
+		if ((x < CONTROLLER_DEADZONE && x > -CONTROLLER_DEADZONE) && !(y > CONTROLLER_DEADZONE || y < -CONTROLLER_DEADZONE))
+			x = 0;
+
+		if ((y < CONTROLLER_DEADZONE && y > -CONTROLLER_DEADZONE) && !(x > CONTROLLER_DEADZONE || x < -CONTROLLER_DEADZONE))
+			y = 0;
+
+		if (y != 0 && x != 0)
+			IE->axisEventHandler(x, y, INPUT_TYPES::MOVE_AXIS);
 
 		//run the renderer every tick
 		/*uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;

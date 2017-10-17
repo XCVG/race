@@ -121,7 +121,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 	case MESSAGE_TYPE::PhysicsCallMessageType:
 	{
 		PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-		rotate(content->go, Vector3(0.2, 0.3, 0.5) * content->deltaTime);
+		//rotate(content->go, Vector3(2 * MATH_PI, 3 * MATH_PI, 2 * MATH_PI) * content->deltaTime);
 		_deltaTime = content->deltaTime;
 		break;
 	}
@@ -144,11 +144,19 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 
 void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 	switch (content->type) {
-	case INPUT_TYPES::LOOK_AXIS: {
+	case INPUT_TYPES::LOOK_AXIS: 
+	{
 		//SDL_Log("A Button Pressed");
-		rotateX(_camera_p, content->lookY * _deltaTime);
-		rotateY(_camera_p, content->lookX * _deltaTime);
+		rotate(_camera_p, Vector3(content->lookY, content->lookX, 0)  * _deltaTime);
 		break;
+	}
+	case INPUT_TYPES::MOVE_AXIS: 
+	{
+		glm::mat4x4 matrix = glm::eulerAngleXYZ(_camera_p->_transform.getRotation().x, _camera_p->_transform.getRotation().y, _camera_p->_transform.getRotation().z);
+		glm::vec4 temp = glm::vec4(content->lookX, 0, content->lookY, 1) * matrix;
+		Vector3 newVector = Vector3(temp.x, 0, temp.z);
+		translateForward(_camera_p, newVector * 2.0f * _deltaTime);
+		
 	}
 	default:
 		break;
@@ -178,6 +186,11 @@ void PhysicsEngine::flagLoop() {
 void PhysicsEngine::translate(GameObject *go, Vector3 translation)
 {
 	go->_transform._position += translation;
+};
+
+void PhysicsEngine::translateForward(GameObject *go, Vector3 translation) 
+{
+	go->_transform._position += (translation * go->_transform.getForward());
 };
 /**
  *  <summary>
@@ -223,6 +236,9 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
  */
 void PhysicsEngine::rotate(GameObject *go, Vector3 amount)
 {
+	glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
+	glm::vec4 temp = glm::vec4(go->_transform._forward.x, go->_transform._forward.y, go->_transform._forward.z, 1) * matrix;
+	go->_transform._forward = Vector3(temp.x, temp.y, temp.z);
 	go->_transform._rotation += amount;
 };
 void PhysicsEngine::rotateX(GameObject *go, GLfloat angle)
