@@ -23,6 +23,13 @@ void main()
 		color.g = d;
 		color.b = d;
 	}
+	else if(testBuffer == 4) // 4: smoothness
+	{
+		float s = texture(fColor, uv).a;
+		color.r = s;
+		color.g = s;
+		color.b = s;
+	}
 	else // 0/default: color buffer
 	{
 		color = texture(fColor, uv).rgb;

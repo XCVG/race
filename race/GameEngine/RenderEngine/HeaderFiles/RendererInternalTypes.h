@@ -15,7 +15,7 @@ enum class RendererState : int_fast8_t
 
 enum class RendererBuffer
 {
-	color, position, normal, depth, LENGTH
+	color, position, normal, depth, smoothness, LENGTH
 };
 
 struct ModelData

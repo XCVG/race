@@ -105,7 +105,7 @@ void Scene::setUpSceneOne() {
 	addGameObject("Cube", go);
 
 	go = new GameObject(new Transform());
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 0));
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0));
 	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));

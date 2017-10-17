@@ -154,17 +154,20 @@ private:
 	GLuint _shaderModelMatrixID = 0;
 	GLuint _shaderMVPMatrixID = 0;
 	GLuint _shaderTextureID = 0;
+	GLuint _shaderSmoothnessID = 0;
 
 	//framebuffer stuff
 	int _renderWidth = 0;
 	int _renderHeight = 0;
 
+	//framebuffer textures
 	GLuint _framebufferID = 0;
 	GLuint _framebufferTexture0ID = 0;
 	GLuint _framebufferTexture1ID = 0;
 	GLuint _framebufferTexture2ID = 0;
 	GLuint _framebufferDepthID = 0;
 
+	//framebuffer program and uniforms
 	GLuint _framebufferDrawProgramID = 0;
 	GLuint _framebufferDrawVertexArrayID = 0;
 	GLuint _framebufferDrawVertexBufferID = 0;
@@ -921,6 +924,7 @@ private:
 		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
 		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
+		_shaderSmoothnessID = glGetUniformLocation(_programID, "iSmoothness");
 	}
 
 	void cleanupProgram()
@@ -996,7 +1000,7 @@ private:
 		//gen framebuffer textures
 		glGenTextures(1, &_framebufferTexture0ID);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _renderWidth, _renderHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _framebufferTexture0ID, 0);
@@ -1042,10 +1046,10 @@ private:
 	void cleanupFramebuffers()
 	{
 		//delete FBOs
-		glDeleteRenderbuffers(1, &_framebufferDepthID);
 		glDeleteTextures(1, &_framebufferTexture0ID);
 		glDeleteTextures(1, &_framebufferTexture1ID);
 		glDeleteTextures(1, &_framebufferTexture2ID);
+		glDeleteTextures(1, &_framebufferDepthID);
 		glDeleteFramebuffers(1, &_framebufferID);
 	}
 
@@ -1272,6 +1276,8 @@ private:
 			glBindTexture(GL_TEXTURE_2D, _cubeTextureID);
 			glUniform1i(_shaderTextureID, 0);
 		}
+
+		glUniform1f(_shaderSmoothnessID, object->smoothness);
 
 		//transform!
 		glm::mat4 objectMVM = glm::mat4();

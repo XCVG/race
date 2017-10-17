@@ -185,6 +185,9 @@ xcopy /y  "$(ProjectDir)Libraries\sdl_mixer\dll\*.dll" "$(OutDir)"
 xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"
 xcopy /y /e /i "$(ProjectDir)ResourceFiles" "$(OutDir)ResourceFiles"</Command>
     </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -221,6 +224,9 @@ xcopy /y  "$(ProjectDir)Libraries\sdl_mixer\dll\*.dll" "$(OutDir)"
 xcopy /y  "$(ProjectDir)Libraries\glew\dll\*.dll" "$(OutDir)"
 xcopy /y /e /i "$(ProjectDir)ResourceFiles" "$(OutDir)ResourceFiles"</Command>
     </PostBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>true</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
