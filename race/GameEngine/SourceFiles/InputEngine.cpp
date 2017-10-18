@@ -2,13 +2,21 @@
 
 InputEngine::InputEngine() {
 	SDL_Init(SDL_INIT_GAMECONTROLLER);
-	for (int x = 0; x < SDL_NumJoysticks(); x++)
+	int numJoysticks = SDL_NumJoysticks();
+	if (numJoysticks != 0)
 	{
-		if (SDL_IsGameController(x))
+		for (int x = 0; x < numJoysticks; x++)
 		{
-			gameController = SDL_GameControllerOpen(x);
-			break;
+			if (SDL_IsGameController(x))
+			{
+				gameController = SDL_GameControllerOpen(x);
+				break;
+			}
 		}
+	}
+	else
+	{
+		gameController = NULL;
 	}
 }
 
@@ -100,10 +108,9 @@ void InputEngine::checkAxis(SDL_GameControllerAxis x, SDL_GameControllerAxis y, 
 
 void InputEngine::checkInput()
 {
-	if (gameController != nullptr) {
+	if (gameController != NULL) {
         checkAxis(SDL_CONTROLLER_AXIS_RIGHTX, SDL_CONTROLLER_AXIS_RIGHTY, INPUT_TYPES::LOOK_AXIS);
         checkAxis(SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_LEFTY, INPUT_TYPES::MOVE_AXIS);
         checkAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, INPUT_TYPES::TRIGGERS);
     }
 }
-
