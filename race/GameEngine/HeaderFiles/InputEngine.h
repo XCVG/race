@@ -3,7 +3,9 @@
 #include "MessagingSystem.h"
 #include "InputTypes.h"
 #include <memory>
-
+#ifdef __APPLE__
+#include "MacTypes.h"
+#endif
 class InputEngine {
 public:
     InputEngine();
@@ -17,7 +19,7 @@ private:
 	int16_t _moveX, _moveY;
 	int16_t _lookX, _lookY;
 	const int CONTROLLER_DEADZONE = 8000;
-	const int imax = std::numeric_limits<__int16>::max();
+	const int imax = std::numeric_limits<int16_t>::max();
 	SDL_GameController *gameController;
 	
 };
