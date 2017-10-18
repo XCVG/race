@@ -25,59 +25,6 @@
 /*========================================================================================
 	Class Fields
 ========================================================================================*/
- char* Shaders::vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 iPos;\n"
-"layout (location = 1) in vec3 iNorm;\n"
-"layout (location = 2) in vec2 iTexC;\n"
-"out vec2 oTexC;\n"
-"out vec3 oNormal;\n"
-"out vec3 oWorldPos;\n"
-"uniform mat4 iModelViewProjectionMatrix;\n"
-"uniform mat4 iModelMatrix;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = iModelViewProjectionMatrix * vec4(iPos.x, iPos.y, iPos.z, 1.0);\n"
-"   oTexC = iTexC;\n"
-"   oNormal = (iModelMatrix * vec4(iNorm, 0.0)).xyz;\n"
-"   oWorldPos = (iModelMatrix * vec4(iPos, 1.0)).xyz;\n"
-"}\0";
-
-char* Shaders::fragmentShaderSource = "#version 330 core\n"
-"in vec2 oTexC;\n"
-"in vec3 oNormal;\n"
-"in vec3 oWorldPos;\n"
-"layout (location = 0) out vec3 FragColor;\n"
-"layout (location = 1) out vec3 FragPosition;\n"
-"layout (location = 2) out vec3 FragNormal;\n"
-"uniform sampler2D iTexImage;\n"
-"void main()\n"
-"{\n"
-"   FragColor = texture(iTexImage, oTexC).rgb;\n"
-"   FragPosition = oWorldPos;\n"
-"   FragNormal = oNormal;\n"
-"}\n\0";
-
-char* Shaders::vertexShader2Source = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"out vec2 uv;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"   uv = (aPos.xy + vec2(1, 1)) / 2.0;\n"
-"}\0";
-
-char* Shaders::fragmentShader2Source = "#version 330 core\n"
-"in vec2 uv;\n"
-"out vec3 color;\n"
-"uniform sampler2D fColor;\n"
-"uniform sampler2D fPosition;\n"
-"uniform sampler2D fNormal;\n"
-"uniform sampler2D fDepth;\n"
-"void main()\n"
-"{\n"
-"   color = texture(fColor, uv).rgb;\n"
-"}\n\0";
-
 std::string Shaders::VSH_01_PATH = "ResourceFiles/Shaders/shader01.vsh";
 std::string Shaders::FSH_01_PATH = "ResourceFiles/Shaders/shader01.fsh";
 std::string Shaders::VSH_02_PATH = "ResourceFiles/Shaders/shader02.vsh";

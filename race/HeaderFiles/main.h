@@ -11,13 +11,13 @@
 #include <glew.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <SDL_opengl.h>
 #include <SDL_gamecontroller.h>
 #include "..\GameEngine\HeaderFiles\FileHelper.h"
 #endif 
 #include <stdio.h>
 #include <string.h>
 #include <iostream>
+#include <limits>
 
 extern SDL_Window *g_window_p;
 extern SDL_GLContext g_context;

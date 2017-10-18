@@ -8,9 +8,14 @@
 #endif
 #include <vector>
 
-enum class RendererState
+enum class RendererState : int_fast8_t
 {
 	idle, loading, rendering, unloading
+};
+
+enum class RendererBuffer
+{
+	color, position, normal, depth, smoothness, LENGTH
 };
 
 struct ModelData

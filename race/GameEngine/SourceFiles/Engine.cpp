@@ -2,7 +2,6 @@
 #include "ErrorHandler.h"
 #include <typeinfo>
 
-uint32_t ticksAtLast = 0;
 const int FRAMES_PER_SECOND = 60;
 
 Engine::Engine() {
@@ -14,6 +13,7 @@ Engine::~Engine() {
 };
 
 std::thread* Engine::start() {
+	
     // Create the other engines, or at least get pointer to them
 	_fileEngine_p = new FileEngine();
 	if (_fileEngine_p == nullptr) {
@@ -31,11 +31,12 @@ std::thread* Engine::start() {
     if (_aiEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }**/
-    //_inputEngine_p = new InputEngine();
-    //if (_inputEngine_p == nullptr) {
-        //std::cout << ErrorHandler::getErrorString(1) << std::endl;
-    //}
+    _inputEngine_p = new InputEngine();
+    if (_inputEngine_p == nullptr) {
+        std::cout << ErrorHandler::getErrorString(1) << std::endl;
+    }
     _soundEngine_p = new SoundEngine();
+
     if (_soundEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
@@ -44,7 +45,6 @@ std::thread* Engine::start() {
         _renderEngine_p->start(); // Render handles it's own thread
         _physicsThread_p = _physicsEngine_p->start();
         //_aiThread_p = _aiEngine_p->start();
-        //_inputEngine_p->start();
         _soundEngine_p->start();		
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
@@ -67,9 +67,11 @@ std::thread* Engine::start() {
 	rsd.models.push_back("cube");
 	rsd.models.push_back("sphere");
 	rsd.models.push_back("road_floor");
+	rsd.models.push_back("carModel");
 	rsd.textures.push_back("rainbow");
 	rsd.textures.push_back("test_texture");
 	rsd.textures.push_back("test_texture2");
+	rsd.textures.push_back("test_texture3");
 	rlmc->data = rsd;
 
 	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
@@ -83,14 +85,15 @@ void Engine::update() {
 	//run the renderer every tick
 
 	uint32_t currentTime = SDL_GetTicks();
-	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND) 
+	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND)
 	{
+		_inputEngine_p->checkInput();
 
 		//SDL_Log("Ticked");
 		if (_sceneObj != nullptr) {
 			PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
-			physicsContent->go = _sceneObj->getGameObject("Sphere");
-			physicsContent->deltaTime = ((float_t)(currentTime - ticksAtLast)) / 1000;
+			physicsContent->worldObjects = _sceneObj->_worldObjects;
+			physicsContent->deltaTime = (((float_t)(currentTime - ticksAtLast)) / 1000);
 			std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
 			myMessage->setContent(physicsContent);
 			MessagingSystem::instance().postMessage(myMessage);
@@ -119,13 +122,12 @@ void Engine::loop() {
 		//SDL_Log("This one should work");
 
 		this->update();
-		//std::this_thread::sleep_for(std::chrono::milliseconds(17));
 
-		SDL_Log("Doing a stupid befpre!");
+		//SDL_Log("Doing a stupid befpre!");
 
 		//std::this_thread::sleep_for(std::chrono::milliseconds(2000));
 
-		SDL_Log("Doing a stupid!");
+		//SDL_Log("Doing a stupid!");
 
 	}
 	this->stop();
@@ -144,7 +146,7 @@ void Engine::stop()
 {
 	//SDL_Log("Engine::stop");
 	_soundEngine_p->~SoundEngine();
-	//_inputEngine_p->~InputEngine();
+	_inputEngine_p->~InputEngine();
 	//_aiEngine_p->~AIEngine();
 	_physicsEngine_p->flagLoop();
 	_physicsEngine_p->~PhysicsEngine();

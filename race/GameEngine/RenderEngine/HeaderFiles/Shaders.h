@@ -39,17 +39,12 @@
 	@see Shaders
 	@see Shaders.cpp
 */
-static class Shaders
+class Shaders
 {
     /*------------------------------------------------------------------------------------
 		Class Fields
     ------------------------------------------------------------------------------------*/
 	private:
-		static char *vertexShaderSource;
-		static char *fragmentShaderSource;
-		static char *vertexShader2Source;
-		static char *fragmentShader2Source;
-
 		static std::string VSH_01_PATH;
 		static std::string FSH_01_PATH;
 		static std::string VSH_02_PATH;

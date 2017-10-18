@@ -121,7 +121,14 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 	case MESSAGE_TYPE::PhysicsCallMessageType:
 	{
 		PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-		rotate(content->go, Vector3(0.2, 0.3, 0.5) * content->deltaTime);
+		
+		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
+			GameObject* go = it->second;
+			generalPhysicsCall(go);
+			if (it->first == "Sphere") {
+				rotate(it->second, Vector3(0, MATH_PI, 0) * content->deltaTime);
+			}
+		}
 		_deltaTime = content->deltaTime;
 		break;
 	}
@@ -135,6 +142,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 	{
 		PhysicsInitializeContent* content = static_cast<PhysicsInitializeContent*>(myMessage->getContent());
 		_camera_p = content->camera;
+		_player_p = content->player;
 	}
 	break;
 	default:
@@ -143,18 +151,45 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 }
 
 void PhysicsEngine::getControllerInput(InputMessageContent *content) {
-	switch (content->buttonPressed) {
-	case INPUT_TYPES::RIGHT_ANALOG_Y: {
+	switch (content->type) {
+	case INPUT_TYPES::LOOK_AXIS: 
+	{
 		//SDL_Log("A Button Pressed");
-		rotateX(_camera_p, content->valueOfInput * _deltaTime);
+		rotate(_camera_p, Vector3(content->lookY, content->lookX, 0) * 2 * _deltaTime);
+		break;
+	}
+	case INPUT_TYPES::MOVE_AXIS: 
+	{
+		glm::mat4x4 matrix = glm::eulerAngleXYZ(_camera_p->_transform.getRotation().x, _camera_p->_transform.getRotation().y, _camera_p->_transform.getRotation().z);
+		translate(_camera_p, Vector3(content->lookX, 0, content->lookY).matrixMulti(matrix) * 2 * _deltaTime);
 	}
 		break;
-	case INPUT_TYPES::RIGHT_ANALOG_X: {
-		rotateY(_camera_p, content->valueOfInput * _deltaTime);
+	case INPUT_TYPES::TRIGGERS: 
+	{
+		if (_player_p->getComponent<AccelerationComponent*>()->_acceleration.magnitude() < _player_p->getComponent<AccelerationComponent*>()->_maxAcceleration) {
+			_player_p->getComponent<AccelerationComponent*>()->_acceleration += Vector3(_player_p->_transform._forward) * content->lookY * _deltaTime;
+		}
 	}
+		break;
 	default:
 		break;
 	}
+}
+
+void PhysicsEngine::generalPhysicsCall(GameObject* go) {
+	if (go->hasComponent<AccelerationComponent*>() && go->hasComponent<VelocityComponent*>()) {
+		applyAcceleration(go);
+		translate(go, go->getComponent<VelocityComponent*>()->_velocity);
+	}
+}
+
+void PhysicsEngine::applyAcceleration(GameObject* go) {
+	VelocityComponent* vc = go->getComponent<VelocityComponent*>();
+	if (vc->_velocity.magnitude() < vc->_maxVelocity) {
+		accelerate(go, Vector3(go->_transform._forward) * go->getComponent<AccelerationComponent*>()->_acceleration);
+	}
+		
+	//accelerate(go, go->);
 }
 
 /**
@@ -181,6 +216,11 @@ void PhysicsEngine::translate(GameObject *go, Vector3 translation)
 {
 	go->_transform._position += translation;
 };
+
+void PhysicsEngine::translateForward(GameObject *go, Vector3 translation) 
+{
+	go->_transform._position += (translation * go->_transform.getForward());
+};
 /**
  *  <summary>
  *  Move the game object in a direciton. Each axis should be modified by the delta time.
@@ -197,7 +237,7 @@ void PhysicsEngine::translate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
  */
 void PhysicsEngine::accelerate(GameObject *go, Vector3 amount)
 {
-	go->getComponent<AccelerationComponent*>()->_acceleration += amount;
+	go->getComponent<VelocityComponent*>()->_velocity += amount;
 };
 /**
  * <summary>
@@ -206,7 +246,7 @@ void PhysicsEngine::accelerate(GameObject *go, Vector3 amount)
  */
 void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {
-	go->getComponent<AccelerationComponent*>()->_acceleration += Vector3(x, y, z);
+	go->getComponent<VelocityComponent*>()->_velocity += Vector3(x, y, z);
 };
 void PhysicsEngine::decelerate(GameObject *go, Vector3 amount)
 {
@@ -225,6 +265,13 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
  */
 void PhysicsEngine::rotate(GameObject *go, Vector3 amount)
 {
+	glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
+	glm::vec4 temp = glm::vec4(go->_transform._forward.x, go->_transform._forward.y, go->_transform._forward.z, 1) * matrix;
+	glm::vec4 temp2 = glm::vec4(go->_transform._right.x, go->_transform._right.y, go->_transform._right.z, 1) * matrix;
+	glm::vec4 temp3 = glm::vec4(go->_transform._up.x, go->_transform._up.y, go->_transform._up.z, 1) * matrix;
+	go->_transform._forward = Vector3(temp.x, temp.y, temp.z);
+	go->_transform._right = Vector3(temp2.x, temp2.y, temp2.z);
+	go->_transform._up = Vector3(temp3.x, temp3.y, temp3.z);
 	go->_transform._rotation += amount;
 };
 void PhysicsEngine::rotateX(GameObject *go, GLfloat angle)

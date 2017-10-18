@@ -1,10 +1,10 @@
 #pragma once
 #ifdef __APPLE__
+#include <GL/glew.h>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
 #elif defined _WIN32 || defined _WIN64
+#include <glew.h>
 #include <SDL.h>
-#include <SDL_opengl.h>
 #endif
 #include "Vector3.h"
 class Transform
@@ -20,8 +20,13 @@ public:
     Vector3 getPosition();
 	Vector3 getRotation();
 	GLfloat getScale();
+	Vector3 getForward();
+	void adjustDirections();
     Vector3 _position;
     Vector3 _rotation;
     GLfloat _scale;
+	Vector3 _forward = Vector3(0, 0, 1);
+	Vector3 _right = Vector3(1, 0, 0);
+	Vector3 _up = Vector3(0, 1, 0);
 private:
 };
