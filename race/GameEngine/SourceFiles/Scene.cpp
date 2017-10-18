@@ -96,23 +96,31 @@ void Scene::setUpSceneOne() {
 
 	PhysicsInitializeContent* content = new PhysicsInitializeContent();
 	content->camera = go;
+
+	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, MATH_PI / 4, 0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	addGameObject("Cube", go);
+
+	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 0));
+	addGameObject("Sphere", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
+	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0));
+	go->addComponent(new AccelerationComponent(new Vector3(), 0.09f));
+	go->addComponent(new VelocityComponent(new Vector3(), 0.01f));
+	addGameObject("Player", go);
+
+	content->player = go;
 	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsInitializeCallType, false));
 	msg->setContent(content);
 	MessagingSystem::instance().postMessage(msg);
-
-	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f));
-	go->addComponent(new RenderComponent("cube", "test_texture", "", 0));
-	addGameObject("Cube", go);
-
-	go = new GameObject(new Transform());
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 0));
-	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("road_floor", "test_texture2", "", 0));
 	addGameObject("Road", go);
 
-	go = new GameObject(new Transform(new Vector3(0, 0, -10), new Vector3(-1.5 * MATH_PI, 0, 0), 3.0f));
+	go = new GameObject(new Transform(new Vector3(0, 0, -15), new Vector3(-1.5 * MATH_PI, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("road_floor", "test_texture", "", 0));
 	addGameObject("Road2", go);
 

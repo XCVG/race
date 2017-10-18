@@ -21,6 +21,7 @@ public:
 	Vector3 getRotation();
 	GLfloat getScale();
 	Vector3 getForward();
+	void adjustDirections();
     Vector3 _position;
     Vector3 _rotation;
     GLfloat _scale;

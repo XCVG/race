@@ -34,6 +34,7 @@
 #include "MessageReceiver.h"
 #include "GameObject.h"
 #include "../../HeaderFiles/InputTypes.h"
+#include "../../Components/HeaderFiles/ComponentHeaders.h"
 
 /*========================================================================================
 	Dependencies
@@ -107,4 +108,6 @@ class PhysicsEngine : public MessageReceiver
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
 		void getControllerInput(InputMessageContent*);
+		void applyAcceleration(GameObject*);
+		void generalPhysicsCall(GameObject*);
 };

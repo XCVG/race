@@ -131,7 +131,7 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	public:
 	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
 	std::string contentVar;
-	GameObject *go;
+	std::map<std::string, GameObject*> worldObjects;
 	float_t deltaTime;
 	PhysicsCallMessageContent(std::string s) { contentVar = s; }
 };
@@ -140,6 +140,7 @@ class PhysicsInitializeContent : public BaseMessageContent
 {
 	public:
 		GameObject* camera;
+		GameObject* player;
 };
 
 class FileLoadMessageContent : public BaseMessageContent

@@ -7,8 +7,8 @@
 SDL_Window *g_window_p;
 SDL_GLContext g_context;
 std::thread* engineThread_p;
-SDL_GameController *gameController;
-const int CONTROLLER_DEADZONE = 8000;
+
+
 /// <summary>
 /// Application entry point
 /// </summary>
@@ -16,9 +16,6 @@ const int CONTROLLER_DEADZONE = 8000;
 /// <param name="argv">Array containg string arguments passed to the application</param>
 /// <return>Status code on application exit.</return>
 int main(int argc, char ** argv) {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
-
-	InputEngine *IE = new InputEngine();
 
 	//open opengl and window
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -43,15 +40,6 @@ int main(int argc, char ** argv) {
 
 	bool quit = false;
 	SDL_Event ev;
-
-	for (int x = 0; x < SDL_NumJoysticks(); x++)
-	{
-		if (SDL_IsGameController(x))
-		{
-			gameController = SDL_GameControllerOpen(x);
-			break;
-		}
-	}
 	
 
 	uint32_t ticksAtLast = SDL_GetTicks();
@@ -65,27 +53,6 @@ int main(int argc, char ** argv) {
 				quit = true;
 				break;
 		}
-		Sint16 x = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTX);
-		Sint16 y = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_RIGHTY);
-		if (x < CONTROLLER_DEADZONE && x > -CONTROLLER_DEADZONE)
-			x = 0;
-
-		if (y < CONTROLLER_DEADZONE && y > -CONTROLLER_DEADZONE)
-			y = 0;
-
-		if (y != 0 || x != 0) 
-			IE->axisEventHandler(x, y, INPUT_TYPES::LOOK_AXIS);
-
-		x = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTX);
-		y = SDL_GameControllerGetAxis(gameController, SDL_CONTROLLER_AXIS_LEFTY);
-		if ((x < CONTROLLER_DEADZONE && x > -CONTROLLER_DEADZONE) && !(y > CONTROLLER_DEADZONE || y < -CONTROLLER_DEADZONE))
-			x = 0;
-
-		if ((y < CONTROLLER_DEADZONE && y > -CONTROLLER_DEADZONE) && !(x > CONTROLLER_DEADZONE || x < -CONTROLLER_DEADZONE))
-			y = 0;
-
-		if (y != 0 && x != 0)
-			IE->axisEventHandler(x, y, INPUT_TYPES::MOVE_AXIS);
 
 		//run the renderer every tick
 		/*uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
@@ -93,11 +60,6 @@ int main(int argc, char ** argv) {
 		{
 			//e->update();
 		}*/
-	}
-
-	if (gameController != NULL)
-	{
-		SDL_GameControllerClose(gameController);
 	}
 
 	
@@ -110,7 +72,6 @@ int main(int argc, char ** argv) {
 	engineThread_p->join();
 	SDL_Log("Engine::Thread Join");
 	delete(e);
-	delete(IE);
 	MessagingSystem::instance().kill();
 	SDL_DestroyWindow(g_window_p);
 

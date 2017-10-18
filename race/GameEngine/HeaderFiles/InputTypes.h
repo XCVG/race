@@ -9,5 +9,6 @@
 
 enum class INPUT_TYPES {
 	LOOK_AXIS,
-	MOVE_AXIS
+	MOVE_AXIS,
+	TRIGGERS
 };
