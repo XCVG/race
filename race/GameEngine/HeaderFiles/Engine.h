@@ -39,6 +39,7 @@ private:
     bool _running = false;
 	Scene* _sceneObj;
 	float i = 0;
+	uint32_t ticksAtLast = 0;
     void loop();
 	
 };

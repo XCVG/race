@@ -2,7 +2,6 @@
 #include "ErrorHandler.h"
 #include <typeinfo>
 
-uint32_t ticksAtLast = 0;
 const int FRAMES_PER_SECOND = 60;
 
 Engine::Engine() {
@@ -86,9 +85,8 @@ void Engine::update() {
 	//run the renderer every tick
 
 	uint32_t currentTime = SDL_GetTicks();
-	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND) 
+	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND)
 	{
-
 		_inputEngine_p->checkInput();
 
 		//SDL_Log("Ticked");

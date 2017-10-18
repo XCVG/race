@@ -20,7 +20,7 @@ public:
 	static size_t HashFilePath(std::string path, bool relative);
 private:
 	void loop();
-	void HandleMessage(Message *inBaseMessage);
+	void HandleMessage(std::shared_ptr<Message> inBaseMessage);
 	void HandleNormalMessage(FileLoadMessageContent inMessageContent);
 	void HandleImageMessage(FileLoadImageMessageContent inMessageContent);
 

@@ -27,8 +27,13 @@ GameObject* Scene::getGameObject(std::string id)
 	return _worldObjects.find(id)->second;
 }
 
+std::map<std::string, GameObject*> Scene::getWorldObjects() {
+	return _worldObjects;
+}
+
 RenderableScene* Scene::getRenderInformation()
 {
+	//_objectsMutex.lock();
 	RenderableScene* rs = new RenderableScene();
 
 	for (std::map<std::string, GameObject*>::iterator it = _worldObjects.begin(); it != _worldObjects.end(); ++it) {
@@ -75,7 +80,7 @@ RenderableScene* Scene::getRenderInformation()
 			}
 		}
 	}
-
+	//_objectsMutex.unlock();
 	return rs;
 };
 

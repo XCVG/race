@@ -121,11 +121,13 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 	case MESSAGE_TYPE::PhysicsCallMessageType:
 	{
 		PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-		//rotate(content->go, Vector3(2 * MATH_PI, 3 * MATH_PI, 2 * MATH_PI) * content->deltaTime);
+		
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
-			
+			if (it->first == "Sphere") {
+				rotate(it->second, Vector3(0, MATH_PI, 0) * content->deltaTime);
+			}
 		}
 		_deltaTime = content->deltaTime;
 		break;
