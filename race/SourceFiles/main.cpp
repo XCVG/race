@@ -16,7 +16,7 @@ std::thread* engineThread_p;
 /// <param name="argv">Array containg string arguments passed to the application</param>
 /// <return>Status code on application exit.</return>
 int main(int argc, char ** argv) {
-
+	SDL_Init(SDL_INIT_VIDEO);
 	//open opengl and window
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
