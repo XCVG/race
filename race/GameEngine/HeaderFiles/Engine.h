@@ -3,12 +3,10 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mixer.h>
-#include <SDL2/SDL_opengl.h>
 #elif defined _WIN32 || defined _WIN64
 #include <glew.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
-#include <SDL_opengl.h>
 #endif
 #include <string>
 #include <iostream>

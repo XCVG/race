@@ -10,7 +10,6 @@
 #include <gtc\matrix_transform.hpp>
 #include <gtx\euler_angles.hpp>
 #include <SDL.h> 
-#include <SDL_opengl.h> 
 #endif 
 class Vector3 
 { 
