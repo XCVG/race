@@ -6,6 +6,7 @@
 #include <SDL2/SDL.h> 
 #include <SDL2/SDL_opengl.h> 
 #elif defined _WIN32 || defined _WIN64
+#include <glew.h>
 #include <glm.hpp>
 #include <gtc\matrix_transform.hpp>
 #include <gtx\euler_angles.hpp>

@@ -1152,7 +1152,7 @@ private:
 			if (msg->getType() == MESSAGE_TYPE::InputMessageType)
 			{
 				InputMessageContent *imc = static_cast<InputMessageContent*>(msg->getContent());
-				if (imc->buttonPressed == INPUT_TYPES::Y_BUTTON)
+				if (imc->type == INPUT_TYPES::Y_BUTTON)
 					wasPressed = true;
 			}
 			_imq_p->clear();

@@ -18,6 +18,7 @@ std::thread* engineThread_p;
 int main(int argc, char ** argv) {
 	SDL_Init(SDL_INIT_VIDEO);
 	//open opengl and window
+	InputEngine *ie = new InputEngine();
 	g_window_p = SDL_CreateWindow("RACE", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, GlobalPrefs::windowWidth, GlobalPrefs::windowHeight, SDL_WINDOW_OPENGL | SDL_WINDOW_ALLOW_HIGHDPI);
 
 	// game code eventually goes here
@@ -44,6 +45,9 @@ int main(int argc, char ** argv) {
 		{
 			case SDL_QUIT:
 				quit = true;
+				break;
+			case SDL_CONTROLLERBUTTONDOWN:
+				ie->buttonEventHandler(ev);
 				break;
 		}
 
