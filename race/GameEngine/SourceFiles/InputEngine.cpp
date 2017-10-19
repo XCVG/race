@@ -37,7 +37,8 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 		case SDL_CONTROLLER_BUTTON_Y:
 			inputContent->type = INPUT_TYPES::Y_BUTTON;
 			break;
-			
+		case SDL_CONTROLLER_BUTTON_BACK:
+			inputContent->type = INPUT_TYPES::BACK_BUTTON;
 			break;
 		default:
 			break;

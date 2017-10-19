@@ -125,6 +125,9 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
+			if (!cameraIndependant) {
+				_camera_p->_transform._position.z = _player_p->_transform._position.z - 10.0f;
+			}
 			if (it->first == "Sphere") {
 				rotate(it->second, Vector3(0, MATH_PI, 0) * content->deltaTime);
 			}
@@ -155,21 +158,34 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 	case INPUT_TYPES::LOOK_AXIS: 
 	{
 		//SDL_Log("A Button Pressed");
-		rotate(_camera_p, Vector3(content->lookY, content->lookX, 0) * 2 * _deltaTime);
+		if (cameraIndependant) {
+			rotate(_camera_p, Vector3(content->lookY, content->lookX, 0) * 2 * _deltaTime);
+		}
+		
 		break;
 	}
 	case INPUT_TYPES::MOVE_AXIS: 
 	{
-		glm::mat4x4 matrix = glm::eulerAngleXYZ(_camera_p->_transform.getRotation().x, _camera_p->_transform.getRotation().y, _camera_p->_transform.getRotation().z);
-		translate(_camera_p, Vector3(content->lookX, 0, content->lookY).matrixMulti(matrix) * 2 * _deltaTime);
+		if (cameraIndependant) {
+			glm::mat4x4 matrix = glm::eulerAngleXYZ(_camera_p->_transform.getRotation().x, _camera_p->_transform.getRotation().y, _camera_p->_transform.getRotation().z);
+			translate(_camera_p, Vector3(content->lookX, 0, content->lookY).matrixMulti(matrix) * 2 * _deltaTime);
+		}
+		
 	}
 		break;
 	case INPUT_TYPES::TRIGGERS: 
 	{
 		if (_player_p->getComponent<AccelerationComponent*>()->_acceleration.magnitude() < _player_p->getComponent<AccelerationComponent*>()->_maxAcceleration) {
 			_player_p->getComponent<AccelerationComponent*>()->_acceleration += Vector3(_player_p->_transform._forward) * content->lookY * _deltaTime;
+			applyAcceleration(_player_p);
+			//SDL_Log("%f, %f, %f", _player_p->getComponent<AccelerationComponent*>()->_acceleration.x, _player_p->getComponent<AccelerationComponent*>()->_acceleration.y, _player_p->getComponent<AccelerationComponent*>()->_acceleration.z);
 		}
+		
 	}
+		break;
+	case INPUT_TYPES::BACK_BUTTON:
+		cameraIndependant = !cameraIndependant;
+		SDL_Log("%d", cameraIndependant);
 		break;
 	default:
 		break;
@@ -178,7 +194,7 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 
 void PhysicsEngine::generalPhysicsCall(GameObject* go) {
 	if (go->hasComponent<AccelerationComponent*>() && go->hasComponent<VelocityComponent*>()) {
-		applyAcceleration(go);
+		
 		translate(go, go->getComponent<VelocityComponent*>()->_velocity);
 	}
 }
@@ -188,8 +204,7 @@ void PhysicsEngine::applyAcceleration(GameObject* go) {
 	if (vc->_velocity.magnitude() < vc->_maxVelocity) {
 		accelerate(go, Vector3(go->_transform._forward) * go->getComponent<AccelerationComponent*>()->_acceleration);
 	}
-		
-	//accelerate(go, go->);
+	
 }
 
 /**

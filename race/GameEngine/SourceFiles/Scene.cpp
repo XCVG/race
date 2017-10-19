@@ -1,6 +1,7 @@
 #include "../HeaderFiles/Scene.h"
 
 const float MATH_PI = 3.14159;
+
 Scene::Scene()
 {
 	setUpSceneOne();
@@ -113,7 +114,7 @@ void Scene::setUpSceneOne() {
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0));
 	go->addComponent(new AccelerationComponent(new Vector3(), 0.09f));
-	go->addComponent(new VelocityComponent(new Vector3(), 0.01f));
+	go->addComponent(new VelocityComponent(new Vector3(), 0.1f));
 	addGameObject("Player", go);
 
 	content->player = go;

@@ -100,7 +100,6 @@ void Engine::update() {
 
 			RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
 			renderContent->scene_p = _sceneObj->getRenderInformation();
-
 			std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false));
 			msg->setContent(renderContent);
 			MessagingSystem::instance().postMessage(msg);

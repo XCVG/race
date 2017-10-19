@@ -61,6 +61,7 @@ class PhysicsEngine : public MessageReceiver
 		GameObject* _camera_p;
 		GLfloat _deltaTime;
 		const float MATH_PI = 3.14159;
+		bool cameraIndependant = true;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
