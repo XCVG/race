@@ -31,6 +31,9 @@ efficiently for such a short project timeline.
 The file structure will be as follows:
 ```
 race/
+    - Game Engine/
+        - Header Files/
+        - Source Files/
     - Header Files/
     - Resource Files/
         - Libraries/
