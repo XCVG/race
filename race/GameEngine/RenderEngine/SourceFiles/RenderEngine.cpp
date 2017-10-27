@@ -37,23 +37,37 @@
 #include "Quad.h"
 #include "Cube.h"
 
+//CONSTANTS: will change at least some to config options
+
 const int_least64_t IDLE_DELAY_CONST = 10;
 const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
 const std::string TEXTURE_BASEPATH_CONST = "ResourceFiles/Textures/";
 const std::string MODEL_EXTENSION_CONST = ".obj";
 const std::string TEXTURE_EXTENSION_CONST = ".png";
 
+/// <summary>
+/// Actual RenderEngine implementation, using PIMPL pattern for a modicum of isolation
+/// </summary>
 class RenderEngineImplementation
 {
 public:
+
+	/// <summary>
+	/// Implementation constructor
+	/// Does nothing
+	/// (runs on game engine thread)
+	/// </summary>
 	RenderEngineImplementation()
 	{
-		//constructor: on engine thread
 	}
 
+	/// <summary>
+	/// Implementation start method
+	/// Creates message handlers, does some setup, and starts render thread
+	/// (runs on game engine thread)
+	/// </summary>
 	void start()
 	{
-		//start: on engine thread
 
 		_window_p = g_window_p; //really ought to switch to dependency injection
 
@@ -86,11 +100,20 @@ public:
 		_renderThread_p = new std::thread(&RenderEngineImplementation::loop, this);
 	}
 
+	/// <summary>
+	/// Implementation update method
+	/// Since RenderEngine is totally asynchronous, this does nothing
+	/// (runs on game engine thread)
+	/// </summary>
 	void update()
 	{
-		//update: on engine thread, synchronized with game loop
 	}
 
+	/// <summary>
+	/// Implementation destructor
+	/// Kills render thread, cleans up message handlers and queues
+	/// (runs on game engine thread)
+	/// </summary>
 	~RenderEngineImplementation()
 	{
 		//destructor
@@ -187,6 +210,11 @@ private:
 	glm::mat4 _baseModelViewMatrix;
 	glm::mat4 _baseModelViewProjectionMatrix;
 
+	/// <summary>
+	/// Threaded loop method
+	/// Runs some setup, executes loop until signalled to stop, does some cleanup
+	/// (runs on own thread and is actually the base of it)
+	/// </summary>
 	void loop()
 	{
 		//initial setup: run once
@@ -203,7 +231,6 @@ private:
 		//loop: on RenderEngine thread
 		while (_isRunning)
 		{
-			//TODO: state switching and stuff
 			//doLoad, doRender/doImmediateLoad, doUnload
 
 			checkQueue();
@@ -249,6 +276,10 @@ private:
 		SDL_Log("RenderEngine thread halted!");
 	}
 
+	/// <summary>
+	/// Helper method for initial datastructure setup
+	/// Creates model and texture resource list, load queues, and await queues
+	/// </summary>
 	void setupStructuresOnThread()
 	{
 		//setup data structures
@@ -261,6 +292,10 @@ private:
 		_textureAwaitQueue_p = new std::vector<TextureLoadingData>();
 	}
 
+	/// <summary>
+	/// Helper method for initial OpenGL setup
+	/// Creates OpenGL context and initializes GLEW
+	/// </summary>
 	void setupGLOnThread()
 	{
 		//this should work in theory as long as we don't need a GL context on the main thread
@@ -281,10 +316,14 @@ private:
 			/* Problem: glewInit failed, something is seriously wrong. */
 			SDL_Log("Renderer: %s\n", glewGetErrorString(err));
 		}
-		SDL_Log((char*)glGetString(GL_VERSION));
-		SDL_Log((char*)glGetString(GL_RENDERER));
+		//SDL_Log((char*)glGetString(GL_VERSION));
+		//SDL_Log((char*)glGetString(GL_RENDERER));
 	}
 
+	/// <summary>
+	/// Helper method for initial scene setup
+	/// Confusingly named; actually handles window, shaders, G-buffer, and temporary cube
+	/// </summary>
 	void setupSceneOnThread()
 	{
 		setupWindow();
@@ -295,6 +334,10 @@ private:
 		setupCube(); //remove this soon
 	}
 
+	/// <summary>
+	/// Helper method for final scene cleanup
+	/// Confusingly named; actually handles window, shaders, G-buffer, and temporary cube
+	/// </summary>
 	void cleanupSceneOnThread()
 	{
 		cleanupProgram();
@@ -303,11 +346,19 @@ private:
 		cleanupCube();
 	}
 
+	/// <summary>
+	/// Helper method for final scene cleanup
+	/// Confusingly named; actually handles window, shaders, G-buffer, and temporary cube
+	/// </summary>
 	void cleanupGLOnThread()
 	{
-		//TODO cleanup all the GL gunk (necessary?)
+		//TODO destroy the openGL context
 	}
 
+	/// <summary>
+	/// Helper method for final datastructure cleanup
+	/// Deletes all await and load queue, as well as resource lists
+	/// </summary>
 	void cleanupStructuresOnThread()
 	{
 		//delete data structures
@@ -317,6 +368,228 @@ private:
 		delete(_modelLoadQueue_p);
 		delete(_textures_p);
 		delete(_models_p);
+	}
+
+	/// <summary>
+	/// Helper method for initial setup
+	/// Gets render width and height
+	/// </summary>
+	void setupWindow()
+	{
+		//eventually this may do more
+
+		int width, height;
+		if (GlobalPrefs::renderHeight > 0 && GlobalPrefs::renderWidth > 0)
+		{
+			width = GlobalPrefs::renderWidth;
+			height = GlobalPrefs::renderHeight;
+		}
+		else
+		{
+			SDL_GL_GetDrawableSize(_window_p, &width, &height);
+		}
+
+		_renderWidth = width;
+		_renderHeight = height;
+	}
+
+	/// <summary>
+	/// Helper method initial setup
+	/// Loads shaders and gets uniform locations
+	/// </summary>
+	void setupProgram()
+	{
+		_programID = Shaders::LoadShaders();
+		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
+		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
+		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
+		_shaderSmoothnessID = glGetUniformLocation(_programID, "iSmoothness");
+	}
+
+	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes shaders
+	/// </summary>
+	void cleanupProgram()
+	{
+		//delete shaders/program
+		if (_programID > 0)
+			glDeleteProgram(_programID);
+	}
+
+	/// <summary>
+	/// Helper method initial setup
+	/// Loads basic/placeholder cube model (will probably be removed)
+	/// </summary>
+	void setupCube()
+	{
+		//setup cube (fallback) VAO TODO CHANGE TO LOAD FROM FILE
+		glGenVertexArrays(1, &_cubeVertexArrayID);
+		glBindVertexArray(_cubeVertexArrayID);
+
+		glGenBuffers(1, &_cubeVertexBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+
+		//setup cube (fallback) texture
+
+		std::string texturePath = TEXTURE_BASEPATH_CONST + "default" + TEXTURE_EXTENSION_CONST;
+
+		SDL_Surface *image_p = FileHelper::loadImageFileFromStringRelative(texturePath);
+
+		GLint mode = GL_RGB;
+
+		if (image_p->format->BytesPerPixel == 4)
+			mode = GL_RGBA;
+
+		GLuint glTexId;
+
+		glGenTextures(1, &glTexId);
+		glBindTexture(GL_TEXTURE_2D, glTexId);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, mode, image_p->w, image_p->h, 0, mode, GL_UNSIGNED_BYTE, image_p->pixels);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		SDL_FreeSurface(image_p);
+		image_p = nullptr;
+
+		_cubeTextureID = glTexId;
+	}
+
+	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes cube VAO, VBO, and texture object
+	/// </summary>
+	void cleanupCube()
+	{
+		glDeleteBuffers(1, &_cubeVertexBufferID);
+		glDeleteVertexArrays(1, &_cubeVertexArrayID);
+		glDeleteTextures(1, &_cubeTextureID);
+	}
+
+	/// <summary>
+	/// Helper method initial setup
+	/// Sets up FBO and textures for G-buffer
+	/// </summary>
+	void setupFramebuffers()
+	{
+
+		//gen FBO
+		glGenFramebuffers(1, &_framebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
+
+		//gen framebuffer textures
+		glGenTextures(1, &_framebufferTexture0ID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _renderWidth, _renderHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _framebufferTexture0ID, 0);
+
+		glGenTextures(1, &_framebufferTexture1ID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _framebufferTexture1ID, 0);
+
+		glGenTextures(1, &_framebufferTexture2ID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, _framebufferTexture2ID, 0);
+
+		//gen depthbuffer
+		glGenTextures(1, &_framebufferDepthID);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, _renderWidth, _renderHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _framebufferDepthID, 0);
+
+		//configure FBO		
+		GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+		glDrawBuffers(3, drawBuffers);
+
+		//quick check
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			SDL_Log("Renderer: Failed to setup framebuffer!");
+			throw;
+		}
+
+		//unbind all
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	}
+
+	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes G-buffer textures and FBO
+	/// </summary>
+	void cleanupFramebuffers()
+	{
+		//delete FBOs
+		glDeleteTextures(1, &_framebufferTexture0ID);
+		glDeleteTextures(1, &_framebufferTexture1ID);
+		glDeleteTextures(1, &_framebufferTexture2ID);
+		glDeleteTextures(1, &_framebufferDepthID);
+		glDeleteFramebuffers(1, &_framebufferID);
+	}
+
+	/// <summary>
+	/// Helper method initial setup
+	/// Sets up fullscreen quad, shaders and uniform locations for lighting pass
+	/// </summary>
+	void setupFramebufferDraw()
+	{
+		glGenVertexArrays(1, &_framebufferDrawVertexArrayID);
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+
+		glGenBuffers(1, &_framebufferDrawVertexBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER, _framebufferDrawVertexBufferID);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindVertexArray(0);
+
+		_framebufferDrawProgramID = Shaders::LoadShadersFBDraw();
+
+		//get locations
+		_framebufferDrawTex0ID = glGetUniformLocation(_framebufferDrawProgramID, "fColor");
+		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
+		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
+		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
+		_framebufferDrawBufferID = glGetUniformLocation(_framebufferDrawProgramID, "testBuffer");
+	}
+
+	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes shaders
+	/// </summary>
+	void cleanupFramebufferDraw()
+	{
+		// delete VBOs
+		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
+		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
 	}
 
 	/// <summary>
@@ -552,7 +825,8 @@ private:
 	}
 
 	/// <summary>
-	/// Loads stuff
+	/// Executed in load state
+	/// Acquires context, dispatches file load messages, and handles incoming file load messages
 	/// </summary>
 	void doLoad()
 	{
@@ -625,7 +899,7 @@ private:
 		}
 
 		//process results from file return queue
-		//not optimized for concurrency TODO
+		//not optimized well for concurrency
 		if (!_fmq_p->empty())
 		{
 			_fmqMutex_p->lock();
@@ -673,6 +947,11 @@ private:
 
 	}
 
+	/// <summary>
+	/// Executed in render state
+	/// Handles a single load message and checks the file queue once
+	/// Not yet implemented
+	/// </summary>
 	void doSingleLoad()
 	{
 		//load one thing during drawing process
@@ -683,6 +962,10 @@ private:
 		//check the file return queue for ONE file
 	}
 
+	/// <summary>
+	/// Helper method for model loading
+	/// Loads a model from file loaded message, finding the matching model await data and binding it
+	/// </summary>
 	void findAndLoadModel(FileLoadedMessageContent *flmc)
 	{
 		int64_t foundModel = -1;
@@ -706,6 +989,10 @@ private:
 		}
 	}
 
+	/// <summary>
+	/// Helper method for texture loading
+	/// Loads a texture from file loaded message, finding the matching texture await data and binding it
+	/// </summary>
 	void findAndLoadTexture(FileLoadedImageMessageContent *flimc)
 	{
 		int64_t foundTexture = -1;
@@ -729,6 +1016,10 @@ private:
 		}
 	}
 
+	/// <summary>
+	/// Helper method for model loading
+	/// Converts and binds a single model, then pushes to model list
+	/// </summary>
 	void loadOneModel(ModelLoadingData mld, std::string *data_p)
 	{
 
@@ -765,6 +1056,10 @@ private:
 
 	}
 
+	/// <summary>
+	/// Helper method for texture loading
+	/// Converts and binds a single texture, then pushes to texture list
+	/// </summary>
 	void loadOneTexture(TextureLoadingData tld, SDL_Surface *image_p)
 	{
 		TextureData td;
@@ -793,7 +1088,8 @@ private:
 	}
 
 	/// <summary>
-	/// Unloads stuff
+	/// Executed in unload state
+	/// Unloads everything and returns to idle state
 	/// </summary>
 	void doUnload()
 	{
@@ -810,11 +1106,19 @@ private:
 		_state = RendererState::idle;
 	}
 
+	/// <summary>
+	/// Executed in idle state
+	/// Does nothing
+	/// </summary>
 	void doIdle()
 	{
 		//drawIdleScreen();
 	}
 
+	/// <summary>
+	/// Helper method for scene unload
+	/// Unbinds all VBOs, VAOs, and texture objects from OpenGL
+	/// </summary>
 	void unloadGL()
 	{
 		//unbind all OGL
@@ -835,6 +1139,10 @@ private:
 		}
 	}
 
+	/// <summary>
+	/// Helper method for scene unload
+	/// Clears input and file message queues, clears load and await queues, clears resource lists and purges scene and overlay data
+	/// </summary>
 	void unloadData()
 	{
 		//clear (but DO NOT DELETE) data structures
@@ -869,6 +1177,10 @@ private:
 		_lastOverlay_p = nullptr;
 	}
 
+	/// <summary>
+	/// Helper method for load screen
+	/// Draws a simple green screen
+	/// </summary>
 	void drawLoadScreen()
 	{
 		if (!haveContext())
@@ -881,6 +1193,10 @@ private:
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
+	/// <summary>
+	/// Helper method for unload screen
+	/// Draws a simple blue screen
+	/// </summary>
 	void drawUnloadScreen()
 	{
 		if (!haveContext())
@@ -894,6 +1210,10 @@ private:
 
 	}
 
+	/// <summary>
+	/// Helper method for idle screen
+	/// Draws a simple red screen
+	/// </summary>
 	void drawIdleScreen()
 	{
 		if (!haveContext())
@@ -904,193 +1224,6 @@ private:
 
 		glClearColor(0.75f, 0.5f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	}
-
-	void setupWindow()
-	{
-		//eventually this may do more
-
-		int width, height;
-		if (GlobalPrefs::renderHeight > 0 && GlobalPrefs::renderWidth > 0)
-		{
-			width = GlobalPrefs::renderWidth;
-			height = GlobalPrefs::renderHeight;
-		}
-		else
-		{
-			SDL_GL_GetDrawableSize(_window_p, &width, &height);
-		}
-
-		_renderWidth = width;
-		_renderHeight = height;
-	}
-
-
-	void setupProgram()
-	{
-		_programID = Shaders::LoadShaders();
-		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
-		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
-		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
-		_shaderSmoothnessID = glGetUniformLocation(_programID, "iSmoothness");
-	}
-
-	void cleanupProgram()
-	{
-		//delete shaders/program
-		if(_programID > 0)
-			glDeleteProgram(_programID);
-	}
-
-	void setupCube()
-	{
-		//setup cube (fallback) VAO TODO CHANGE TO LOAD FROM FILE
-		glGenVertexArrays(1, &_cubeVertexArrayID);
-		glBindVertexArray(_cubeVertexArrayID);
-
-		glGenBuffers(1, &_cubeVertexBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);		
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
-				
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-
-		//setup cube (fallback) texture
-
-		std::string texturePath = TEXTURE_BASEPATH_CONST + "default" + TEXTURE_EXTENSION_CONST;
-
-		SDL_Surface *image_p = FileHelper::loadImageFileFromStringRelative(texturePath);
-
-		GLint mode = GL_RGB;
-
-		if (image_p->format->BytesPerPixel == 4)
-			mode = GL_RGBA;
-
-		GLuint glTexId;
-
-		glGenTextures(1, &glTexId);
-		glBindTexture(GL_TEXTURE_2D, glTexId);
-
-		glTexImage2D(GL_TEXTURE_2D, 0, mode, image_p->w, image_p->h, 0, mode, GL_UNSIGNED_BYTE, image_p->pixels);
-
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-		glBindTexture(GL_TEXTURE_2D, 0);
-
-		SDL_FreeSurface(image_p);
-		image_p = nullptr;
-
-		_cubeTextureID = glTexId;
-	}
-
-	void cleanupCube()
-	{
-		glDeleteBuffers(1, &_cubeVertexBufferID);
-		glDeleteVertexArrays(1, &_cubeVertexArrayID);
-		glDeleteTextures(1, &_cubeTextureID);
-	}
-
-	void setupFramebuffers()
-	{
-
-		//gen FBO
-		glGenFramebuffers(1, &_framebufferID);
-		glBindFramebuffer(GL_FRAMEBUFFER, _framebufferID);
-
-		//gen framebuffer textures
-		glGenTextures(1, &_framebufferTexture0ID);
-		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _renderWidth, _renderHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _framebufferTexture0ID, 0);
-
-		glGenTextures(1, &_framebufferTexture1ID);
-		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _framebufferTexture1ID, 0);
-
-		glGenTextures(1, &_framebufferTexture2ID);
-		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, _framebufferTexture2ID, 0);
-
-		//gen depthbuffer
-		glGenTextures(1, &_framebufferDepthID);
-		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, _renderWidth, _renderHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _framebufferDepthID, 0);
-
-		//configure FBO		
-		GLenum drawBuffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-		glDrawBuffers(3, drawBuffers);
-
-		//quick check
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-		{
-			SDL_Log("Renderer: Failed to setup framebuffer!");
-			throw;
-		}
-
-		//unbind all
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	}
-
-	void cleanupFramebuffers()
-	{
-		//delete FBOs
-		glDeleteTextures(1, &_framebufferTexture0ID);
-		glDeleteTextures(1, &_framebufferTexture1ID);
-		glDeleteTextures(1, &_framebufferTexture2ID);
-		glDeleteTextures(1, &_framebufferDepthID);
-		glDeleteFramebuffers(1, &_framebufferID);
-	}
-
-	void setupFramebufferDraw()
-	{
-		glGenVertexArrays(1, &_framebufferDrawVertexArrayID);
-		glBindVertexArray(_framebufferDrawVertexArrayID);
-
-		glGenBuffers(1, &_framebufferDrawVertexBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, _framebufferDrawVertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-
-		_framebufferDrawProgramID = Shaders::LoadShadersFBDraw();
-
-		//get locations
-		_framebufferDrawTex0ID = glGetUniformLocation(_framebufferDrawProgramID, "fColor");
-		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
-		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
-		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
-		_framebufferDrawBufferID = glGetUniformLocation(_framebufferDrawProgramID, "testBuffer");
-	}
-
-	void cleanupFramebufferDraw()
-	{
-		// delete VBOs
-		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
-		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
 	}
 
 	/// <summary>
@@ -1122,9 +1255,13 @@ private:
 		}
 
 		//TODO vsync/no vsync
-		//SDL_GL_SwapWindow(_window_p);
+		//SDL_GL_SwapWindow(_window_p); //will be moved back here once idle screen problems can be fixed
 	}
 
+	/// <summary>
+	/// Draws a blank scene
+	/// Used when no scene data is available
+	/// </summary>
 	void drawNullScene()
 	{
 		//fallback drawing routine if no scene is available
@@ -1139,6 +1276,10 @@ private:
 
 	}
 
+	/// <summary>
+	/// Helper method to swap G-buffer output
+	/// Purely for testing, will be removed shortly
+	/// </summary>
 	void testBuffers()
 	{
 		//check input queue, if we have a Y button pressed, change buffer
@@ -1174,6 +1315,10 @@ private:
 
 	}
 
+	/// <summary>
+	/// "Draws" the camera
+	/// Actually sets up base matrices because in OpenGL you move the whole world
+	/// </summary>
 	void drawCamera(RenderableScene *scene)
 	{
 		RenderableCamera *camera = &scene->camera;
@@ -1193,6 +1338,11 @@ private:
 
 	}
 
+	/// <summary>
+	/// Draws all objects in the scene
+	/// Does some setup, then calls drawObject for each object
+	/// Essentially the geometry pass of a deferred renderer
+	/// </summary>
 	void drawObjects(RenderableScene *scene)
 	{
 
@@ -1206,7 +1356,7 @@ private:
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //TODO use camera color
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//TODO draw objects
+		//draw objects
 		for (int i = 0; i < scene->objects.size(); i++)
 		{
 			RenderableObject *ro = &scene->objects[i];
@@ -1215,6 +1365,11 @@ private:
 
 	}
 
+	/// <summary>
+	/// Draws a single object
+	/// Relys on some setup done in drawObjects(), so only call from there
+	/// Will fail to draw elegantly if resources are missing
+	/// </summary>
 	void drawObject(RenderableObject *object)
 	{
 		//draw one arbitraty object
@@ -1316,6 +1471,11 @@ private:
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
+	/// <summary>
+	/// Draws all lights in the scene
+	/// May be broken up with helper methods later
+	/// This is the lighting pass of a deferred renderer
+	/// </summary>
 	void drawLighting(RenderableScene *scene)
 	{
 		//setup framebuffer
@@ -1364,6 +1524,10 @@ private:
 
 	}
 
+	/// <summary>
+	/// Draws the overlay
+	/// TODO needs implementation
+	/// </summary>
 	void drawOverlay(RenderableOverlay *overlay)
 	{
 		//TODO draw overlay
@@ -1371,12 +1535,19 @@ private:
 		//need to make sure right framebuffer is set, clear depth but not color
 	}
 
+	/// <summary>
+	/// Draws the null overlay
+	/// Run if no overlay data is available, literally does nothing
+	/// </summary>
 	void drawNullOverlay()
 	{
-		//fallback overlay draw if no overlay is available
-
+		//probably just leave it blank yeah
 	}
 
+	/// <summary>
+	/// Helper method for context
+	/// Attempts to acquire OpenGL context, returns true on success
+	/// </summary>
 	bool acquireContext()
 	{
 		if (SDL_GL_GetCurrentContext() == _context_p)
@@ -1393,18 +1564,28 @@ private:
 		return false;
 	}
 
+	/// <summary>
+	/// Helper method for context
+	/// Releases OpenGL context so others can use it
+	/// </summary>
 	bool releaseContext()
 	{
 		//does nothing but we may need it later
 		return true;
 	}
 
+	/// <summary>
+	/// Helper method for context
+	/// Checks if the renderer has OpenGL context
+	/// </summary>
 	bool haveContext()
 	{
 		return SDL_GL_GetCurrentContext() == _context_p;
 	}
 
 };
+
+//Base class implementations below: just passes through because PIMPL
 
 RenderEngine::RenderEngine()
 {
