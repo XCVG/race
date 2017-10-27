@@ -6,6 +6,7 @@
 #pragma once
 
 #include "targetver.h"
+#include "sdkddkver.h"
 
 // Headers for CppUnitTest
 #include "CppUnitTest.h"
