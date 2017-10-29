@@ -125,9 +125,6 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
-			if (!cameraIndependant) {
-				_camera_p->_transform._position.z = _player_p->_transform._position.z - 10.0f;
-			}
 			if (it->first == "Sphere") {
 				rotate(it->second, Vector3(0, MATH_PI, 0) * content->deltaTime);
 			}
@@ -158,17 +155,33 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 	case INPUT_TYPES::LOOK_AXIS: 
 	{
 		//SDL_Log("A Button Pressed");
-		if (cameraIndependant) {
+		if (cameraIndependant) 
+		{
 			rotate(_camera_p, Vector3(content->lookY, content->lookX, 0) * 2 * _deltaTime);
+		}
+		else 
+		{
+			glm::mat4x4 matrix = glm::eulerAngleXYZ(0.0f, -content->lookX * _deltaTime, 0.0f);
+			Vector3 tempVect = Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
+				_camera_p->_transform._position.y - _player_p->_transform._position.y,
+				_camera_p->_transform._position.z - _player_p->_transform._position.z).matrixMulti(matrix);
+			tempVect += _player_p->_transform._position;
+			_camera_p->_transform._position = tempVect;
+			rotate(_camera_p, Vector3(0, -content->lookX, 0) * _deltaTime);
 		}
 		
 		break;
 	}
 	case INPUT_TYPES::MOVE_AXIS: 
 	{
-		if (cameraIndependant) {
+		if (cameraIndependant) 
+		{
 			glm::mat4x4 matrix = glm::eulerAngleXYZ(_camera_p->_transform.getRotation().x, _camera_p->_transform.getRotation().y, _camera_p->_transform.getRotation().z);
 			translate(_camera_p, Vector3(content->lookX, 0, content->lookY).matrixMulti(matrix) * 2 * _deltaTime);
+		}
+		else 
+		{
+
 		}
 		
 	}
