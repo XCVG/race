@@ -15,19 +15,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SoureFiles\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SoureFiles\unittest1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClInclude Include="HeaderFiles\main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HeaderFiles\stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HeaderFiles\targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClCompile Include="SourceFiles\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
