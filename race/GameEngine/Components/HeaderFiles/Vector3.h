@@ -17,7 +17,7 @@ class Vector3
 { 
 public: 
   Vector3(); 
-  Vector3(GLfloat x, GLfloat y, GLfloat z); 
+  Vector3(float x, float y, float z); 
   Vector3(const Vector3 &obj); 
   GLfloat x; 
   GLfloat y; 

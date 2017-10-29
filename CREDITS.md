@@ -18,3 +18,4 @@ This is where the credits for all the third-party resources we use will go. Libr
 
 ## MISC
 
+*Philsquared* - [*Catch*](https://github.com/philsquared/Catch)
