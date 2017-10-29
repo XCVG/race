@@ -74,6 +74,12 @@ public:
 	  this->z *= vec.z;
 	  return *this;
   }
+  Vector3& operator+(Vector3 vec) {
+	  this->x += vec.x;
+	  this->y += vec.y;
+	  this->z += vec.z;
+	  return *this;
+  }
   GLfloat magnitude()
   {
 	  float x = powf(this->x, 2);
@@ -84,6 +90,11 @@ public:
   Vector3& matrixMulti(glm::mat4x4 matrix) {
 	  glm::vec4 temp = glm::vec4(this->x, this->y, this->z, 1) * matrix;
 	  this->x = temp.x; this->y = temp.y, this->z = temp.z;
+	  return *this;
+  }
+  Vector3& normalize() {
+	  float num = sqrtf(powf(this->x, 2) + powf(this->y, 2) + powf(this->z, 2));
+	  this->x /= num; this->y /= num; this->z /= num;
 	  return *this;
   }
   GLfloat x; 
