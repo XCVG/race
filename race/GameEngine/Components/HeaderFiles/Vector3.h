@@ -80,6 +80,12 @@ public:
 	  this->z += vec.z;
 	  return *this;
   }
+  Vector3& operator-(Vector3 vec) {
+	  this->x -= vec.x;
+	  this->y -= vec.y;
+	  this->z -= vec.z;
+	  return *this;
+  }
   GLfloat magnitude()
   {
 	  float x = powf(this->x, 2);

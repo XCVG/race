@@ -165,10 +165,16 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 		else 
 		{
 			glm::mat4x4 matrix = glm::eulerAngleXYZ(0.0f, -content->lookX * _deltaTime, 0.0f);
-			Vector3 tempVect = Vector3(playerToCamera->matrixMulti(matrix));
+			Vector3 tempVect = Vector3(*playerToCamera).matrixMulti(matrix);
+			
 			tempVect += _player_p->_transform._position;
 			_camera_p->_transform._position = tempVect;
-			rotate(_camera_p, Vector3(0, -content->lookX, 0) * _deltaTime);
+			GLfloat angleY = atan2(playerToCamera->z, playerToCamera->x);
+			GLfloat angleX = atan2(playerToCamera->y, playerToCamera->z);
+			
+			//rotate(_camera_p, Vector3(0, -content->lookX, 0) * _deltaTime);
+			_camera_p->_transform._rotation.y = angleY - MATH_PI/2;
+			_camera_p->_transform._rotation.x = angleX;
 		}
 		
 		break;
@@ -189,7 +195,8 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 		break;
 	case INPUT_TYPES::TRIGGERS: 
 	{
-		if (_player_p->getComponent<AccelerationComponent*>()->_acceleration.magnitude() < _player_p->getComponent<AccelerationComponent*>()->_maxAcceleration) {
+		if (_player_p->getComponent<AccelerationComponent*>()->_acceleration.magnitude() < _player_p->getComponent<AccelerationComponent*>()->_maxAcceleration) 
+		{
 			_player_p->getComponent<AccelerationComponent*>()->_acceleration += Vector3(_player_p->_transform._forward) * content->lookY * _deltaTime;
 			applyAcceleration(_player_p);
 		}
@@ -206,9 +213,14 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
 }
 
 void PhysicsEngine::generalPhysicsCall(GameObject* go) {
-	if (go->hasComponent<AccelerationComponent*>() && go->hasComponent<VelocityComponent*>() && go->getComponent<VelocityComponent*>()->getVelocity().magnitude() > 0) {
+	playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
+		_camera_p->_transform._position.y - _player_p->_transform._position.y,
+		_camera_p->_transform._position.z - _player_p->_transform._position.z);
+	if (go->hasComponent<AccelerationComponent*>() && go->hasComponent<VelocityComponent*>() && go->getComponent<VelocityComponent*>()->getVelocity().magnitude() > 0) 
+	{
 		translate(go, go->getComponent<VelocityComponent*>()->_velocity);
-		if (go == _player_p && !cameraIndependant) {
+		if (go == _player_p && !cameraIndependant) 
+		{
 			_camera_p->_transform._position = Vector3(*playerToCamera) + go->_transform._position;
 		}
 	}
@@ -226,16 +238,19 @@ void PhysicsEngine::applyAcceleration(GameObject* go) {
  */
 void PhysicsEngine::stop()
 {
+	
 	if (_camera_p != nullptr)
 		delete(_camera_p);
 	if (_player_p != nullptr)
 		delete(_player_p);
+	delete(playerToCamera);
 	//SDL_Log("Physics::Stop");
 }
 
 void PhysicsEngine::flagLoop() {
 	_running = false;
 }
+
 /**
  *  <summary>
  *  Move the game object in a direciton. The translation should be modified by the delta time.
