@@ -147,7 +147,6 @@ private:
 	std::atomic<RendererState> _state;
 	RenderableScene *_lastScene_p;
 	RenderableOverlay *_lastOverlay_p;
-	RendererBuffer _buffer;
 
 	//messaging stuff
 	RenderMessageReceiver *_mr_p;
@@ -190,7 +189,7 @@ private:
 	GLuint _framebufferTexture2ID = 0;
 	GLuint _framebufferDepthID = 0;
 
-	//framebuffer program and uniforms
+	//framebuffer program and uniforms (will handle ambient and possibly main directional light as well) 
 	GLuint _framebufferDrawProgramID = 0;
 	GLuint _framebufferDrawVertexArrayID = 0;
 	GLuint _framebufferDrawVertexBufferID = 0;
@@ -198,7 +197,7 @@ private:
 	GLuint _framebufferDrawTex1ID = 0;
 	GLuint _framebufferDrawTex2ID = 0;
 	GLuint _framebufferDrawTex3ID = 0;
-	GLuint _framebufferDrawBufferID = 0;
+	GLuint _framebufferDrawAmbientID = 0;
 
 	//temporary cube stuff
 	GLuint _cubeVertexArrayID = 0;
@@ -578,7 +577,7 @@ private:
 		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
 		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
-		_framebufferDrawBufferID = glGetUniformLocation(_framebufferDrawProgramID, "testBuffer");
+		_framebufferDrawAmbientID = glGetUniformLocation(_framebufferDrawProgramID, "ambientLight");
 	}
 
 	/// <summary>
@@ -812,9 +811,6 @@ private:
 
 		//grab context
 		acquireContext();
-
-		//TESTONLY set default buffer
-		_buffer = RendererBuffer::color;
 
 		//DON'T DO ANYTHING LONG IN HERE BECAUSE THE QUEUE IS STILL BLOCKED
 	}
@@ -1239,7 +1235,6 @@ private:
 		}
 		else
 		{
-			testBuffers(); //check input, swap buffers if need be
 			drawCamera(_lastScene_p); //set up the camera
 			drawObjects(_lastScene_p); //do the geometry pass
 			drawLighting(_lastScene_p); //do the lighting pass
@@ -1273,45 +1268,6 @@ private:
 
 		glClearColor(1.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	}
-
-	/// <summary>
-	/// Helper method to swap G-buffer output
-	/// Purely for testing, will be removed shortly
-	/// </summary>
-	void testBuffers()
-	{
-		//check input queue, if we have a Y button pressed, change buffer
-		bool wasPressed = false;
-
-		_imqMutex_p->lock();
-
-		if (!_imq_p->empty())
-		{
-			Message *msg = _imq_p->front().get();
-			if (msg->getType() == MESSAGE_TYPE::InputMessageType)
-			{
-				InputMessageContent *imc = static_cast<InputMessageContent*>(msg->getContent());
-				if (imc->type == INPUT_TYPES::Y_BUTTON)
-					wasPressed = true;
-			}
-			_imq_p->clear();
-		}
-
-		_imqMutex_p->unlock();
-
-		if (wasPressed)
-		{
-			SDL_Log("Renderer: changing buffer type");
-
-			//set the renderer buffer type
-			int pos = static_cast<int>(_buffer);
-			pos++;
-			if (pos >= static_cast<int>(RendererBuffer::LENGTH))
-				pos = 0;
-			_buffer = static_cast<RendererBuffer>(pos);
-		}	
 
 	}
 
@@ -1352,6 +1308,8 @@ private:
 
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
+
+		glEnable(GL_CULL_FACE);
 
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //TODO use camera color
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1478,6 +1436,9 @@ private:
 	/// </summary>
 	void drawLighting(RenderableScene *scene)
 	{
+		//precalc ambient
+		glm::vec3 ambient = computeAmbientLight(scene);
+
 		//setup framebuffer
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferID);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1489,6 +1450,11 @@ private:
 		glClearColor(0, 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//I think I need this
+		glEnable(GL_BLEND);
+		glBlendEquation(GL_FUNC_ADD);
+		glBlendFunc(GL_ONE, GL_ONE);
+		
 		//bind shader
 		glUseProgram(_framebufferDrawProgramID);	
 
@@ -1509,8 +1475,8 @@ private:
 		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
 		glUniform1i(_framebufferDrawTex3ID, 3);
 
-		//"select" buffer (yes it's done in the shader itself, sue me)
-		glUniform1i(_framebufferDrawBufferID, static_cast<int>(_buffer));
+		//bind ambient light
+		glUniform3f(_framebufferDrawAmbientID, ambient.r, ambient.g, ambient.b);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
@@ -1522,6 +1488,28 @@ private:
 		glBindVertexArray(0);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+		glDisable(GL_BLEND);
+
+	}
+
+	/// <summary>
+	/// Helper method for scene lighting
+	/// Computes ambient light values
+	/// </summary>
+	glm::vec3 computeAmbientLight(RenderableScene *scene)
+	{
+		glm::vec3 totalAmbientLight = glm::vec3(0);
+
+		std::vector<RenderableLight> *lights = &scene->lights;
+		for (const RenderableLight& light : *lights)
+		{
+			if (light.type == RenderableLightType::AMBIENT)
+			{
+				totalAmbientLight += (light.color * light.intensity);
+			}
+		}
+
+		return totalAmbientLight;
 	}
 
 	/// <summary>
