@@ -42,7 +42,8 @@ enum class MESSAGE_TYPE
 {
 	BaseMessageType,
 	PhysicsCallMessageType,
-	PhysicsInitializeCallType,
+	InputInitializeCallType,
+	InputButtonDownCallType,
 	FileLoadMessageType,
 	InputMessageType,
 	FileLoadImageMessageType,
@@ -136,11 +137,17 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	PhysicsCallMessageContent(std::string s) { contentVar = s; }
 };
 
-class PhysicsInitializeContent : public BaseMessageContent
+class InputInitializeContent : public BaseMessageContent
 {
 	public:
 		GameObject* camera;
 		GameObject* player;
+};
+
+class InputButtonDownContent : public BaseMessageContent 
+{
+public:
+	SDL_Event ev;
 };
 
 class FileLoadMessageContent : public BaseMessageContent

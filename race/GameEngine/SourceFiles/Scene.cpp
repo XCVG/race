@@ -100,7 +100,7 @@ void Scene::setUpSceneOne() {
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	PhysicsInitializeContent* content = new PhysicsInitializeContent();
+	InputInitializeContent* content = new InputInitializeContent();
 	content->camera = go;
 
 	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, MATH_PI / 4, 0), 1.0f));
@@ -118,7 +118,7 @@ void Scene::setUpSceneOne() {
 	addGameObject("Player", go);
 
 	content->player = go;
-	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsInitializeCallType, false));
+	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));
 	msg->setContent(content);
 	MessagingSystem::instance().postMessage(msg);
 

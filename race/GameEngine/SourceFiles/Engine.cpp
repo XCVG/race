@@ -27,14 +27,14 @@ std::thread* Engine::start() {
     if (_physicsEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
+	_inputEngine_p = new InputEngine();
+	if (_inputEngine_p == nullptr) {
+		std::cout << ErrorHandler::getErrorString(1) << std::endl;
+	}
     /**_aiEngine_p = new AIEngine();
     if (_aiEngine_p == nullptr) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }**/
-    _inputEngine_p = new InputEngine();
-    if (_inputEngine_p == nullptr) {
-        std::cout << ErrorHandler::getErrorString(1) << std::endl;
-    }
     _soundEngine_p = new SoundEngine();
 
     if (_soundEngine_p == nullptr) {
@@ -59,6 +59,7 @@ std::thread* Engine::start() {
     }
 
 	_sceneObj = new Scene();
+	_inputEngine_p->setUpInput();
 
 	ticksAtLast = SDL_GetTicks();
 
@@ -87,13 +88,14 @@ void Engine::update() {
 	uint32_t currentTime = SDL_GetTicks();
 	if (currentTime > ticksAtLast + 1000 / FRAMES_PER_SECOND)
 	{
-		_inputEngine_p->checkInput();
+		float delta = (((float_t)(currentTime - ticksAtLast)) / 1000);
+		_inputEngine_p->checkInput(delta);
 
 		//SDL_Log("Ticked");
 		if (_sceneObj != nullptr) {
 			PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
 			physicsContent->worldObjects = _sceneObj->_worldObjects;
-			physicsContent->deltaTime = (((float_t)(currentTime - ticksAtLast)) / 1000);
+			physicsContent->deltaTime = delta;
 			std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
 			myMessage->setContent(physicsContent);
 			MessagingSystem::instance().postMessage(myMessage);
