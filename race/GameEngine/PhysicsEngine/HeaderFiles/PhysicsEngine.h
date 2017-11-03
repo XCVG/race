@@ -32,6 +32,7 @@
 #include <thread>
 #include <math.h>
 #include "MessageReceiver.h"
+#include "../../MessagingSystem/HeaderFiles/MessagingSystem.h"
 #include "GameObject.h"
 #include "../../HeaderFiles/InputTypes.h"
 #include "../../Components/HeaderFiles/ComponentHeaders.h"
@@ -57,10 +58,8 @@ class PhysicsEngine : public MessageReceiver
     ------------------------------------------------------------------------------------*/
     private:
 		bool _running = false;
-		GameObject* _player_p;
-		GameObject* _camera_p;
 		GLfloat _deltaTime;
-		const float MATH_PI = 3.14159;
+		const float MATH_PI = 3.14159f;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -91,17 +90,10 @@ class PhysicsEngine : public MessageReceiver
 			void flagLoop();
 			// TODO: Physics function calls
 	#pragma region Physics Calculation Methods
-			void translate(GameObject *go, Vector3 translation);
-			void translate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
-			void translateForward(GameObject *go, Vector3 traslation);
 			void accelerate(GameObject *go, Vector3 amount);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 			void decelerate(GameObject *go, Vector3 amount);
 			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
-			void rotate(GameObject *go, Vector3 amount);
-			void rotateX(GameObject *go, GLfloat angle);
-			void rotateY(GameObject *go, GLfloat angle);
-			void rotateZ(GameObject *go, GLfloat angle);
 	#pragma endregion
 
     private:

@@ -4,21 +4,21 @@ Transform::Transform()
     this->_position = new Vector3();
     this->_rotation = new Vector3();
     this->_scale = 1;
-	adjustDirections();
+	adjustDirections(_rotation);
 };
 Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
     this->_position = _position;
     this->_rotation = _rotation;
     this->_scale = _scale;
-	adjustDirections();
+	adjustDirections(this->_rotation);
 };
 Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
     this->_position = *_position;
     this->_rotation = *_rotation;
     this->_scale = _scale;
-	adjustDirections();
+	adjustDirections(this->_rotation);
 
 };
 Transform::Transform(const Transform &obj)
@@ -26,7 +26,7 @@ Transform::Transform(const Transform &obj)
     this->_position = obj._position;
     this->_rotation = obj._rotation;
     this->_scale = obj._scale;
-	adjustDirections();
+	adjustDirections(this->_rotation);
 };
 void Transform::setPosition(Vector3 _position)
 {
@@ -35,7 +35,7 @@ void Transform::setPosition(Vector3 _position)
 void Transform::setRotation(Vector3 _rotation)
 {
     this->_rotation = _rotation;
-	adjustDirections();
+	adjustDirections(this->_rotation);
 };
 void Transform::setScale(GLfloat _scale)
 {
@@ -58,9 +58,69 @@ Vector3 Transform::getForward()
 	return this->_forward;
 };
 
-void Transform::adjustDirections() {
-	glm::mat4x4 matrix = glm::eulerAngleXYZ(this->_rotation.x, this->_rotation.y, this->_rotation.z);
+void Transform::adjustDirections(Vector3 rot) 
+{
+	glm::mat4x4 matrix = glm::eulerAngleXYZ(rot.x, rot.y, rot.z);
 	_forward = _forward.matrixMulti(matrix);
+	//SDL_Log("X:%f, Y:%f, Z:%f", _forward.x, _forward.y, _forward.z);
 	_right = _right.matrixMulti(matrix);
 	_up = _up.matrixMulti(matrix);
 }
+
+/**
+* <summary>
+* Rotate the object by a set amount. This rotation is in radians only,
+* and is only ever increasing the rotation.
+* Please specify positive/negative when calling. e.g., rotate(&go, -1.2);
+* </summary>
+*/
+void Transform::rotate(Vector3 amount)
+{
+	adjustDirections(amount);
+	glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
+	_rotation += amount;
+	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);
+};
+void Transform::rotateX(GLfloat angle)
+{
+	adjustDirections(Vector3(angle, 0, 0));
+	_rotation.x += angle;
+};
+void Transform::rotateY(GLfloat angle)
+{
+	adjustDirections(Vector3(0, angle, 0));
+	_rotation.y += angle;
+};
+void Transform::rotateZ(GLfloat angle)
+{
+	adjustDirections(Vector3(0, 0, angle));
+	_rotation.z += angle;
+};
+
+/**
+*  <summary>
+*  Move the game object in a direciton. The translation should be modified by the delta time.
+*  </summary>
+*/
+void Transform::translate(Vector3 translation)
+{
+	_position += translation;
+};
+
+void Transform::translateForward(GLfloat num)
+{
+	_position += Vector3(_forward) * num;
+};
+
+void Transform::translateRight(GLfloat num) {
+	_position += Vector3(_right) * num;
+}
+/**
+*  <summary>
+*  Move the game object in a direciton. Each axis should be modified by the delta time.
+*  </summary>
+*/
+void Transform::translate(GLfloat x, GLfloat y, GLfloat z)
+{
+	_position += Vector3(x, y, z);
+};
