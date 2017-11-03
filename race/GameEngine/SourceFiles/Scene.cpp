@@ -39,8 +39,6 @@ RenderableScene* Scene::getRenderInformation()
 
 	for (std::map<std::string, GameObject*>::iterator it = _worldObjects.begin(); it != _worldObjects.end(); ++it) {
 		it->second->_lockMutex.lock();
-		//SDL_Log("Scene Locked object: ");
-		//SDL_Log(it->first.c_str());
 		if (it->first == "Camera" && it->second->getComponent<CameraComponent*>() != nullptr) 
 		{
 			RenderableCamera rc;
@@ -77,14 +75,12 @@ RenderableScene* Scene::getRenderInformation()
 				ro.normalName = rc->getNormalName();
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
-				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());
+				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());			
 				ro.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
 			}
 		}
-		//SDL_Log("Scene Unlocked object: ");
-		//SDL_Log(it->first.c_str());
 		it->second->_lockMutex.unlock();
 	}
 	//_objectsMutex.unlock();

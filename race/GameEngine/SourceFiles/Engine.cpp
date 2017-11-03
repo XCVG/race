@@ -2,10 +2,11 @@
 #include "ErrorHandler.h"
 #include <typeinfo>
 
-const int FRAMES_PER_SECOND = 60;
+const int FRAMES_PER_SECOND = 120;
+
 
 Engine::Engine() {
-    
+	
 };
 
 Engine::~Engine() {
@@ -13,7 +14,7 @@ Engine::~Engine() {
 };
 
 std::thread* Engine::start() {
-	
+	subscribe(MESSAGE_TYPE::PhysicsReturnCall);
     // Create the other engines, or at least get pointer to them
 	_fileEngine_p = new FileEngine();
 	if (_fileEngine_p == nullptr) {
@@ -90,26 +91,18 @@ void Engine::update() {
 	{
 		float delta = (((float_t)(currentTime - ticksAtLast)) / 1000);
 		_inputEngine_p->checkInput(delta);
-
-		//SDL_Log("Ticked");
 		if (_sceneObj != nullptr) {
-			PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent("Test");
-			physicsContent->worldObjects = _sceneObj->_worldObjects;
-			physicsContent->deltaTime = delta;
-			std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
-			myMessage->setContent(physicsContent);
-			MessagingSystem::instance().postMessage(myMessage);
 
-			RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
-			renderContent->scene_p = _sceneObj->getRenderInformation();
-			std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false));
-			msg->setContent(renderContent);
-			MessagingSystem::instance().postMessage(msg);
+			doWrites(delta);
+			while (checkMessages());
+			doReads();
 		}
 		
 		ticksAtLast = currentTime;
 	}
-	//SDL_Log("%s", "Running Engine::udpate");
+	else {
+		std::this_thread::yield();
+	}
 }
 
 void Engine::loop() {
@@ -120,16 +113,7 @@ void Engine::loop() {
 	}
 	while (_running) 
 	{
-		//SDL_Log("This one should work");
-
 		this->update();
-
-		//SDL_Log("Doing a stupid befpre!");
-
-		//std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
-		//SDL_Log("Doing a stupid!");
-
 	}
 	this->stop();
 };
@@ -145,7 +129,6 @@ void Engine::loop() {
 /// 
 void Engine::stop() 
 {
-	//SDL_Log("Engine::stop");
 	_soundEngine_p->~SoundEngine();
 	_inputEngine_p->~InputEngine();
 	//_aiEngine_p->~AIEngine();
@@ -164,4 +147,63 @@ void Engine::stop()
 void Engine::flagLoop() 
 {
 	_running = false;
+}
+
+bool Engine::checkMessages()
+{
+	_urgentMessageQueueMutex_p->lock();
+	_messageQueueMutex_p->lock();
+	if (_messageQueue.empty() && _urgentMessageQueue.empty())
+	{
+		_urgentMessageQueueMutex_p->unlock();
+		_messageQueueMutex_p->unlock();
+	}
+	else {
+		if (!_urgentMessageQueue.empty())
+		{
+			_messageQueueMutex_p->unlock();
+			// process an urgent message
+			if (_urgentMessageQueue.front()->getType() == MESSAGE_TYPE::PhysicsReturnCall) {
+				_urgentMessageQueueMutex_p->unlock();
+				_urgentMessageQueue.pop();
+				return false;
+			}
+			_urgentMessageQueueMutex_p->unlock();
+		}
+		else
+		{
+			_urgentMessageQueueMutex_p->unlock();
+			if (!_messageQueue.empty())
+			{
+				// process a normal messages
+				if (_messageQueue.front()->getType() == MESSAGE_TYPE::PhysicsReturnCall) {
+					_messageQueueMutex_p->unlock();
+					_messageQueue.pop();
+					return false;
+				}
+			}
+			_messageQueueMutex_p->unlock();
+		}
+	}
+	
+	return true;
+}
+
+void Engine::doWrites(GLfloat delta)
+{
+	PhysicsCallMessageContent *physicsContent = new PhysicsCallMessageContent(std::to_string(count++));
+	physicsContent->worldObjects = _sceneObj->_worldObjects;
+	physicsContent->deltaTime = delta;
+	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsCallMessageType));
+	myMessage->setContent(physicsContent);
+	MessagingSystem::instance().postMessage(myMessage);
+}
+
+void Engine::doReads()
+{
+	RenderDrawMessageContent *renderContent = new RenderDrawMessageContent();
+	renderContent->scene_p = _sceneObj->getRenderInformation();
+	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::RenderDrawMessageType, false));
+	msg->setContent(renderContent);
+	MessagingSystem::instance().postMessage(msg);
 }

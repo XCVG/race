@@ -41,6 +41,7 @@
 enum class MESSAGE_TYPE
 {
 	BaseMessageType,
+	PhysicsReturnCall,
 	PhysicsCallMessageType,
 	PhysicsAccelerateCallType,
 	InputInitializeCallType,

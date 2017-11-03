@@ -39,13 +39,14 @@ void InputEngine::setUpInput()
 				_playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
 					_camera_p->_transform._position.y - _player_p->_transform._position.y,
 					_camera_p->_transform._position.z - _player_p->_transform._position.z);
+				GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
+				_camera_p->_transform._rotation.y = angleY - MATH_PI / 2;
 				_messageQueue.pop();
 				break;
 			}
 		}
 	}
-	GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
-	_camera_p->_transform._rotation.y = angleY - MATH_PI / 2;
+	
 }
 
 InputEngine::~InputEngine() 

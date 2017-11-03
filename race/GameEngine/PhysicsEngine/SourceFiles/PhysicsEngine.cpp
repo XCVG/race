@@ -127,17 +127,13 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 			generalPhysicsCall(go);
 			
 			if (it->first == "Sphere") {
-				
-				//SDL_Log("Physics Locked object: ");
-				//SDL_Log(it->first.c_str());
-				it->second->_transform.rotate(Vector3(0, MATH_PI / 16, 0) * content->deltaTime);
-				//SDL_Log("Physics Unlocked object: ");
-				//SDL_Log(it->first.c_str());
-				
+				it->second->_transform.rotate(Vector3(0, MATH_PI / 2, 0) * content->deltaTime);
 			}
 			go->_lockMutex.unlock();
 		}
 		_deltaTime = content->deltaTime;
+		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
+		MessagingSystem::instance().postMessage(myMessage);
 		break;
 	}
 	case MESSAGE_TYPE::PhysicsAccelerateCallType: 

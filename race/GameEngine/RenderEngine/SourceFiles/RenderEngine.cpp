@@ -1290,6 +1290,7 @@ private:
 		//transform!
 		glm::mat4 objectMVM = glm::mat4();
 		objectMVM = glm::translate(objectMVM, object->position);
+		//SDL_Log("%f, %f, %f", object->position.x, object->position.y, object->position.z);
 		objectMVM = glm::scale(objectMVM, object->scale);
 		objectMVM = glm::rotate(objectMVM, object->rotation.y, glm::vec3(0, 1, 0));
 		objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
