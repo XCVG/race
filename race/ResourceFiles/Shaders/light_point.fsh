@@ -17,12 +17,24 @@ void main()
     vec3 position = texture( fPosition, uv).rgb;
     vec3 normal = texture( fNormal, uv).rgb;
 	
-	vec3 lightDir = normalize(lightPos - position);
+	vec3 lightColorFac = lightColor * lightIntensity;
+	vec3 lightVec = lightPos - position;
+	vec3 lightDir = normalize(lightVec);
+	float lightDist = length(lightVec);
 	normal = normalize(normal);
 	
 	vec3 eyeDir = normalize(cameraPos - position);
 	vec3 vHalfVec = normalize(lightDir + eyeDir);
 	
 	//TODO add smoothness, range/fallloff, intensity mul, light color
-	color =  max(dot(normal,lightDir),0) * image + pow(max(dot(normal,vHalfVec),0.0), 100) * 1.5;
+	float attn = pow(clamp(1.0 - lightDist/lightRange, 0.0, 1.0), 2);
+	float diffuse = max(dot(normal, lightDir),0) * attn * (1.0 - smoothness);
+	float spec = 0.0;
+	if(dot(normal, lightDir) >= 0.0) //doesn't work, need to find a WORKING way to check angles
+	{
+		spec = pow(max(dot(reflect(-lightDir, normal), eyeDir),0.0), 50) * attn * smoothness;
+	}	
+	
+	
+	color = (diffuse * lightColorFac) + (spec * lightColorFac);
 }

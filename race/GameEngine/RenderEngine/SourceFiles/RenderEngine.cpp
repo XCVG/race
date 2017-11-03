@@ -1347,15 +1347,16 @@ private:
 
 		glEnable(GL_CULL_FACE);
 
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); //TODO use camera color
+		glm::vec3 clearColor = scene->camera.clearColor;
+		glClearColor(clearColor.r, clearColor.g, clearColor.b, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//draw objects
+		//draw objects 
 		for (int i = 0; i < scene->objects.size(); i++)
 		{
 			RenderableObject *ro = &scene->objects[i];
-			drawObject(ro);
-		}
+			drawObject(ro);  
+		} 
 
 	}
 
@@ -1492,6 +1493,8 @@ private:
 		SDL_GL_GetDrawableSize(_window_p, &w, &h);
 		glViewport(0, 0, w, h);
 
+		//TODO draw background as a fullscreen quad because glClearColor isn't working (or just fix glClearColor)
+
 		glClearColor(0, 0, 0, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -1499,7 +1502,8 @@ private:
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
-		
+		glDepthMask(GL_FALSE);
+
 		//draw main scene/lighting pass (ambient and main directional)
 		drawLightingMainPass(ambient);
 
@@ -1517,6 +1521,8 @@ private:
 		}
 
 		glDisable(GL_BLEND);
+
+		glDepthMask(GL_TRUE); 
 
 	}
 
