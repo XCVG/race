@@ -1,6 +1,7 @@
 #include "../HeaderFiles/Scene.h"
 
 const float MATH_PI = 3.14159;
+
 Scene::Scene()
 {
 	setUpSceneOne();
@@ -37,6 +38,7 @@ RenderableScene* Scene::getRenderInformation()
 	RenderableScene* rs = new RenderableScene();
 
 	for (std::map<std::string, GameObject*>::iterator it = _worldObjects.begin(); it != _worldObjects.end(); ++it) {
+		it->second->_lockMutex.lock();
 		if (it->first == "Camera" && it->second->getComponent<CameraComponent*>() != nullptr) 
 		{
 			RenderableCamera rc;
@@ -72,12 +74,13 @@ RenderableScene* Scene::getRenderInformation()
 				ro.normalName = rc->getNormalName();
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
-				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());
+				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());			
 				ro.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
 			}
 		}
+		it->second->_lockMutex.unlock();
 	}
 	//_objectsMutex.unlock();
 	return rs;
@@ -94,11 +97,11 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 };
 
 void Scene::setUpSceneOne() {
-	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, 10), new Vector3(0, 0, 0), 1.0f));
+	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, -5), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	PhysicsInitializeContent* content = new PhysicsInitializeContent();
+	InputInitializeContent* content = new InputInitializeContent();
 	content->camera = go;
 
 	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, MATH_PI / 4, 0), 1.0f));
@@ -106,17 +109,17 @@ void Scene::setUpSceneOne() {
 	addGameObject("Cube", go);
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0));
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f));
 	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
-	go->addComponent(new AccelerationComponent(new Vector3(), 0.09f));
-	go->addComponent(new VelocityComponent(new Vector3(), 0.01f));
+	go->addComponent(new AccelerationComponent(new Vector3(), 10.0f));
+	go->addComponent(new VelocityComponent(new Vector3(), 10.0f));
 	addGameObject("Player", go);
 
 	content->player = go;
-	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsInitializeCallType, false));
+	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));
 	msg->setContent(content);
 	MessagingSystem::instance().postMessage(msg);
 
