@@ -58,9 +58,11 @@ Vector3 Transform::getForward()
 	return this->_forward;
 };
 
-void Transform::adjustDirections(Vector3 rot) {
+void Transform::adjustDirections(Vector3 rot) 
+{
 	glm::mat4x4 matrix = glm::eulerAngleXYZ(rot.x, rot.y, rot.z);
 	_forward = _forward.matrixMulti(matrix);
+	//SDL_Log("X:%f, Y:%f, Z:%f", _forward.x, _forward.y, _forward.z);
 	_right = _right.matrixMulti(matrix);
 	_up = _up.matrixMulti(matrix);
 }
@@ -77,6 +79,7 @@ void Transform::rotate(Vector3 amount)
 	adjustDirections(amount);
 	glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
 	_rotation += amount;
+	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);
 };
 void Transform::rotateX(GLfloat angle)
 {

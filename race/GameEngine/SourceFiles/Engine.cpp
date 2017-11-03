@@ -2,7 +2,7 @@
 #include "ErrorHandler.h"
 #include <typeinfo>
 
-const int FRAMES_PER_SECOND = 120;
+const int FRAMES_PER_SECOND = 60;
 
 Engine::Engine() {
     

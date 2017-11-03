@@ -42,6 +42,7 @@ enum class MESSAGE_TYPE
 {
 	BaseMessageType,
 	PhysicsCallMessageType,
+	PhysicsAccelerateCallType,
 	InputInitializeCallType,
 	InputButtonDownCallType,
 	FileLoadMessageType,
@@ -135,6 +136,13 @@ class PhysicsCallMessageContent: public BaseMessageContent
 	std::map<std::string, GameObject*> worldObjects;
 	float_t deltaTime;
 	PhysicsCallMessageContent(std::string s) { contentVar = s; }
+};
+
+class PhysicsAccelerateContent : public BaseMessageContent
+{
+public:
+	GameObject* object;
+	GLfloat amount;
 };
 
 class InputInitializeContent : public BaseMessageContent

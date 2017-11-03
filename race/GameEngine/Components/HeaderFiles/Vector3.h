@@ -103,6 +103,9 @@ public:
 	  this->x /= num; this->y /= num; this->z /= num;
 	  return *this;
   }
+  GLfloat dotProduct(Vector3 vec) {
+	  return this->x * vec.x + this->y * vec.y + this->z * vec.z;
+  }
   GLfloat x; 
   GLfloat y; 
   GLfloat z; 

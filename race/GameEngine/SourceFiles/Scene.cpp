@@ -38,6 +38,9 @@ RenderableScene* Scene::getRenderInformation()
 	RenderableScene* rs = new RenderableScene();
 
 	for (std::map<std::string, GameObject*>::iterator it = _worldObjects.begin(); it != _worldObjects.end(); ++it) {
+		it->second->_lockMutex.lock();
+		//SDL_Log("Scene Locked object: ");
+		//SDL_Log(it->first.c_str());
 		if (it->first == "Camera" && it->second->getComponent<CameraComponent*>() != nullptr) 
 		{
 			RenderableCamera rc;
@@ -80,6 +83,9 @@ RenderableScene* Scene::getRenderInformation()
 				rs->objects.push_back(ro);
 			}
 		}
+		//SDL_Log("Scene Unlocked object: ");
+		//SDL_Log(it->first.c_str());
+		it->second->_lockMutex.unlock();
 	}
 	//_objectsMutex.unlock();
 	return rs;
@@ -96,7 +102,7 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 };
 
 void Scene::setUpSceneOne() {
-	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, 10), new Vector3(0, 0, 0), 1.0f));
+	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, -5), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
@@ -108,13 +114,13 @@ void Scene::setUpSceneOne() {
 	addGameObject("Cube", go);
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 0));
+	go->addComponent(new RenderComponent("sphere", "crate", "", 0));
 	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0));
-	go->addComponent(new AccelerationComponent(new Vector3(), 0.09f));
-	go->addComponent(new VelocityComponent(new Vector3(), 0.1f));
+	go->addComponent(new AccelerationComponent(new Vector3(), 10.0f));
+	go->addComponent(new VelocityComponent(new Vector3(), 10.0f));
 	addGameObject("Player", go);
 
 	content->player = go;

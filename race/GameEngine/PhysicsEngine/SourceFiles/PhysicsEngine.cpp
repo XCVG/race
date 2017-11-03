@@ -30,6 +30,7 @@
 PhysicsEngine::PhysicsEngine()
 {
 	subscribe(MESSAGE_TYPE::PhysicsCallMessageType);
+	subscribe(MESSAGE_TYPE::PhysicsAccelerateCallType);
 }
 
 ///
@@ -122,17 +123,37 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 		
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
+			go->_lockMutex.lock();
 			generalPhysicsCall(go);
+			
 			if (it->first == "Sphere") {
-				//rotate(it->second, Vector3(0, MATH_PI, 0) * content->deltaTime);
-				it->second->_transform.rotate(Vector3(0, MATH_PI, 0) * content->deltaTime);
+				
+				//SDL_Log("Physics Locked object: ");
+				//SDL_Log(it->first.c_str());
+				it->second->_transform.rotate(Vector3(0, MATH_PI / 16, 0) * content->deltaTime);
+				//SDL_Log("Physics Unlocked object: ");
+				//SDL_Log(it->first.c_str());
+				
 			}
+			go->_lockMutex.unlock();
 		}
 		_deltaTime = content->deltaTime;
 		break;
 	}
+	case MESSAGE_TYPE::PhysicsAccelerateCallType: 
+	{
+		PhysicsAccelerateContent* content = static_cast<PhysicsAccelerateContent*>(myMessage->getContent());
+		GameObject* go = content->object;
+		GLfloat amount = content->amount;
+		if (go->getComponent<AccelerationComponent*>()->_acceleration.magnitude() < go->getComponent<AccelerationComponent*>()->_maxAcceleration)
+		{
+			go->getComponent<AccelerationComponent*>()->_acceleration += Vector3(go->_transform._forward) * amount * _deltaTime;
+			applyAcceleration(go);
+			//SDL_Log("%f, %f, %f", go->getComponent<AccelerationComponent*>()->_acceleration.x, go->getComponent<AccelerationComponent*>()->_acceleration.y, go->getComponent<AccelerationComponent*>()->_acceleration.z);
+		}
 		break;
-	break;
+	}
+		
 	default:
 		break;
 	}
@@ -141,19 +162,17 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 void PhysicsEngine::generalPhysicsCall(GameObject* go) {
 	if (go->hasComponent<AccelerationComponent*>() && go->hasComponent<VelocityComponent*>() && go->getComponent<VelocityComponent*>()->getVelocity().magnitude() > 0) 
 	{
-		//translate(go, go->getComponent<VelocityComponent*>()->_velocity);
-		go->_transform.translate(go->getComponent<VelocityComponent*>()->_velocity);
-		//if (go == _player_p && !cameraIndependant) 
-		//{
-		//	_camera_p->_transform._position = Vector3(*playerToCamera) + go->_transform._position;
-		//}
+		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
+		go->_transform.translate(Vector3(go->getComponent<VelocityComponent*>()->_velocity) * _deltaTime);
+		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
+
 	}
 }
 
 void PhysicsEngine::applyAcceleration(GameObject* go) {
 	VelocityComponent* vc = go->getComponent<VelocityComponent*>();
 	if (vc->_velocity.magnitude() < vc->_maxVelocity) {
-		accelerate(go, Vector3(go->_transform._forward) * go->getComponent<AccelerationComponent*>()->_acceleration);
+		accelerate(go, go->getComponent<AccelerationComponent*>()->_acceleration);
 	}
 }
 
@@ -177,7 +196,7 @@ void PhysicsEngine::flagLoop() {
  */
 void PhysicsEngine::accelerate(GameObject *go, Vector3 amount)
 {
-	go->getComponent<VelocityComponent*>()->_velocity += amount;
+	go->getComponent<VelocityComponent*>()->_velocity += amount * _deltaTime;
 };
 /**
  * <summary>
