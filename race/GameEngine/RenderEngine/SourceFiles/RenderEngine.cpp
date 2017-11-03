@@ -189,7 +189,7 @@ private:
 	GLuint _framebufferTexture2ID = 0;
 	GLuint _framebufferDepthID = 0;
 
-	//framebuffer program and uniforms (will handle ambient and possibly main directional light as well) 
+	//framebuffer (initial pass) program and uniforms
 	GLuint _framebufferDrawProgramID = 0;
 	GLuint _framebufferDrawVertexArrayID = 0;
 	GLuint _framebufferDrawVertexBufferID = 0;
@@ -199,10 +199,16 @@ private:
 	GLuint _framebufferDrawTex3ID = 0;
 	GLuint _framebufferDrawAmbientID = 0;
 
-	//temporary cube stuff
-	GLuint _cubeVertexArrayID = 0;
-	GLuint _cubeVertexBufferID = 0;
-	GLuint _cubeTextureID = 0;
+	//TODO shadow pass program and uniforms, texture ID
+
+	//point light pass program and uniforms
+	GLuint _plightPassProgramID;
+
+	//spot light pass program and uniforms
+	GLuint _slightPassProgramID;
+
+	//the texture of shame
+	GLuint _fallbackTextureID = 0;
 
 	//base MVP, may keep or remove
 	
@@ -329,8 +335,8 @@ private:
 		setupProgram();
 		setupFramebuffers();
 		setupFramebufferDraw();
-		//setupBaseMatrices(); //will need to move/redo to deal with moving camera
-		setupCube(); //remove this soon
+		setupShadowMapping();
+		setupFallbacks();
 	}
 
 	/// <summary>
@@ -342,7 +348,8 @@ private:
 		cleanupProgram();
 		cleanupFramebuffers();
 		cleanupFramebufferDraw();
-		cleanupCube();
+		cleanupShadowMapping();
+		cleanupFallbacks();
 	}
 
 	/// <summary>
@@ -418,28 +425,10 @@ private:
 
 	/// <summary>
 	/// Helper method initial setup
-	/// Loads basic/placeholder cube model (will probably be removed)
+	/// Loads basic/placeholder texture
 	/// </summary>
-	void setupCube()
+	void setupFallbacks()
 	{
-		//setup cube (fallback) VAO TODO CHANGE TO LOAD FROM FILE
-		glGenVertexArrays(1, &_cubeVertexArrayID);
-		glBindVertexArray(_cubeVertexArrayID);
-
-		glGenBuffers(1, &_cubeVertexBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER, _cubeVertexBufferID);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), 0); //vertex coords
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(3 * sizeof(GL_FLOAT))); //normals
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GL_FLOAT), (GLvoid*)(6 * sizeof(GL_FLOAT))); //UVs
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindVertexArray(0);
-
 		//setup cube (fallback) texture
 
 		std::string texturePath = TEXTURE_BASEPATH_CONST + "default" + TEXTURE_EXTENSION_CONST;
@@ -458,26 +447,24 @@ private:
 
 		glTexImage2D(GL_TEXTURE_2D, 0, mode, image_p->w, image_p->h, 0, mode, GL_UNSIGNED_BYTE, image_p->pixels);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
 
 		SDL_FreeSurface(image_p);
 		image_p = nullptr;
 
-		_cubeTextureID = glTexId;
+		_fallbackTextureID = glTexId;
 	}
 
 	/// <summary>
 	/// Helper method for final cleanup
-	/// Deletes cube VAO, VBO, and texture object
+	/// Deletes fallback texture object
 	/// </summary>
-	void cleanupCube()
+	void cleanupFallbacks()
 	{
-		glDeleteBuffers(1, &_cubeVertexBufferID);
-		glDeleteVertexArrays(1, &_cubeVertexArrayID);
-		glDeleteTextures(1, &_cubeTextureID);
+		glDeleteTextures(1, &_fallbackTextureID);
 	}
 
 	/// <summary>
@@ -557,6 +544,8 @@ private:
 	/// </summary>
 	void setupFramebufferDraw()
 	{
+		//setup fullscreen quad VAO
+		
 		glGenVertexArrays(1, &_framebufferDrawVertexArrayID);
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 
@@ -570,14 +559,28 @@ private:
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindVertexArray(0);
 
+		//setup main pass shader
 		_framebufferDrawProgramID = Shaders::LoadShadersFBDraw();
-
-		//get locations
 		_framebufferDrawTex0ID = glGetUniformLocation(_framebufferDrawProgramID, "fColor");
 		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
 		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
 		_framebufferDrawAmbientID = glGetUniformLocation(_framebufferDrawProgramID, "ambientLight");
+
+		//setup point pass shader
+		_plightPassProgramID = Shaders::LoadShadersPointPass();
+		
+		//setup spot pass shader
+		_slightPassProgramID = Shaders::LoadShadersSpotPass();
+	}
+
+	/// <summary>
+	/// Helper method initial setup
+	/// Sets up geometry, buffers, and shaders for shadow mapping
+	/// </summary>
+	void setupShadowMapping()
+	{
+		//TODO impl
 	}
 
 	/// <summary>
@@ -586,9 +589,23 @@ private:
 	/// </summary>
 	void cleanupFramebufferDraw()
 	{
-		// delete VBOs
+		// delete VBOs/VAOs
 		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
 		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
+
+		//delete programs
+		glDeleteProgram(_framebufferDrawProgramID);
+		glDeleteProgram(_plightPassProgramID);
+		glDeleteProgram(_slightPassProgramID);
+	}
+
+	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes shadow mapping buffers, programs, and geometry
+	/// </summary>
+	void cleanupShadowMapping()
+	{
+		//TODO impl
 	}
 
 	/// <summary>
@@ -1237,6 +1254,7 @@ private:
 		{
 			drawCamera(_lastScene_p); //set up the camera
 			drawObjects(_lastScene_p); //do the geometry pass
+			drawShadows(_lastScene_p); //do the shadow map
 			drawLighting(_lastScene_p); //do the lighting pass
 		}
 
@@ -1370,7 +1388,8 @@ private:
 		
 		if(!hasModel)
 		{			
-			glBindVertexArray(_cubeVertexArrayID);
+			SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: object has no model!");
+			return;
 		}
 
 
@@ -1394,7 +1413,7 @@ private:
 		if (!hasTexture)
 		{
 			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, _cubeTextureID);
+			glBindTexture(GL_TEXTURE_2D, _fallbackTextureID);
 			glUniform1i(_shaderTextureID, 0);
 		}
 
@@ -1430,6 +1449,14 @@ private:
 	}
 
 	/// <summary>
+	/// TODO prepares the shadow map
+	/// </summary>
+	void drawShadows(RenderableScene *scene)
+	{
+
+	}
+
+	/// <summary>
 	/// Draws all lights in the scene
 	/// May be broken up with helper methods later
 	/// This is the lighting pass of a deferred renderer
@@ -1455,18 +1482,46 @@ private:
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
 		
+		//draw main scene/lighting pass (ambient and main directional)
+		drawLightingMainPass(ambient);
+
+		for (auto it = scene->lights.begin(); it < scene->lights.end(); it++)
+		{
+			switch (it->type)
+			{
+			case RenderableLightType::POINT:
+				drawLightingPointLight(*it);
+				break;
+			case RenderableLightType::SPOT:
+				drawLightingSpotLight(*it);
+				break;
+			}
+		}
+
+		glDisable(GL_BLEND);
+
+	}
+
+	/// <summary>
+	/// Draws the main lighting pass
+	/// Includes ambient component and main directional light, with shadows
+	/// </summary>
+	void drawLightingMainPass(glm::vec3 ambient)
+	{
+		//TODO shadow setup
+
 		//bind shader
-		glUseProgram(_framebufferDrawProgramID);	
+		glUseProgram(_framebufferDrawProgramID);
 
 		//bind buffers
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
 		glUniform1i(_framebufferDrawTex0ID, 0);
-				
+
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
-		glUniform1i(_framebufferDrawTex1ID, 1);		
-		
+		glUniform1i(_framebufferDrawTex1ID, 1);
+
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
 		glUniform1i(_framebufferDrawTex2ID, 2);
@@ -1487,9 +1542,22 @@ private:
 		//unbind
 		glBindVertexArray(0);
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
 
-		glDisable(GL_BLEND);
+	/// <summary>
+	/// Draws a single point light in a lighting pass
+	/// </summary>
+	void drawLightingPointLight(RenderableLight light)
+	{
+		//TODO implementation
+	}
 
+	/// <summary>
+	/// Draws a single spot light in a lighting pass
+	/// </summary>
+	void drawLightingSpotLight(RenderableLight light)
+	{
+		//TODO implementation
 	}
 
 	/// <summary>
