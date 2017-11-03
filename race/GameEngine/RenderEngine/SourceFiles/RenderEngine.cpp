@@ -203,6 +203,15 @@ private:
 
 	//point light pass program and uniforms
 	GLuint _plightPassProgramID;
+	GLuint _plightPassTex0ID = 0;
+	GLuint _plightPassTex1ID = 0;
+	GLuint _plightPassTex2ID = 0;
+	GLuint _plightPassTex3ID = 0;
+	GLuint _plightPassCameraPosID = 0;
+	GLuint _plightPassLightPosID = 0;
+	GLuint _plightPassLightIntensityID = 0;
+	GLuint _plightPassLightColorID = 0;
+	GLuint _plightPassLightRangeID = 0;
 
 	//spot light pass program and uniforms
 	GLuint _slightPassProgramID;
@@ -569,6 +578,15 @@ private:
 
 		//setup point pass shader
 		_plightPassProgramID = Shaders::LoadShadersPointPass();
+		_plightPassTex0ID = glGetUniformLocation(_plightPassProgramID, "fColor");
+		_plightPassTex1ID = glGetUniformLocation(_plightPassProgramID, "fPosition");
+		_plightPassTex2ID = glGetUniformLocation(_plightPassProgramID, "fNormal");
+		_plightPassTex3ID = glGetUniformLocation(_plightPassProgramID, "fDepth");
+		_plightPassCameraPosID = glGetUniformLocation(_plightPassProgramID, "cameraPos");
+		_plightPassLightColorID = glGetUniformLocation(_plightPassProgramID, "lightColor");
+		_plightPassLightPosID = glGetUniformLocation(_plightPassProgramID, "lightPos");
+		_plightPassLightIntensityID = glGetUniformLocation(_plightPassProgramID, "lightIntensity");
+		_plightPassLightRangeID = glGetUniformLocation(_plightPassProgramID, "lightRange");
 		
 		//setup spot pass shader
 		_slightPassProgramID = Shaders::LoadShadersSpotPass();
@@ -1490,10 +1508,10 @@ private:
 			switch (it->type)
 			{
 			case RenderableLightType::POINT:
-				drawLightingPointLight(*it);
+				drawLightingPointLight(*it, scene);
 				break;
 			case RenderableLightType::SPOT:
-				drawLightingSpotLight(*it);
+				drawLightingSpotLight(*it, scene);
 				break;
 			}
 		}
@@ -1506,7 +1524,7 @@ private:
 	/// Draws the main lighting pass
 	/// Includes ambient component and main directional light, with shadows
 	/// </summary>
-	void drawLightingMainPass(glm::vec3 ambient)
+	void drawLightingMainPass(glm::vec3 ambient) //will need more args
 	{
 		//TODO shadow setup
 
@@ -1547,17 +1565,54 @@ private:
 	/// <summary>
 	/// Draws a single point light in a lighting pass
 	/// </summary>
-	void drawLightingPointLight(RenderableLight light)
+	void drawLightingPointLight(RenderableLight light, RenderableScene *scene)
 	{
-		//TODO implementation
+		glUseProgram(_plightPassProgramID);
+
+		//bind buffers
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
+		glUniform1i(_plightPassTex0ID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
+		glUniform1i(_plightPassTex1ID, 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
+		glUniform1i(_plightPassTex2ID, 2);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glUniform1i(_plightPassTex3ID, 3);
+
+		//bind camera and lighting data
+		glm::vec3 cPos = scene->camera.position;
+		glUniform3f(_plightPassCameraPosID, cPos.x, cPos.y, cPos.z);
+		glm::vec3 lPos = light.position;
+		glUniform3f(_plightPassLightPosID, lPos.x, lPos.y, lPos.z);
+		glm::vec3 lColor = light.color;
+		glUniform3f(_plightPassLightColorID, lColor.x, lColor.y, lColor.z);
+		glUniform1f(_plightPassLightIntensityID, light.intensity);
+		glUniform1f(_plightPassLightRangeID, light.range);
+
+		//setup vertices
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+
+		//draw
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//unbind
+		glBindVertexArray(0);
 	}
 
 	/// <summary>
 	/// Draws a single spot light in a lighting pass
 	/// </summary>
-	void drawLightingSpotLight(RenderableLight light)
+	void drawLightingSpotLight(RenderableLight light, RenderableScene *scene)
 	{
 		//TODO implementation
+
 	}
 
 	/// <summary>
