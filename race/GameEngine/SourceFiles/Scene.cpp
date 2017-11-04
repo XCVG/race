@@ -50,12 +50,13 @@ RenderableScene* Scene::getRenderInformation()
 			rc.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
 			rc.viewAngle = cc->getAngle();
 			rs->camera = rc;
-		} else if (it->first == "Light") 
+		}			
+		else 
 		{
 			if (it->second->hasComponent<LightComponent*>()) {
 				RenderableLight rl;
 				LightComponent *lc = it->second->getComponent<LightComponent*>();
-				rl.type = RenderableLightType::AMBIENT;
+				rl.type = lc->_type;
 				rl.intensity = lc->_intensity;
 				rl.color = Vector3ToGLMVector(lc->_color);
 				rl.angle = lc->_angle;
@@ -65,9 +66,7 @@ RenderableScene* Scene::getRenderInformation()
 				rl.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->lights.push_back(rl);
 			}
-		}
-		else 
-		{
+
 			if (it->second->hasComponent<RenderComponent*>()) {
 				RenderableObject ro;
 				RenderComponent *rc = it->second->getComponent<RenderComponent *>();
@@ -110,11 +109,11 @@ void Scene::setUpSceneOne() {
 	addGameObject("Cube", go);
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
-	go->addComponent(new RenderComponent("sphere", "crate", "", 0));
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f));
 	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
-	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0));
+	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
 	go->addComponent(new AccelerationComponent(new Vector3(), 10.0f));
 	go->addComponent(new VelocityComponent(new Vector3(), 10.0f));
 	addGameObject("Player", go);
@@ -133,7 +132,17 @@ void Scene::setUpSceneOne() {
 	addGameObject("Road2", go);
 
 	go = new GameObject();
-	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f));
+	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
 	addGameObject("Light", go);
+
+	go = new GameObject( new Transform(new Vector3(3.0f, 5.0f, 3.0f), new Vector3(0,0,0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	go->addComponent(new LightComponent(2.0f, new Vector3(0.5,0.5, 1), 20.0f, 0.0f, RenderableLightType::POINT));
+	addGameObject("Light2", go);
+
+	go = new GameObject(new Transform(new Vector3(-3.0f, 3.0f, 0.0f), new Vector3(0, 0, 0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	go->addComponent(new LightComponent(2.0f, new Vector3(1.0f, 0, 0), 20.0f, 0.0f, RenderableLightType::POINT));
+	addGameObject("Light3", go); 
 };
 
