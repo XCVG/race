@@ -114,8 +114,7 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
-	go->addComponent(new AccelerationComponent(new Vector3(), 10.0f));
-	go->addComponent(new VelocityComponent(new Vector3(), 10.0f));
+	go->addComponent(new RigidBodyComponent(10.0f, 10.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
 	addGameObject("Player", go);
 
 	content->player = go;
@@ -130,6 +129,10 @@ void Scene::setUpSceneOne() {
 	go = new GameObject(new Transform(new Vector3(0, 0, -15), new Vector3(-1.5 * MATH_PI, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("road_floor", "test_texture", "", 0));
 	addGameObject("Road2", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 0, 50), new Vector3(0, 0, 0), 3.0f));
+	go->addComponent(new RenderComponent("road_floor", "test_texture", "", 0));
+	addGameObject("Road3", go);
 
 	go = new GameObject();
 	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));

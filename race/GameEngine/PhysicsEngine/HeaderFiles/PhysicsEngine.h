@@ -60,6 +60,7 @@ class PhysicsEngine : public MessageReceiver
 		bool _running = false;
 		GLfloat _deltaTime;
 		const float MATH_PI = 3.14159f;
+		float count = 0;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -90,7 +91,7 @@ class PhysicsEngine : public MessageReceiver
 			void flagLoop();
 			// TODO: Physics function calls
 	#pragma region Physics Calculation Methods
-			void accelerate(GameObject *go, Vector3 amount);
+			void accelerate(GameObject *go, RigidBodyComponent* rbc);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 			void decelerate(GameObject *go, Vector3 amount);
 			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
@@ -99,7 +100,7 @@ class PhysicsEngine : public MessageReceiver
     private:
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
-		void getControllerInput(InputMessageContent*);
 		void applyAcceleration(GameObject*);
+		void applyDecceleration(GameObject * go);
 		void generalPhysicsCall(GameObject*);
 };

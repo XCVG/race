@@ -140,9 +140,9 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 	break;
 	case INPUT_TYPES::TRIGGERS:
 	{
-		
 		PhysicsAccelerateContent *content = new PhysicsAccelerateContent();
-		content->amount = Y;
+		content->amountFast = Y;
+		content->amountSlow = X;
 		content->object = _player_p;
 		std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsAccelerateCallType, false));
 		inputMessage->setContent(content);

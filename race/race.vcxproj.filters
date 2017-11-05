@@ -21,7 +21,6 @@
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderFileMessageReceiver.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\GlobalPrefs.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\FileEngine.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\AccelerationComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\BoxColliderComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\CameraComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\ColliderComponent.cpp" />
@@ -30,7 +29,6 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\RenderComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\RigidBodyComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Vector3.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\VelocityComponent.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Scene.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
@@ -63,7 +61,6 @@
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderFileMessageReceiver.h" />
     <ClInclude Include="GameEngine\HeaderFiles\FileEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\EngineHeaders.h" />
-    <ClInclude Include="GameEngine\Components\HeaderFiles\AccelerationComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\AIComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\AudioComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\BoxColliderComponent.h" />
@@ -80,7 +77,6 @@
     <ClInclude Include="GameEngine\Components\HeaderFiles\RenderComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\RigidBodyComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Vector3.h" />
-    <ClInclude Include="GameEngine\Components\HeaderFiles\VelocityComponent.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderableTypes.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Scene.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Transform.h" />
