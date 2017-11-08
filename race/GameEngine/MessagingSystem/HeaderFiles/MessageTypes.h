@@ -48,6 +48,7 @@ enum class MESSAGE_TYPE
 	InputButtonDownCallType,
 	FileLoadMessageType,
 	InputMessageType,
+	SceneDoneLoadType,
 	FileLoadImageMessageType,
 	FileLoadedMessageType,
 	FileLoadedImageMessageType,
