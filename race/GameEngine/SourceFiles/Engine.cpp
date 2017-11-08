@@ -95,7 +95,9 @@ void Engine::update() {
 		if (_sceneObj != nullptr) {
 
 			doWrites(delta);
-			while (checkMessages());
+			while (checkMessages()) {
+				std::this_thread::yield();
+			}
 			doReads();
 		}
 		
