@@ -142,7 +142,7 @@ class PhysicsCallMessageContent: public BaseMessageContent
 class PhysicsAccelerateContent : public BaseMessageContent
 {
 public:
-	GameObject* object;
+	GameObject *object;
 	GLfloat amountFast, amountSlow;
 };
 

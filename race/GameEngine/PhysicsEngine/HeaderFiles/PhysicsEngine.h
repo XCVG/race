@@ -93,7 +93,7 @@ class PhysicsEngine : public MessageReceiver
 	#pragma region Physics Calculation Methods
 			void accelerate(GameObject *go, RigidBodyComponent* rbc);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
-			void decelerate(GameObject *go, Vector3 amount);
+			void decelerate(GameObject *go, RigidBodyComponent* rbc);
 			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 	#pragma endregion
 
@@ -101,6 +101,5 @@ class PhysicsEngine : public MessageReceiver
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
 		void applyAcceleration(GameObject*);
-		void applyDecceleration(GameObject * go);
 		void generalPhysicsCall(GameObject*);
 };

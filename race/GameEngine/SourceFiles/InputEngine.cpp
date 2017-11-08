@@ -20,6 +20,7 @@ InputEngine::InputEngine() {
 	{
 		gameController = NULL;
 	}
+
 }
 
 void InputEngine::setUpInput() 
@@ -46,7 +47,6 @@ void InputEngine::setUpInput()
 			}
 		}
 	}
-	
 }
 
 InputEngine::~InputEngine() 
@@ -74,8 +74,8 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 		{
 			cameraIndependant = !cameraIndependant;
 			if (!cameraIndependant) {
-				GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
-				_camera_p->_transform._rotation.y = angleY - MATH_PI / 2;
+				//GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
+				//_camera_p->_transform._rotation.y = angleY - MATH_PI / 2;
 			}
 			else {
 				_camera_p->_transform._forward = Vector3(*_playerToCamera).normalize();
@@ -102,15 +102,22 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		}
 		else
 		{
-			glm::mat4x4 matrix = glm::eulerAngleXYZ(0.0f, -X * _deltaTime, 0.0f);
-			Vector3 tempVect = Vector3(*_playerToCamera).matrixMulti(matrix);
 
-			tempVect += _player_p->_transform._position;
-			_camera_p->_transform._position = tempVect;
-			_playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
-				_camera_p->_transform._position.y - _player_p->_transform._position.y,
-				_camera_p->_transform._position.z - _player_p->_transform._position.z);
-			GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
+			//GLfloat s = sin(-X * _deltaTime);
+			//GLfloat c = cos(-X * _deltaTime);
+
+			//_playerToCamera->x = (_playerToCamera->x * c) - (_playerToCamera->z * s);
+			//_playerToCamera->z = (_playerToCamera->x * s) + (_playerToCamera->z * c);
+			glm::mat4x4 matrix = glm::eulerAngleXYZ(0.0f, -X * _deltaTime, 0.0f);
+			_camera_p->_transform._position = _playerToCamera->matrixMulti(matrix) + _player_p->_transform._position;
+
+			//glm::mat4x4 matrix = glm::eulerAngleXYZ(0.0f, -X * _deltaTime, 0.0f);
+			//_camera_p->_transform._position = Vector3(*_playerToCamera).matrixMulti(matrix) + _player_p->_transform._position;
+			//_playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
+				//_camera_p->_transform._position.y - _player_p->_transform._position.y,
+				//_camera_p->_transform._position.z - _player_p->_transform._position.z);
+			//SDL_Log("PlayerToCamera: %f, %f, %f", _playerToCamera->x, _playerToCamera->y, _playerToCamera->z);
+			GLfloat angleY = atan2(_camera_p->_transform._position.z - _player_p->_transform._position.z, _camera_p->_transform._position.x - _player_p->_transform._position.x);
 			//GLfloat angleX = acosf(Vector3(*_playerToCamera).dotProduct(_player_p->_transform._position) /
 				//_camera_p->_transform._position.magnitude() * _player_p->_transform._position.magnitude());
 			//GLfloat angleX = atan2(_playerToCamera->z, _playerToCamera->x) - atan2(_player_p->_transform._position.z, _player_p->_transform._position.x);
@@ -164,8 +171,7 @@ void InputEngine::checkAxis(SDL_GameControllerAxis x, SDL_GameControllerAxis y, 
 	if ((degreeY < CONTROLLER_DEADZONE && degreeY > -CONTROLLER_DEADZONE) && !(degreeY > CONTROLLER_DEADZONE || degreeY < -CONTROLLER_DEADZONE))
 		degreeY = 0;
 
-	if (degreeX != 0 || degreeY != 0)
-		axisEventHandler((float)degreeX / imax, (float)degreeY / imax, type);
+	axisEventHandler((float)degreeX / imax, (float)degreeY / imax, type);
 	
 }
 
@@ -192,6 +198,8 @@ void InputEngine::checkInput(GLfloat deltaTime)
         checkAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, INPUT_TYPES::TRIGGERS);
     }
 	if (!cameraIndependant) {
+		//SDL_Log("Mag: %f", _playerToCamera->magnitude());
 		_camera_p->_transform._position = Vector3(*_playerToCamera) + _player_p->_transform._position;
+		//_camera_p->_transform._position = Vector3(_camera_p->_transform._position) - _player_p->_transform._position + _cameraDistance;
 	}
 }

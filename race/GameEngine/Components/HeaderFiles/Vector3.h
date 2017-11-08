@@ -27,9 +27,9 @@ public:
   }; 
   Vector3& operator=(const Vector3& obj)  
   { 
-    this->x = obj.x; 
-    this->y = obj.y; 
-    this->z = obj.z; 
+    this->x = obj.x;
+    this->y = obj.y;
+    this->z = obj.z;
     return *this; 
   };
   Vector3& operator+=(const Vector3* obj)
@@ -75,10 +75,11 @@ public:
 	  return *this;
   }
   Vector3& operator+(Vector3 vec) {
-	  this->x += vec.x;
-	  this->y += vec.y;
-	  this->z += vec.z;
-	  return *this;
+	  Vector3 vec2 = Vector3();
+	  vec2.x = vec.x + this->x;
+	  vec2.y = vec.y + this->y;
+	  vec2.z = vec.z + this->z;
+	  return vec2;
   }
   Vector3& operator-(Vector3 vec) {
 	  this->x -= vec.x;

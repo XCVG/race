@@ -70,6 +70,7 @@ std::thread* Engine::start() {
 	rsd.models.push_back("sphere");
 	rsd.models.push_back("road_floor");
 	rsd.models.push_back("carModel");
+	rsd.models.push_back("raceTrack");
 	rsd.textures.push_back("rainbow");
 	rsd.textures.push_back("test_texture");
 	rsd.textures.push_back("test_texture2");

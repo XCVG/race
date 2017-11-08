@@ -43,6 +43,7 @@ RenderableScene* Scene::getRenderInformation()
 		{
 			RenderableCamera rc;
 			CameraComponent *cc = it->second->getComponent<CameraComponent*>();
+			//SDL_Log("Camera Scene %f, %f, %f", it->second->_transform._position.x, it->second->_transform._position.y, it->second->_transform._position.z);
 			rc.clearColor = Vector3ToGLMVector(cc->getClearColor());
 			rc.nearPlane = cc->getNearPlane();
 			rc.farPlane = cc->getFarPlane();
@@ -70,6 +71,10 @@ RenderableScene* Scene::getRenderInformation()
 			if (it->second->hasComponent<RenderComponent*>()) {
 				RenderableObject ro;
 				RenderComponent *rc = it->second->getComponent<RenderComponent *>();
+				//if (it->first == "Player") {
+					//SDL_Log("Player Scene Call");
+				//}
+
 				ro.albedoName = rc->getAlbedoName();
 				ro.normalName = rc->getNormalName();
 				ro.smoothness = rc->getSmoothness();
@@ -114,7 +119,7 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
-	go->addComponent(new RigidBodyComponent(10.0f, 10.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
+	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
 	addGameObject("Player", go);
 
 	content->player = go;
@@ -123,16 +128,8 @@ void Scene::setUpSceneOne() {
 	MessagingSystem::instance().postMessage(msg);
 
 	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
-	go->addComponent(new RenderComponent("road_floor", "test_texture2", "", 0));
+	go->addComponent(new RenderComponent("raceTrack", "test_texture2", "", 0));
 	addGameObject("Road", go);
-
-	go = new GameObject(new Transform(new Vector3(0, 0, -15), new Vector3(-1.5 * MATH_PI, 0, 0), 3.0f));
-	go->addComponent(new RenderComponent("road_floor", "test_texture", "", 0));
-	addGameObject("Road2", go);
-
-	go = new GameObject(new Transform(new Vector3(0, 0, 50), new Vector3(0, 0, 0), 3.0f));
-	go->addComponent(new RenderComponent("road_floor", "test_texture", "", 0));
-	addGameObject("Road3", go);
 
 	go = new GameObject();
 	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
@@ -140,12 +137,12 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject( new Transform(new Vector3(3.0f, 5.0f, 3.0f), new Vector3(0,0,0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));
-	go->addComponent(new LightComponent(2.0f, new Vector3(0.5,0.5, 1), 20.0f, 0.0f, RenderableLightType::POINT));
+	go->addComponent(new LightComponent(2.0f, new Vector3(0.0,0.0, 0.0), 20.0f, 0.0f, RenderableLightType::POINT));
 	addGameObject("Light2", go);
 
 	go = new GameObject(new Transform(new Vector3(-3.0f, 3.0f, 0.0f), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));
-	go->addComponent(new LightComponent(2.0f, new Vector3(1.0f, 0, 0), 20.0f, 0.0f, RenderableLightType::POINT));
+	go->addComponent(new LightComponent(2.0f, new Vector3(0.0f, 0.0, 0.0), 20.0f, 0.0f, RenderableLightType::POINT));
 	addGameObject("Light3", go); 
 };
 
