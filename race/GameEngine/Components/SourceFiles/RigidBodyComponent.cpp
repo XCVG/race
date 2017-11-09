@@ -7,8 +7,7 @@ RigidBodyComponent::RigidBodyComponent()
     this->_resistance = 0;
 	this->_maxAcceleration = 0;
 	this->_maxVelocity = 0;
-	this->_speed = 0;
-	this->_accelerationNumber = 0;
+	this->_turningDegree = 0;
 	this->_velocity = new Vector3();
 	this->_acceleration = new Vector3();
 };
@@ -20,8 +19,7 @@ RigidBodyComponent::RigidBodyComponent(GLfloat _maxAccel, GLfloat _maxVel, GLflo
     this->_resistance = _resistance;
 	this->_maxAcceleration = _maxAccel;
 	this->_maxVelocity = _maxVel;
-	this->_speed = 0;
-	this->_accelerationNumber = 0;
+	this->_turningDegree = 0;
 	this->_velocity = new Vector3();
 	this->_acceleration = new Vector3();
 };
@@ -33,8 +31,7 @@ RigidBodyComponent::RigidBodyComponent(const RigidBodyComponent &obj)
     this->_resistance = obj._resistance;
 	this->_maxAcceleration = obj._maxAcceleration;
 	this->_maxVelocity = obj._maxVelocity;
-	this->_speed = obj._speed;
-	this->_accelerationNumber = obj._accelerationNumber;
+	this->_turningDegree = obj._turningDegree;
 	this->_velocity = obj._velocity;
 	this->_acceleration = obj._acceleration;
 
@@ -79,10 +76,12 @@ void RigidBodyComponent::setMaxAcceleration(GLfloat _maxAcceleration)
 {
 	this->_maxAcceleration = _maxAcceleration;
 };
-void RigidBodyComponent::setAccNumber(GLfloat _num) 
-{
-	this->_accelerationNumber += _num;
-}
+void RigidBodyComponent::setTurningDegree(GLfloat _num) {
+	this->_turningDegree = _num;
+};
+void RigidBodyComponent::setForce(Vector3 _num) {
+	this->_force = _num;
+};
 Vector3 RigidBodyComponent::getAccelerationVector()
 {
 	return this->_acceleration;
@@ -91,10 +90,6 @@ GLfloat RigidBodyComponent::getMaxAcceleration()
 {
 	return this->_maxAcceleration;
 };
-GLfloat RigidBodyComponent::getAccNumber()
-{
-	return this->_accelerationNumber;
-}
 void RigidBodyComponent::setVelocity(Vector3 _velocity)
 {
 	this->_velocity = _velocity;
@@ -103,10 +98,6 @@ void RigidBodyComponent::setMaxVelocity(GLfloat _maxVelocity)
 {
 	this->_maxVelocity = _maxVelocity;
 };
-void RigidBodyComponent::setSpeed(GLfloat _speed)
-{
-	this->_speed += _speed;
-}
 Vector3 RigidBodyComponent::getVelocity()
 {
 	return this->_velocity;
@@ -115,7 +106,9 @@ GLfloat RigidBodyComponent::getMaxVelocity()
 {
 	return this->_maxVelocity;
 };
-GLfloat RigidBodyComponent::getSpeed()
-{
-	return this->_speed;
-}
+GLfloat RigidBodyComponent::getTurningDegree() {
+	return this->_turningDegree;
+};
+Vector3 RigidBodyComponent::getForce() {
+	return this->_force;
+};

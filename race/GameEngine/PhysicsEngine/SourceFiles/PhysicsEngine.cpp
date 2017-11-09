@@ -129,10 +129,6 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 			if (it->first == "Sphere") {
 				it->second->_transform.rotate(Vector3(0, MATH_PI / 2, 0) * content->deltaTime);
 			}
-			if (it->first == "Player") {
-				//SDL_Log("Player Physics Call");
-				//SDL_Log(content->contentVar.c_str());
-			}
 			go->_lockMutex.unlock();
 		}
 		_deltaTime = content->deltaTime;
@@ -147,26 +143,31 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 		GLfloat amount = content->amountFast;
 		GLfloat amount2 = content->amountSlow;
 		RigidBodyComponent *rbc = go->getComponent<RigidBodyComponent*>();
+		Vector3 F_Long;
 		
-		if (amount != 0 && rbc->getAccNumber() < rbc->getMaxAcceleration())
-		{
-			rbc->setAccelerationVector(rbc->getAccelerationVector() + (Vector3(go->_transform._forward) * amount * _deltaTime));
-			rbc->setAccNumber(amount * _deltaTime);
-		} else if (amount == 0 && rbc->getAccNumber() > 0) 
-		{
-			rbc->setAccNumber(-rbc->getAccNumber());
-			rbc->setAccelerationVector(Vector3(0, 0, 0));
-		}
-		if (amount2 != 0 && rbc->getSpeed() > 0)
-		{
-			rbc->setVelocity(Vector3(rbc->getVelocity()) + (Vector3(go->_transform._forward) * -amount2 * 3.0f * _deltaTime));
-			rbc->setSpeed(-amount2 * 3.0f * _deltaTime);
-			if (rbc->getSpeed() <= 0)
+		if (amount != 0 || amount2 != 0) {
+			Vector3 F_Drag = Vector3(rbc->getVelocity() * rbc->getVelocity().magnitude()) * -0.4257;
+			Vector3 F_RollingRes = rbc->getVelocity() * 12.8;
+			Vector3 F_Long = F_Drag + F_RollingRes;
+			if (amount != 0)
 			{
-				rbc->setSpeed(-rbc->getSpeed());
-				rbc->setVelocity(Vector3(0, 0, 0));
+				F_Long += go->_transform._forward.normalize() * (amount * 5000);
+				rbc->setForce(F_Long);
 			}
+			if (amount2 != 0)
+			{
+				F_Long += Vector3(-go->_transform._forward.normalize()) * (amount2 * 6000);
+				rbc->setForce(F_Long);
+			}
+			rbc->setAccelerationVector(rbc->getForce() / rbc->getWeight());
+			rbc->setTurningDegree(-content->turningDegree);
 		}
+		if (amount == 0 && amount2 == 0)
+		{
+			rbc->setAccelerationVector(Vector3(0, 0, 0));
+			rbc->setTurningDegree(0);
+		}
+		
 		
 		break;
 	}
@@ -188,10 +189,9 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go) {
 
 void PhysicsEngine::applyAcceleration(GameObject* go) {
 	RigidBodyComponent* rc = go->getComponent<RigidBodyComponent*>();
-	if (!(rc->getSpeed() > rc->getMaxVelocity()) || rc->getSpeed() < 0) 
+	if (!(rc->getVelocity().magnitude() > rc->getMaxVelocity()) || rc->getVelocity().dotProduct(go->_transform._forward) < 0) 
 	{
 		accelerate(go, rc);
-		decelerate(go, rc);
 	}
 }
 
@@ -215,8 +215,15 @@ void PhysicsEngine::flagLoop() {
  */
 void PhysicsEngine::accelerate(GameObject *go, RigidBodyComponent* rbc)
 {
-	rbc->setVelocity(rbc->getVelocity() + (Vector3(rbc->getAccelerationVector()) * _deltaTime));
-	rbc->setSpeed(rbc->getAccNumber() * _deltaTime);
+	if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) {
+		//GLfloat R = 5 / sin(rbc->getTurningDegree());
+		rbc->setVelocity(rbc->getVelocity() + (Vector3(rbc->getAccelerationVector()) * _deltaTime));
+		//go->_transform.rotate(Vector3(0, (0.5f / R) * _deltaTime, 0));
+	}
+	else {
+		rbc->setVelocity(Vector3(0, 0, 0));
+		rbc->setForce(Vector3(0, 0, 0));
+	}
 };
 /**
  * <summary>
@@ -227,15 +234,6 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {
 	//go->getComponent<RigidBodyComponent*>()->getVelocity() += Vector3(x, y, z) * _deltaTime;
 	//go->getComponent<RigidBodyComponent*>()->setSpeed(go->getComponent<RigidBodyComponent*>()->getAccNumber() * _deltaTime);
-};
-void PhysicsEngine::decelerate(GameObject *go, RigidBodyComponent* rbc)
-{
-	//go->getComponent<RigidBodyComponent*>()->getVelocity() -= amount * _deltaTime;
-	Vector3 vec = rbc->getVelocity();
-	vec.x += -0.001 * powf(vec.x, 2) * _deltaTime;
-	vec.y += -0.001 * powf(vec.y, 2) * _deltaTime;
-	vec.z += -0.001 * powf(vec.z, 2) * _deltaTime;
-	rbc->setVelocity(vec);
 };
 void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {

@@ -62,17 +62,26 @@ public:
   };
   Vector3& operator*(const float_t& mult)
   {
-	  this->x = this->x * mult;
-	  this->y = this->y * mult;
-	  this->z = this->z * mult;
-	  return *this;
+	  Vector3 vec2 = Vector3();
+	  vec2.x = this->x * mult;
+	  vec2.y = this->y * mult;
+	  vec2.z = this->z * mult;
+	  return vec2;
   };
   Vector3& operator*(Vector3 vec)
   {
-	  this->x *= vec.x;
-	  this->y *= vec.y;
-	  this->z *= vec.z;
-	  return *this;
+	  Vector3 vec2 = Vector3();
+	  vec2.x = vec.x * this->x;
+	  vec2.y = vec.y * this->y;
+	  vec2.z = vec.z * this->z;
+	  return vec2;
+  }
+  Vector3& operator/(GLfloat num) {
+	  Vector3 vec2 = Vector3();
+	  vec2.x = this->x / num;
+	  vec2.y = this->y / num;
+	  vec2.z = this->z / num;
+	  return vec2;
   }
   Vector3& operator+(Vector3 vec) {
 	  Vector3 vec2 = Vector3();
@@ -86,6 +95,13 @@ public:
 	  this->y -= vec.y;
 	  this->z -= vec.z;
 	  return *this;
+  }
+  Vector3& operator-() {
+	  Vector3 vec2 = Vector3();
+	  vec2.x = -this->x;
+	  vec2.y = -this->y;
+	  vec2.z = -this->z;
+	  return vec2;
   }
   GLfloat magnitude()
   {

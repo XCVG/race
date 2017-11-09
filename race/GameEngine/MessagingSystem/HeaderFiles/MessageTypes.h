@@ -143,7 +143,7 @@ class PhysicsAccelerateContent : public BaseMessageContent
 {
 public:
 	GameObject *object;
-	GLfloat amountFast, amountSlow;
+	GLfloat amountFast, amountSlow, turningDegree;
 };
 
 class InputInitializeContent : public BaseMessageContent

@@ -19,20 +19,20 @@ public:
 	void setResistance(GLfloat _resistance);
 	void setVelocity(Vector3 _velocity);
 	void setMaxVelocity(GLfloat _maxVelocity);
-	void setSpeed(GLfloat _speed);
 	void setAccelerationVector(Vector3 _acceleration);
 	void setMaxAcceleration(GLfloat _maxAcceleration);
-	void setAccNumber(GLfloat _num);
+	void setTurningDegree(GLfloat _num);
+	void setForce(Vector3 _num);
 	GLfloat getWeight();
 	GLfloat getBouncyness();
 	GLfloat getFriction();
 	GLfloat getResistance();
 	Vector3 getAccelerationVector();
 	GLfloat getMaxAcceleration();
-	GLfloat getAccNumber();
 	Vector3 getVelocity();
 	GLfloat getMaxVelocity();
-	GLfloat getSpeed();
+	GLfloat getTurningDegree();
+	Vector3 getForce();
 private:
 	GLfloat _weight;
 	GLfloat _bouncyness;
@@ -40,8 +40,8 @@ private:
 	GLfloat _resistance;
 	Vector3 _acceleration;
 	GLfloat _maxAcceleration;
-	GLfloat _accelerationNumber = 0;
 	Vector3 _velocity;
 	GLfloat _maxVelocity;
-	GLfloat _speed;
+	GLfloat _turningDegree;
+	Vector3 _force;
 };
