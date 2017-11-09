@@ -215,6 +215,17 @@ private:
 
 	//spot light pass program and uniforms
 	GLuint _slightPassProgramID;
+	GLuint _slightPassTex0ID = 0;
+	GLuint _slightPassTex1ID = 0;
+	GLuint _slightPassTex2ID = 0;
+	GLuint _slightPassTex3ID = 0;
+	GLuint _slightPassCameraPosID = 0;
+	GLuint _slightPassLightPosID = 0;
+	GLuint _slightPassLightRotID = 0;
+	GLuint _slightPassLightIntensityID = 0;
+	GLuint _slightPassLightColorID = 0;
+	GLuint _slightPassLightRangeID = 0;
+	GLuint _slightPassLightAngleID = 0;
 
 	//the texture of shame
 	GLuint _fallbackTextureID = 0;
@@ -590,6 +601,17 @@ private:
 		
 		//setup spot pass shader
 		_slightPassProgramID = Shaders::LoadShadersSpotPass();
+		_slightPassTex0ID = glGetUniformLocation(_plightPassProgramID, "fColor");
+		_slightPassTex1ID = glGetUniformLocation(_plightPassProgramID, "fPosition");
+		_slightPassTex2ID = glGetUniformLocation(_plightPassProgramID, "fNormal");
+		_slightPassTex3ID = glGetUniformLocation(_plightPassProgramID, "fDepth");
+		_slightPassCameraPosID = glGetUniformLocation(_plightPassProgramID, "cameraPos");
+		_slightPassLightColorID = glGetUniformLocation(_plightPassProgramID, "lightColor");
+		_slightPassLightPosID = glGetUniformLocation(_plightPassProgramID, "lightPos");
+		_slightPassLightRotID = glGetUniformLocation(_plightPassProgramID, "lightRot");
+		_slightPassLightIntensityID = glGetUniformLocation(_plightPassProgramID, "lightIntensity");
+		_slightPassLightRangeID = glGetUniformLocation(_plightPassProgramID, "lightRange");
+		_slightPassLightAngleID = glGetUniformLocation(_plightPassProgramID, "lightAngle");
 	}
 
 	/// <summary>
@@ -1570,7 +1592,7 @@ private:
 	}
 
 	/// <summary>
-	/// Draws a single point light in a lighting pass
+	/// Draws a single point light in a lighting pass (using fullscreen quad for now)
 	/// </summary>
 	void drawLightingPointLight(RenderableLight light, RenderableScene *scene)
 	{
@@ -1618,7 +1640,46 @@ private:
 	/// </summary>
 	void drawLightingSpotLight(RenderableLight light, RenderableScene *scene)
 	{
-		//TODO implementation
+		glUseProgram(_slightPassProgramID);
+
+		//bind buffers
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
+		glUniform1i(_slightPassTex0ID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
+		glUniform1i(_slightPassTex1ID, 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
+		glUniform1i(_slightPassTex2ID, 2);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glUniform1i(_slightPassTex3ID, 3);
+
+		//bind camera and lighting data
+		glm::vec3 cPos = scene->camera.position;
+		glUniform3f(_slightPassCameraPosID, cPos.x, cPos.y, cPos.z);
+		glm::vec3 lPos = light.position;
+		glUniform3f(_slightPassLightPosID, lPos.x, lPos.y, lPos.z);
+		glm::vec3 lRot = light.rotation;
+		glUniform3f(_slightPassLightRotID, lRot.x, lRot.y, lRot.z);
+		glm::vec3 lColor = light.color;
+		glUniform3f(_slightPassLightColorID, lColor.x, lColor.y, lColor.z);
+		glUniform1f(_slightPassLightIntensityID, light.intensity);
+		glUniform1f(_slightPassLightRangeID, light.range);
+		glUniform1f(_slightPassLightAngleID, light.angle);
+
+		//setup vertices
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+
+		//draw
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//unbind
+		glBindVertexArray(0);
 
 	}
 
