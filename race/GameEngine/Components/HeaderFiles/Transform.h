@@ -38,8 +38,8 @@ public:
     Vector3 _position;
     Vector3 _rotation;
     GLfloat _scale;
-	Vector3 _forward = Vector3(0, 0, 1);
-	Vector3 _right = Vector3(1, 0, 0);
-	Vector3 _up = Vector3(0, 1, 0);
+	Vector3 _forward;
+	Vector3 _right;
+	Vector3 _up;
 private:
 };

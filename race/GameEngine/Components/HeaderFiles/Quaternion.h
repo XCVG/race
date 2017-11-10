@@ -12,7 +12,6 @@
 #include <gtx\euler_angles.hpp>
 #include <SDL.h> 
 #endif
-#define TOL 0.000001
 #define PI 3.14159265
 #include "Vector3.h"
 class Quaternion
@@ -38,13 +37,9 @@ public:
 	Quaternion operator/(GLfloat s);
 
 	GLfloat QGetAngle();
-
 	Vector3 QGetAxis();
-
 	Quaternion QRotate(Quaternion q1, Quaternion q2);
-
 	Quaternion MakeQFromEulerAngles(float x, float y, float z);
-
 	Vector3 MakeEulerAnglesFromQ(Quaternion q);
 
 private:
@@ -196,12 +191,12 @@ inline Quaternion Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 	double cyaw, cpitch, croll, syaw, spitch, sroll;
 	double cyawcpitch, syawspitch, cyawspitch, syawcpitch;
 
-	cyaw = cosf(0.5f * yaw);
-	cpitch = cosf(0.5f * pitch);
-	croll = cosf(0.5f * roll);
-	syaw = sinf(0.5f * yaw);
-	spitch = sinf(0.5f * pitch);
-	sroll = sinf(0.5f * roll);
+	cyaw = cos(0.5f * yaw);
+	cpitch = cos(0.5f * pitch);
+	croll = cos(0.5f * roll);
+	syaw = sin(0.5f * yaw);
+	spitch = sin(0.5f * pitch);
+	sroll = sin(0.5f * roll);
 
 	cyawcpitch = cyaw * cpitch;
 	syawspitch = syaw * spitch;
@@ -236,13 +231,13 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ(Quaternion q)
 		r12 = 2 * (q._v->x * q._v->y - q._n * q._v->z);
 		r13 = 2 * (q._v->x * q._v->z + q._n * q._v->y);
 
-		u.x = 0.0f;
-		u.y = (-(PI / 2) * r31 / temp);
-		u.z = (atan2(-r12, -r31 * r13));
+		u.x = (GLfloat)0.0f;
+		u.y = (GLfloat)(-(PI / 2) * r31 / temp);
+		u.z = (GLfloat)(atan2(-r12, -r31 * r13));
 		return u;
 	}
-	u.x = atan2(r32, r33);
-	u.y = asin(-r31);
-	u.z = atan2(r21, r11);
+	u.x = (GLfloat)atan2(r32, r33);
+	u.y = (GLfloat)asin(-r31);
+	u.z = (GLfloat)atan2(r21, r11);
 	return u;
 };

@@ -21,21 +21,17 @@ public:
 	void setVelocity(Vector3 _velocity);
 	void setMaxVelocity(GLfloat _maxVelocity);
 	void setAccelerationVector(Vector3 _acceleration);
-	void setMaxAcceleration(GLfloat _maxAcceleration);
 	void setTurningDegree(GLfloat _num);
 	void setForce(Vector3 _num);
-	void setCenterOfGrav(Vector3 _num);
 	GLfloat getWeight();
 	GLfloat getBouncyness();
 	GLfloat getFriction();
 	GLfloat getResistance();
 	Vector3 getAccelerationVector();
-	GLfloat getMaxAcceleration();
 	Vector3 getVelocity();
 	GLfloat getMaxVelocity();
 	GLfloat getTurningDegree();
 	Vector3 getForce();
-	Vector3 getCenterOfGrav();
 private:
 	GLfloat _weight;
 	GLfloat _bouncyness;

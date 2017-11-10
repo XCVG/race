@@ -40,8 +40,7 @@ void InputEngine::setUpInput()
 				_playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
 					_camera_p->_transform._position.y - _player_p->_transform._position.y,
 					_camera_p->_transform._position.z - _player_p->_transform._position.z);
-				GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
-				_camera_p->_transform._rotation.y = angleY - PI / 2;
+				_camera_p->_transform._rotation.y = (GLfloat)atan2(_playerToCamera->z, _playerToCamera->x) - PI / 2;
 				_messageQueue.pop();
 				break;
 			}
@@ -74,8 +73,8 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 		{
 			cameraIndependant = !cameraIndependant;
 			if (!cameraIndependant) {
-				//GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
-				//_camera_p->_transform._rotation.y = angleY - MATH_PI / 2;
+				GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
+				_camera_p->_transform._rotation.y = angleY - PI / 2;
 			}
 			else {
 				_camera_p->_transform._forward = Vector3(*_playerToCamera).normalize();
@@ -104,9 +103,11 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		{
 			glm::mat4x4 matrix = glm::eulerAngleXYZ(0.0f, -X * _deltaTime, 0.0f);
 			_camera_p->_transform._position = _playerToCamera->matrixMulti(matrix) + _player_p->_transform._position;
+			_playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
+				_camera_p->_transform._position.y - _player_p->_transform._position.y,
+				_camera_p->_transform._position.z - _player_p->_transform._position.z);
 
-			GLfloat angleY = atan2(_camera_p->_transform._position.z - _player_p->_transform._position.z,
-				_camera_p->_transform._position.x - _player_p->_transform._position.x);
+			GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
 
 			_camera_p->_transform._rotation.y = angleY - PI / 2;
 		}

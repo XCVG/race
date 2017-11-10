@@ -48,7 +48,6 @@
     <ClCompile Include="GameEngine\SourceFiles\Scene.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\SoundEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Window.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\Quaternion.cpp" />
     <ClCompile Include="SourceFiles\main.cpp" />
     <ClCompile Include="SourceFiles\Object.cpp" />
   </ItemGroup>

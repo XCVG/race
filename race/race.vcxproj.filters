@@ -33,7 +33,6 @@
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderInputMessageReceiver.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\Quaternion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />

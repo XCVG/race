@@ -4,6 +4,9 @@ Transform::Transform()
     this->_position = new Vector3();
     this->_rotation = new Vector3();
     this->_scale = 1;
+	_forward = Vector3(0, 0, 1);
+	_right = Vector3(1, 0, 0);
+	_up = Vector3(0, 1, 0);
 	adjustDirections(_rotation);
 };
 Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
@@ -11,6 +14,9 @@ Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
     this->_position = _position;
     this->_rotation = _rotation;
     this->_scale = _scale;
+	_forward = Vector3(0, 0, 1);
+	_right = Vector3(1, 0, 0);
+	_up = Vector3(0, 1, 0);
 	adjustDirections(this->_rotation);
 };
 Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
@@ -18,6 +24,9 @@ Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
     this->_position = *_position;
     this->_rotation = *_rotation;
     this->_scale = _scale;
+	_forward = Vector3(0, 0, 1);
+	_right = Vector3(1, 0, 0);
+	_up = Vector3(0, 1, 0);
 	adjustDirections(this->_rotation);
 
 };
@@ -26,6 +35,9 @@ Transform::Transform(const Transform &obj)
     this->_position = obj._position;
     this->_rotation = obj._rotation;
     this->_scale = obj._scale;
+	_forward = obj._forward;
+	_right = obj._right;
+	_up = obj._up;
 	adjustDirections(this->_rotation);
 };
 void Transform::setPosition(Vector3 _position)

@@ -113,8 +113,8 @@ void PhysicsEngine::loop()
 	SDL_Log("Physics::Out of loop");
 }
 
-void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
-	
+void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) 
+{
 
 	switch (myMessage->getType()) {
 	case MESSAGE_TYPE::PhysicsCallMessageType:
@@ -174,7 +174,8 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 	}
 }
 
-void PhysicsEngine::generalPhysicsCall(GameObject* go) {
+void PhysicsEngine::generalPhysicsCall(GameObject* go) 
+{
 	if (go->hasComponent<RigidBodyComponent*>()) 
 	{
 		RigidBodyComponent* rbc = go->getComponent<RigidBodyComponent*>();
@@ -186,7 +187,8 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go) {
 	}
 }
 
-void PhysicsEngine::applyAcceleration(GameObject* go) {
+void PhysicsEngine::applyAcceleration(GameObject* go) 
+{
 	RigidBodyComponent* rc = go->getComponent<RigidBodyComponent*>();
 	if (!(rc->getVelocity().magnitude() > rc->getMaxVelocity()) || rc->getVelocity().dotProduct(go->_transform._forward) < 0) 
 	{
@@ -203,7 +205,8 @@ void PhysicsEngine::stop()
 	//SDL_Log("Physics::Stop");
 }
 
-void PhysicsEngine::flagLoop() {
+void PhysicsEngine::flagLoop() 
+{
 	_running = false;
 }
 
@@ -214,10 +217,14 @@ void PhysicsEngine::flagLoop() {
  */
 void PhysicsEngine::accelerate(GameObject *go, RigidBodyComponent* rbc)
 {
-	if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) {
-		//GLfloat R = 5 / sin(rbc->getTurningDegree());
+	if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) 
+	{
 		rbc->setVelocity(rbc->getVelocity() + (Vector3(rbc->getAccelerationVector()) * _deltaTime));
-		//go->_transform.rotate(Vector3(-(rbc->getVelocity() / R) * _deltaTime));
+	}
+	else 
+	{
+		rbc->setVelocity(Vector3(0.0f, 0.0f, 0.0f));
+		rbc->setForce(Vector3(0.0f, 0.0f, 0.0f));
 	}
 };
 /**
@@ -230,6 +237,7 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 	//go->getComponent<RigidBodyComponent*>()->getVelocity() += Vector3(x, y, z) * _deltaTime;
 	//go->getComponent<RigidBodyComponent*>()->setSpeed(go->getComponent<RigidBodyComponent*>()->getAccNumber() * _deltaTime);
 };
+
 void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {
 	go->getComponent<RigidBodyComponent*>()->getVelocity() -= Vector3(x, y, z) * _deltaTime;
