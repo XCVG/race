@@ -48,6 +48,7 @@
     <ClCompile Include="GameEngine\SourceFiles\Scene.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\SoundEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Window.cpp" />
+    <ClCompile Include="GameEngine\Components\SourceFiles\Quaternion.cpp" />
     <ClCompile Include="SourceFiles\main.cpp" />
     <ClCompile Include="SourceFiles\Object.cpp" />
   </ItemGroup>
@@ -65,6 +66,7 @@
     <ClInclude Include="GameEngine\Components\HeaderFiles\MeshColliderComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\MessageHandlerComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\PlayerComponent.h" />
+    <ClInclude Include="GameEngine\Components\HeaderFiles\Quaternion.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\RenderComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\RigidBodyComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Transform.h" />

@@ -5,7 +5,6 @@ RigidBodyComponent::RigidBodyComponent()
     this->_bouncyness = 0;
     this->_friction = 0;
     this->_resistance = 0;
-	this->_maxAcceleration = 0;
 	this->_maxVelocity = 0;
 	this->_turningDegree = 0;
 	this->_velocity = new Vector3();
@@ -17,7 +16,6 @@ RigidBodyComponent::RigidBodyComponent(GLfloat _maxAccel, GLfloat _maxVel, GLflo
     this->_bouncyness = _bouncyness;
     this->_friction = _friction;
     this->_resistance = _resistance;
-	this->_maxAcceleration = _maxAccel;
 	this->_maxVelocity = _maxVel;
 	this->_turningDegree = 0;
 	this->_velocity = new Vector3();
@@ -29,7 +27,6 @@ RigidBodyComponent::RigidBodyComponent(const RigidBodyComponent &obj)
     this->_bouncyness = obj._bouncyness;
     this->_friction = obj._friction;
     this->_resistance = obj._resistance;
-	this->_maxAcceleration = obj._maxAcceleration;
 	this->_maxVelocity = obj._maxVelocity;
 	this->_turningDegree = obj._turningDegree;
 	this->_velocity = obj._velocity;
@@ -72,23 +69,17 @@ void RigidBodyComponent::setAccelerationVector(Vector3 _acceleration)
 {
 	this->_acceleration = _acceleration;
 };
-void RigidBodyComponent::setMaxAcceleration(GLfloat _maxAcceleration)
+void RigidBodyComponent::setTurningDegree(GLfloat _num) 
 {
-	this->_maxAcceleration = _maxAcceleration;
-};
-void RigidBodyComponent::setTurningDegree(GLfloat _num) {
 	this->_turningDegree = _num;
 };
-void RigidBodyComponent::setForce(Vector3 _num) {
+void RigidBodyComponent::setForce(Vector3 _num) 
+{
 	this->_force = _num;
 };
 Vector3 RigidBodyComponent::getAccelerationVector()
 {
 	return this->_acceleration;
-};
-GLfloat RigidBodyComponent::getMaxAcceleration()
-{
-	return this->_maxAcceleration;
 };
 void RigidBodyComponent::setVelocity(Vector3 _velocity)
 {
@@ -106,9 +97,11 @@ GLfloat RigidBodyComponent::getMaxVelocity()
 {
 	return this->_maxVelocity;
 };
-GLfloat RigidBodyComponent::getTurningDegree() {
+GLfloat RigidBodyComponent::getTurningDegree() 
+{
 	return this->_turningDegree;
 };
-Vector3 RigidBodyComponent::getForce() {
+Vector3 RigidBodyComponent::getForce() 
+{
 	return this->_force;
 };

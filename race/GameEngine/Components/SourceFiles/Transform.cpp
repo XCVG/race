@@ -62,8 +62,8 @@ void Transform::adjustDirections(Vector3 rot)
 {
 	glm::mat4x4 matrix = glm::eulerAngleXYZ(rot.x, rot.y, rot.z);
 	_forward = _forward.matrixMulti(matrix);
-	//_right = _right.matrixMulti(matrix);
-	//_up = _up.matrixMulti(matrix);
+	_right = _right.matrixMulti(matrix);
+	_up = _up.matrixMulti(matrix);
 }
 
 /**

@@ -123,13 +123,11 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 		
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
-			go->_lockMutex.lock();
 			generalPhysicsCall(go);
 			
 			if (it->first == "Sphere") {
 				it->second->_transform.rotate(Vector3(0, MATH_PI / 2, 0) * content->deltaTime);
 			}
-			go->_lockMutex.unlock();
 		}
 		_deltaTime = content->deltaTime;
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
@@ -160,12 +158,12 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 				rbc->setForce(F_Long);
 			}
 			rbc->setAccelerationVector(rbc->getForce() / rbc->getWeight());
-			rbc->setTurningDegree(-content->turningDegree);
+			rbc->setTurningDegree(content->turningDegree);
 		}
 		if (amount == 0 && amount2 == 0)
 		{
 			rbc->setAccelerationVector(Vector3(0, 0, 0));
-			rbc->setTurningDegree(0);
+			//rbc->setTurningDegree(0);
 		}
 		
 		
@@ -183,6 +181,7 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go) {
 		applyAcceleration(go);
 		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
 		go->_transform.translate(Vector3(rbc->getVelocity()) * _deltaTime);
+		//go->_transform.rotateY((MATH_PI / 2) * _deltaTime);
 		//SDL_Log("Player Pos: %f", go->_transform._position.z);
 	}
 }
@@ -218,11 +217,7 @@ void PhysicsEngine::accelerate(GameObject *go, RigidBodyComponent* rbc)
 	if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) {
 		//GLfloat R = 5 / sin(rbc->getTurningDegree());
 		rbc->setVelocity(rbc->getVelocity() + (Vector3(rbc->getAccelerationVector()) * _deltaTime));
-		//go->_transform.rotate(Vector3(0, (0.5f / R) * _deltaTime, 0));
-	}
-	else {
-		rbc->setVelocity(Vector3(0, 0, 0));
-		rbc->setForce(Vector3(0, 0, 0));
+		//go->_transform.rotate(Vector3(-(rbc->getVelocity() / R) * _deltaTime));
 	}
 };
 /**

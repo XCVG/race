@@ -38,7 +38,6 @@ RenderableScene* Scene::getRenderInformation()
 	RenderableScene* rs = new RenderableScene();
 
 	for (std::map<std::string, GameObject*>::iterator it = _worldObjects.begin(); it != _worldObjects.end(); ++it) {
-		it->second->_lockMutex.lock();
 		if (it->first == "Camera" && it->second->getComponent<CameraComponent*>() != nullptr) 
 		{
 			RenderableCamera rc;
@@ -85,7 +84,6 @@ RenderableScene* Scene::getRenderInformation()
 				rs->objects.push_back(ro);
 			}
 		}
-		it->second->_lockMutex.unlock();
 	}
 	//_objectsMutex.unlock();
 	return rs;
@@ -117,7 +115,7 @@ void Scene::setUpSceneOne() {
 	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f));
 	addGameObject("Sphere", go);
 
-	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
+	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, MATH_PI / 2, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
 	addGameObject("Player", go);
