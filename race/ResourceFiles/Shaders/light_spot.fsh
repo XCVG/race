@@ -8,7 +8,7 @@ uniform sampler2D fDepth;
 uniform vec3 cameraPos;
 uniform vec3 lightColor;
 uniform vec3 lightPos;
-uniform vec3 lightRot;
+uniform vec3 lightFacing;
 uniform float lightRange;
 uniform float lightIntensity;
 uniform float lightAngle;
@@ -26,11 +26,23 @@ void main()
 	normal = normalize(normal);
 	
 	vec3 eyeDir = normalize(cameraPos - position);
-	vec3 vHalfVec = normalize(lightDir + eyeDir);
 	
-	//TODO add rotation stuff
-	float attn = pow(clamp(1.0 - lightDist/lightRange, 0.0, 1.0), 2);
+	vec3 coneDir = normalize(lightFacing);
+	vec3 rayDir = -lightDir;
+	float lightSurfAngle = acos(dot(rayDir, coneDir));
+	
+	float attn;
+	if(lightSurfAngle > lightAngle)
+	{
+		attn = 0.0;
+	}
+	else
+	{
+		attn = pow(clamp(1.0 - lightDist/lightRange, 0.0, 1.0), 2);
+	}
+	
 	float diffuse = max(dot(normal, lightDir),0) * attn * (1.0 - smoothness);
+	
 	float spec = 0.0;
 	if(dot(normal, lightDir) >= 0.0) //doesn't work, need to find a WORKING way to check angles
 	{

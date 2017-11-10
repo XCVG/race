@@ -221,7 +221,7 @@ private:
 	GLuint _slightPassTex3ID = 0;
 	GLuint _slightPassCameraPosID = 0;
 	GLuint _slightPassLightPosID = 0;
-	GLuint _slightPassLightRotID = 0;
+	GLuint _slightPassLightDirID = 0;
 	GLuint _slightPassLightIntensityID = 0;
 	GLuint _slightPassLightColorID = 0;
 	GLuint _slightPassLightRangeID = 0;
@@ -608,7 +608,7 @@ private:
 		_slightPassCameraPosID = glGetUniformLocation(_plightPassProgramID, "cameraPos");
 		_slightPassLightColorID = glGetUniformLocation(_plightPassProgramID, "lightColor");
 		_slightPassLightPosID = glGetUniformLocation(_plightPassProgramID, "lightPos");
-		_slightPassLightRotID = glGetUniformLocation(_plightPassProgramID, "lightRot");
+		_slightPassLightDirID = glGetUniformLocation(_plightPassProgramID, "lightFacing");
 		_slightPassLightIntensityID = glGetUniformLocation(_plightPassProgramID, "lightIntensity");
 		_slightPassLightRangeID = glGetUniformLocation(_plightPassProgramID, "lightRange");
 		_slightPassLightAngleID = glGetUniformLocation(_plightPassProgramID, "lightAngle");
@@ -1640,6 +1640,13 @@ private:
 	/// </summary>
 	void drawLightingSpotLight(RenderableLight light, RenderableScene *scene)
 	{
+		//prepare direction vector for "rotation"
+		glm::mat4 rotMatrix = glm::mat4();
+		rotMatrix = glm::rotate(rotMatrix, light.rotation.y, glm::vec3(0, 1, 0));
+		rotMatrix = glm::rotate(rotMatrix, light.rotation.x, glm::vec3(1, 0, 0));
+		rotMatrix = glm::rotate(rotMatrix, light.rotation.z, glm::vec3(0, 0, 1));
+		glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f , 1.0f);
+
 		glUseProgram(_slightPassProgramID);
 
 		//bind buffers
@@ -1662,10 +1669,12 @@ private:
 		//bind camera and lighting data
 		glm::vec3 cPos = scene->camera.position;
 		glUniform3f(_slightPassCameraPosID, cPos.x, cPos.y, cPos.z);
+
 		glm::vec3 lPos = light.position;
 		glUniform3f(_slightPassLightPosID, lPos.x, lPos.y, lPos.z);
-		glm::vec3 lRot = light.rotation;
-		glUniform3f(_slightPassLightRotID, lRot.x, lRot.y, lRot.z);
+
+		glUniform3f(_slightPassLightDirID, lightFacing.x, lightFacing.y, lightFacing.z);
+
 		glm::vec3 lColor = light.color;
 		glUniform3f(_slightPassLightColorID, lColor.x, lColor.y, lColor.z);
 		glUniform1f(_slightPassLightIntensityID, light.intensity);
