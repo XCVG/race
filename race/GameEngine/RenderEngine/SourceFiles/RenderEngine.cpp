@@ -508,7 +508,7 @@ private:
 
 		glGenTextures(1, &_framebufferTexture1ID);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _framebufferTexture1ID, 0);
