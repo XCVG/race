@@ -601,17 +601,17 @@ private:
 		
 		//setup spot pass shader
 		_slightPassProgramID = Shaders::LoadShadersSpotPass();
-		_slightPassTex0ID = glGetUniformLocation(_plightPassProgramID, "fColor");
-		_slightPassTex1ID = glGetUniformLocation(_plightPassProgramID, "fPosition");
-		_slightPassTex2ID = glGetUniformLocation(_plightPassProgramID, "fNormal");
-		_slightPassTex3ID = glGetUniformLocation(_plightPassProgramID, "fDepth");
-		_slightPassCameraPosID = glGetUniformLocation(_plightPassProgramID, "cameraPos");
-		_slightPassLightColorID = glGetUniformLocation(_plightPassProgramID, "lightColor");
-		_slightPassLightPosID = glGetUniformLocation(_plightPassProgramID, "lightPos");
-		_slightPassLightDirID = glGetUniformLocation(_plightPassProgramID, "lightFacing");
-		_slightPassLightIntensityID = glGetUniformLocation(_plightPassProgramID, "lightIntensity");
-		_slightPassLightRangeID = glGetUniformLocation(_plightPassProgramID, "lightRange");
-		_slightPassLightAngleID = glGetUniformLocation(_plightPassProgramID, "lightAngle");
+		_slightPassTex0ID = glGetUniformLocation(_slightPassProgramID, "fColor");
+		_slightPassTex1ID = glGetUniformLocation(_slightPassProgramID, "fPosition");
+		_slightPassTex2ID = glGetUniformLocation(_slightPassProgramID, "fNormal");
+		_slightPassTex3ID = glGetUniformLocation(_slightPassProgramID, "fDepth");
+		_slightPassCameraPosID = glGetUniformLocation(_slightPassProgramID, "cameraPos");
+		_slightPassLightColorID = glGetUniformLocation(_slightPassProgramID, "lightColor");
+		_slightPassLightPosID = glGetUniformLocation(_slightPassProgramID, "lightPos");
+		_slightPassLightDirID = glGetUniformLocation(_slightPassProgramID, "lightFacing");
+		_slightPassLightIntensityID = glGetUniformLocation(_slightPassProgramID, "lightIntensity");
+		_slightPassLightRangeID = glGetUniformLocation(_slightPassProgramID, "lightRange");
+		_slightPassLightAngleID = glGetUniformLocation(_slightPassProgramID, "lightAngle");
 	}
 
 	/// <summary>

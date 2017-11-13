@@ -26,7 +26,6 @@ void main()
 	normal = normalize(normal);
 	
 	vec3 eyeDir = normalize(cameraPos - position);
-	
 	vec3 coneDir = normalize(lightFacing);
 	vec3 rayDir = -lightDir;
 	float lightSurfAngle = acos(dot(rayDir, coneDir));
@@ -41,10 +40,12 @@ void main()
 		attn = pow(clamp(1.0 - lightDist/lightRange, 0.0, 1.0), 2);
 	}
 	
-	float diffuse = max(dot(normal, lightDir),0) * attn * (1.0 - smoothness);
+	
+	float diffuseC = max(0.0, dot(normal, lightDir)); 
+	float diffuse = diffuseC * attn * (1.0 - smoothness);
 	
 	float spec = 0.0;
-	if(dot(normal, lightDir) >= 0.0) //doesn't work, need to find a WORKING way to check angles
+	if(diffuseC > 0)
 	{
 		spec = pow(max(dot(reflect(-lightDir, normal), eyeDir),0.0), 50) * attn * smoothness;
 	}	

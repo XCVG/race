@@ -140,9 +140,9 @@ void Scene::setUpSceneOne() {
 	go->addComponent(new LightComponent(2.0f, new Vector3(0.5,0.5, 1), 20.0f, 0.0f, RenderableLightType::POINT));
 	addGameObject("Light2", go);
 
-	go = new GameObject(new Transform(new Vector3(-3.0f, 1.0f, 0.0f), new Vector3(0, 0, 0), 1.0f));
+	go = new GameObject(new Transform(new Vector3(-5.0f, 2.0f, 0.0f), new Vector3(0, 1.5f, 0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));
-	go->addComponent(new LightComponent(5.0f, new Vector3(1.0f, 0, 0), 30.0f, 1.6f, RenderableLightType::SPOT));
+	go->addComponent(new LightComponent(5.0f, new Vector3(1.0f, 1.0f, 1.0f), 15.0f, 0.6f, RenderableLightType::SPOT));
 	addGameObject("Light3", go);
 	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SceneDoneLoadType));
 	MessagingSystem::instance().postMessage(myMessage);
