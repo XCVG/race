@@ -12,6 +12,7 @@ public:
 	void loop();
 
 private:
+	std::string basePath;
 	std::map<std::string, Mix_Music*> gameSoundtracks;
 	std::map<std::string, Mix_Chunk*> gameSoundEffects;
 	void HandleMessage(std::shared_ptr<Message> inBaseMessage);

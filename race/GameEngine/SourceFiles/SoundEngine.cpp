@@ -5,6 +5,7 @@ SoundEngine::SoundEngine()
 	subscribe(MESSAGE_TYPE::SoundMessageType);
 	SDL_Init(SDL_INIT_AUDIO);
 
+	basePath = std::string(SDL_GetBasePath()) + "ResourceFiles/Sounds/";
 
 	// Check frequency (22050 / 44100) and chunksize (2048 / 4096) values to adjust in case of sound lag.
 	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
@@ -13,8 +14,8 @@ SoundEngine::SoundEngine()
 	}
 
 	//TODO dynamic loading
-	gameSoundtracks.emplace("testmusic", Mix_LoadMUS("Music.mp3"));
-	gameSoundEffects.emplace("testsfx", Mix_LoadWAV("SEffect.wav"));
+	gameSoundtracks.emplace("testmusic", Mix_LoadMUS((basePath + "Music.mp3").c_str()));
+	gameSoundEffects.emplace("testsfx", Mix_LoadWAV((basePath + "SEffect.wav").c_str()));
 }
 
 SoundEngine::~SoundEngine() 
