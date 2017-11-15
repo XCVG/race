@@ -9,7 +9,6 @@ SDL_Window *g_window_p;
 SDL_GLContext g_context;
 std::thread* engineThread_p;
 
-
 /// <summary>
 /// Application entry point
 /// </summary>
@@ -17,7 +16,7 @@ std::thread* engineThread_p;
 /// <param name="argv">Array containg string arguments passed to the application</param>
 /// <return>Status code on application exit.</return>
 int main(int argc, char ** argv) {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
+	SDL_Init(SDL_INIT_VIDEO);
 	//open opengl and window
 	InputEngine *ie = new InputEngine();
 	SoundEngine *se = new SoundEngine();
@@ -31,15 +30,6 @@ int main(int argc, char ** argv) {
 	MessagingSystem::instance().start();
 	Engine *e = new Engine();
 	engineThread_p = e->start();
-
-	// Check frequency (22050 / 44100) and chunksize (2048 / 4096) values to adjust in case of sound lag.
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0)
-	{
-		SDL_Log("Error: %s", Mix_GetError(), "\n");
-	}
-
-	Mix_Music *gameSoundtracks = Mix_LoadMUS("Music.mp3");
-	Mix_Chunk *gameSoundEffects = Mix_LoadWAV("SEffect.wav");
 
 	//*****temporary loop stolen from racerender
 
@@ -71,26 +61,35 @@ int main(int argc, char ** argv) {
 			switch (ev.key.keysym.sym)
 			{
 				case SDLK_0:
-					if (!Mix_PlayingMusic())
-					{
-						Mix_PlayMusic(gameSoundtracks, -1);
-					}
-					else if (Mix_PausedMusic())
-					{
-						Mix_ResumeMusic();
-					}
-					else
-					{
-						Mix_PauseMusic();
-					}
+				{
+					SoundMessageContent *content = new SoundMessageContent;
+					content->name = "testmusic";
+					content->subType = S_TYPE::playMusic;
+					std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
+					myMessage->setContent(content);
+					MessagingSystem::instance().postMessage(myMessage);
+				}
 				break;
 
 				case SDLK_1:
-					Mix_HaltMusic();
+				{
+					SoundMessageContent *content = new SoundMessageContent;
+					content->subType = S_TYPE::stopMusic;
+					std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
+					myMessage->setContent(content);
+					MessagingSystem::instance().postMessage(myMessage);
+				}
 					break;
 
 				case SDLK_2:
-					Mix_PlayChannel(-1, gameSoundEffects, 0);
+				{
+					SoundMessageContent *content = new SoundMessageContent;
+					content->name = "testsfx";
+					content->subType = S_TYPE::playSound;
+					std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
+					myMessage->setContent(content);
+					MessagingSystem::instance().postMessage(myMessage);
+				}
 					break;
 			}
 		}
@@ -101,6 +100,8 @@ int main(int argc, char ** argv) {
 		{
 			//e->update();
 		}*/
+
+		se->loop();
 	}
 
 	
@@ -118,14 +119,7 @@ int main(int argc, char ** argv) {
 
 	//*****temporary loop section ends
 
-	Mix_FreeChunk(gameSoundEffects);
-	Mix_FreeMusic(gameSoundtracks);
-
-	gameSoundEffects = nullptr;
-	gameSoundtracks = nullptr;
-
-	Mix_Quit();
-	SDL_Quit();
+	delete(se);
 
 	return 0;
 }

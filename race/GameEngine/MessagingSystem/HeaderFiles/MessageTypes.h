@@ -57,7 +57,8 @@ enum class MESSAGE_TYPE
 	RenderDrawMessageType,
 	RenderDrawOverlayMessageType,
 	RenderUnloadMessageType,
-	RenderFinishedMessageType
+	RenderFinishedMessageType,
+	SoundMessageType
 };
 
 /*========================================================================================
@@ -129,36 +130,6 @@ class RenderFinishedMessageContent : public BaseMessageContent
 
 //*****FILE MESSAGES
 
-class PhysicsCallMessageContent: public BaseMessageContent
-{
-	public:
-	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
-	std::string contentVar;
-	std::map<std::string, GameObject*> worldObjects;
-	float_t deltaTime;
-	PhysicsCallMessageContent(std::string s) { contentVar = s; }
-};
-
-class PhysicsAccelerateContent : public BaseMessageContent
-{
-public:
-	GameObject* object;
-	GLfloat amount;
-};
-
-class InputInitializeContent : public BaseMessageContent
-{
-	public:
-		GameObject* camera;
-		GameObject* player;
-};
-
-class InputButtonDownContent : public BaseMessageContent 
-{
-public:
-	SDL_Event ev;
-};
-
 class FileLoadMessageContent : public BaseMessageContent
 {
 public:
@@ -191,11 +162,64 @@ public:
 	std::shared_ptr<SDL_Surface> image;
 };
 
+//*****INPUT MESSAGES
+
+class PhysicsCallMessageContent : public BaseMessageContent
+{
+public:
+	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
+	std::string contentVar;
+	std::map<std::string, GameObject*> worldObjects;
+	float_t deltaTime;
+	PhysicsCallMessageContent(std::string s) { contentVar = s; }
+};
+
+class PhysicsAccelerateContent : public BaseMessageContent
+{
+public:
+	GameObject* object;
+	GLfloat amount;
+};
+
+class InputInitializeContent : public BaseMessageContent
+{
+public:
+	GameObject* camera;
+	GameObject* player;
+};
+
+class InputButtonDownContent : public BaseMessageContent
+{
+public:
+	SDL_Event ev;
+};
+
 class InputMessageContent : public BaseMessageContent
 {
 public:
 	INPUT_TYPES type;
 	float lookX, lookY;
+};
+
+
+
+//*****SOUND MESSAGES
+
+enum class S_TYPE
+{
+	playSound,
+	playMusic,
+	stopMusic
+};
+
+class SoundMessageContent: public BaseMessageContent
+{
+public:
+	S_TYPE subType;
+	std::string name;
+
+private:
+
 };
 
 #endif
