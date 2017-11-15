@@ -133,7 +133,12 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject();
 	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
-	addGameObject("Light", go);
+	addGameObject("LightAmb", go);
+
+	go = new GameObject(new Transform(new Vector3(10.0f, 8.0f, 0), new Vector3(0, 0, 0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	go->addComponent(new LightComponent(6.0f, new Vector3(1, 1, 1), 1000.0f, 0.0f, RenderableLightType::DIRECTIONAL));
+	addGameObject("LightDir", go);
 
 	go = new GameObject( new Transform(new Vector3(3.0f, 5.0f, 3.0f), new Vector3(0,0,0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));

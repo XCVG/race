@@ -201,7 +201,12 @@ private:
 	GLuint _framebufferDrawTex3ID = 0;
 	GLuint _framebufferDrawAmbientID = 0;
 
-	//TODO shadow pass program and uniforms, texture ID
+	//shadow pass program and uniforms, texture ID
+	GLuint _shadowPassProgramID = 0;
+	GLuint _shadowPassModelMatrixID = 0;
+	GLuint _shadowPassMVPMatrixID = 0;
+	GLuint _shadowFramebufferID = 0;
+	GLuint _shadowFramebufferDepthID = 0;
 
 	//point light pass program and uniforms
 	GLuint _plightPassProgramID;
@@ -624,7 +629,29 @@ private:
 	/// </summary>
 	void setupShadowMapping()
 	{
-		//TODO impl
+		/* Set up directional/shadow shader. */
+		_shadowPassProgramID = Shaders::LoadShadersShadows();
+		//_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
+		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
+
+		/* Generate FBO for shadow depth buffer. */
+		glGenFramebuffers(1, &_shadowFramebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferID);
+
+		/* Generate the shadow depth buffer. */
+		glGenTextures(1, &_shadowFramebufferDepthID);
+		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0); //TODO CONST
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _shadowFramebufferDepthID, 0);
+
+		glDrawBuffer(GL_NONE);
+
+		/* Unbind the FBO. */
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	/// <summary>
@@ -649,7 +676,9 @@ private:
 	/// </summary>
 	void cleanupShadowMapping()
 	{
-		//TODO impl
+		glDeleteTextures(1, &_shadowFramebufferDepthID);
+		glDeleteFramebuffers(1, &_shadowFramebufferID);
+		glDeleteProgram(_shadowPassProgramID);
 	}
 
 	/// <summary>
@@ -1522,10 +1551,102 @@ private:
 	}
 
 	/// <summary>
-	/// TODO prepares the shadow map
+	/// prepares the shadow map
 	/// </summary>
 	void drawShadows(RenderableScene *scene)
 	{
+
+		//grab the main light
+		RenderableLight mainDirectionalLight;
+		for (int eachLight = 0; eachLight < scene->lights.size(); eachLight++)
+		{
+			if (scene->lights[eachLight].type == RenderableLightType::DIRECTIONAL)
+			{
+				mainDirectionalLight = (scene->lights[eachLight]);
+				//SDL_Log("Found a directional light!");
+				break;
+			}
+		}
+
+		//get direction
+		//glm::mat4 rotMatrix = glm::mat4();
+		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		//glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+
+		//build base matrix
+		glm::mat4 projection = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+		glm::mat4 translation = glm::translate(look, mainDirectionalLight.position * -1.0f);
+		glm::mat4 rotation = glm::mat4();
+		rotation = glm::rotate(rotation, mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		rotation = glm::rotate(rotation, mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		rotation = glm::rotate(rotation, mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		glm::mat4 view = rotation * translation;
+		glm::mat4 depthVPM = projection * view;
+
+		//bind framebuffer and program
+		glUseProgram(_shadowPassProgramID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferID);
+		glViewport(0, 0, 1024, 1024);
+
+		//glEnable(GL_DEPTH_TEST);
+		//glDepthFunc(GL_LESS);
+		//glEnable(GL_CULL_FACE);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		//draw objects into shadow map
+		for (int i = 0; i < scene->objects.size(); i++)
+		{
+			RenderableObject *object = &scene->objects[i];
+
+			//check if a model exists
+			bool hasModel = false;
+			ModelData modelData;
+
+			if (_models_p->count(object->modelName) > 0)
+				hasModel = true;
+			
+			//try to bind model
+			if (hasModel)
+			{
+				modelData = _models_p->find(object->modelName)->second;
+				if (modelData.vaoID != 0)
+				{
+					glBindVertexArray(modelData.vaoID);
+				}
+				else
+				{
+					hasModel = false;
+					SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model has no VAO!");
+				}
+
+			}
+
+			if (!hasModel)
+			{
+				SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: object has no model!");
+				break;
+			}
+
+			//transform!
+			glm::mat4 objectMVM = glm::mat4();
+			objectMVM = glm::translate(objectMVM, object->position);
+			//SDL_Log("%f, %f, %f", object->position.x, object->position.y, object->position.z);
+			objectMVM = glm::scale(objectMVM, object->scale);
+			objectMVM = glm::rotate(objectMVM, object->rotation.y, glm::vec3(0, 1, 0));
+			objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
+			objectMVM = glm::rotate(objectMVM, object->rotation.z, glm::vec3(0, 0, 1));
+			glm::mat4 objectMVPM = depthVPM *  objectMVM;
+			glUniformMatrix4fv(_shadowPassMVPMatrixID, 1, GL_FALSE, &objectMVPM[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, modelData.numVerts);
+
+			glBindVertexArray(0);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	}
 
@@ -1594,6 +1715,7 @@ private:
 		//bind buffers
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
+		//glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
 		glUniform1i(_framebufferDrawTex0ID, 0);
 
 		glActiveTexture(GL_TEXTURE1);
