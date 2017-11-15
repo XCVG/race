@@ -176,6 +176,8 @@ private:
 	GLuint _shaderModelMatrixID = 0;
 	GLuint _shaderMVPMatrixID = 0;
 	GLuint _shaderTextureID = 0;
+	GLuint _shaderNormalID = 0;
+	GLuint _shaderHasNormID = 0;
 	GLuint _shaderSmoothnessID = 0;
 
 	//framebuffer stuff
@@ -429,6 +431,8 @@ private:
 		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
 		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
+		_shaderNormalID = glGetUniformLocation(_programID, "iNormImage");
+		_shaderHasNormID = glGetUniformLocation(_programID, "iHasNorm");
 		_shaderSmoothnessID = glGetUniformLocation(_programID, "iSmoothness");
 	}
 
@@ -1397,7 +1401,8 @@ private:
 
 		//check if a model exists
 		bool hasModel = false;
-		bool hasTexture = false;
+		bool hasATexture = false;
+		bool hasNTexture = false;
 		ModelData modelData;
 		TextureData texData;
 
@@ -1407,9 +1412,12 @@ private:
 		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model is missing!");
 
 		if (_textures_p->count(object->albedoName) > 0)
-			hasTexture = true;
+			hasATexture = true;
 		//else
 		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture is missing!");
+
+		if (!(object->normalName.empty()) && _textures_p->count(object->normalName) > 0)
+			hasNTexture = true;
 
 		//try to bind model
 		if (hasModel)
@@ -1435,7 +1443,7 @@ private:
 
 
 		//try to bind texture
-		if (hasTexture)
+		if (hasATexture)
 		{
 			texData = _textures_p->find(object->albedoName)->second;
 			if (texData.texID != 0)
@@ -1446,16 +1454,39 @@ private:
 			}
 			else
 			{
-				hasTexture = false;
+				hasATexture = false;
 				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture has no texID!");
 			}
-		}	
+		}
 
-		if (!hasTexture)
+		if (!hasATexture)
 		{
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, _fallbackTextureID);
 			glUniform1i(_shaderTextureID, 0);
+		}
+
+		//try to bind normal map
+		if (hasNTexture)
+		{
+			texData = _textures_p->find(object->normalName)->second;
+			if (texData.texID != 0)
+			{
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, texData.texID);
+				glUniform1i(_shaderNormalID, 1);
+				glUniform1i(_shaderHasNormID, GL_TRUE);
+			}
+			else
+			{
+				hasNTexture = false;
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture has no texID!");
+			}
+		}
+
+		if (!hasNTexture)
+		{
+			glUniform1i(_shaderHasNormID, GL_FALSE);
 		}
 
 		glUniform1f(_shaderSmoothnessID, object->smoothness);

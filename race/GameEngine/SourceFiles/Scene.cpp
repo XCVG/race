@@ -101,7 +101,7 @@ void Scene::setUpSceneOne() {
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	InputInitializeContent* content = new InputInitializeContent();
+	InputInitializeContent* content = new InputInitializeContent(); 
 	content->camera = go;
 
 	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, MATH_PI / 4, 0), 1.0f));
@@ -109,11 +109,11 @@ void Scene::setUpSceneOne() {
 	addGameObject("Cube", go);
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f));
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f)); 
 	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
-	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
+	go->addComponent(new RenderComponent("carModel", "test_texture3", "test_normal", 0.75f));
 	go->addComponent(new AccelerationComponent(new Vector3(), 10.0f));
 	go->addComponent(new VelocityComponent(new Vector3(), 10.0f));
 	addGameObject("Player", go);
