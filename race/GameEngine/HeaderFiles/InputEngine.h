@@ -39,7 +39,6 @@ private:
 	GameObject* _camera_p;
 	bool cameraIndependant;
 	Vector3 _playerToCamera;
-	GLfloat distance = 5.0f;
 	GLfloat _deltaTime;
 	GLfloat _turningDegree = 0;
 	

@@ -17,7 +17,7 @@ public:
     Transform(const Transform &obj);
 
 #pragma region Rotation Calculation Methods
-	void rotateAround(Vector3 objectPos, Vector3 rotation);
+	Vector3 rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rotation);
 	void rotate(Vector3 amount);
 	void rotateX(GLfloat angle);
 	void rotateY(GLfloat angle);

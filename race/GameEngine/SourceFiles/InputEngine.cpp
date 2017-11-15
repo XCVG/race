@@ -37,9 +37,10 @@ void InputEngine::setUpInput()
 				InputInitializeContent* content = static_cast<InputInitializeContent*>(myMessage->getContent());
 				_camera_p = content->camera;
 				_player_p = content->player;
-				Vector3 vec = Vector3(_camera_p->_transform._position - _player_p->_transform._position).normalize();
-				_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
-				GLfloat angleY = (GLfloat)atan2(vec.z, vec.x);
+				_playerToCamera = Vector3(0.0f, 1.5f, 5.0f);
+				_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
+				//Vector3 vec = Vector3(_camera_p->_transform._position - _player_p->_transform._position).normalize();
+				GLfloat angleY = (GLfloat)atan2(_playerToCamera.z, _playerToCamera.x);
 				Quaternion q;
 				_camera_p->_transform._orientation = q.MakeQFromEulerAngles(0, angleY - PI / 2.0f, 0);
 				_messageQueue.pop();
@@ -104,10 +105,10 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		{
 			if (X != 0 || Y != 0)
 			{
-				_camera_p->_transform.rotateAround(_player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
-				_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
-				Vector3 vec = Vector3(_camera_p->_transform._position - _player_p->_transform._position).normalize();
-				GLfloat angleY = atan2(vec.z, vec.x);
+				_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
+				//_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
+				//Vector3 vec = Vector3(_camera_p->_transform._position - _player_p->_transform._position).normalize();
+				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
 				if (angleY < 0) {
 					angleY = PI - (angleY);
 				}
@@ -186,6 +187,7 @@ void InputEngine::checkInput(GLfloat deltaTime)
     }
 	if (!cameraIndependant) {
 		//SDL_Log("Mag: %f", _playerToCamera->magnitude());
+		//_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
 		_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
 		//_camera_p->_transform._position = Vector3(_camera_p->_transform._position) - _player_p->_transform._position + _cameraDistance;
 		//_camera_p->_transform.rotateAround(_player_p->_transform._position, Vector3(0.0f, 0.0f, 0.0f));
