@@ -14,7 +14,7 @@ public:
     Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale);
     Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale);
     Transform(const Transform &obj);
-
+	bool operator==(const Transform& t);
 #pragma region Rotation Calculation Methods
 	void rotate(Vector3 amount);
 	void rotateX(GLfloat angle);
@@ -42,4 +42,10 @@ public:
 	Vector3 _right;
 	Vector3 _up;
 private:
+};
+inline bool Transform::operator==(const Transform& t)
+{
+	return (this->_position == t._position &&
+			this->_rotation == t._rotation &&
+			this->_scale == t._scale);
 };

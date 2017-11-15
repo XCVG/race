@@ -1,6 +1,6 @@
 #pragma once
 #include <list>
-//#include <vector>
+#include <vector>
 #include <map>
 #include <typeinfo>
 #include <typeindex>
@@ -10,10 +10,16 @@
 class GameObject
 {
 public:
-	GameObject();
+	GameObject(); // TODO: Add name as "identifier" for GameObject
+	GameObject(std::string name);
 	GameObject(Transform transform);
 	GameObject(Transform *transform);
+	GameObject(Transform transform, std::string name);
+	GameObject(Transform *transform, std::string name);
+	std::string _name;
 	Transform _transform;
+	void setName(std::string name);
+	std::string getName();
 	template <typename T>
 	void addComponent(T component)
 	{
@@ -53,12 +59,31 @@ public:
 			return true;
 		}
 	};
+	template <typename T>
+	bool compareMaps(const std::map<std::string,T>& l, const std::map<std::string,T>& r)
+	{
+	  // same types, proceed to compare maps here
+	  if(l.size() != r.size())
+	  {
+		return false;  // differing sizes, they are not the same
+	  }
+	  typename std::map<std::string,T>::const_iterator i, j;
+	  for(i = l.begin(), j = r.begin(); i != l.end(); ++i, ++j)
+	  {
+		if(*i != *j)
+		{
+			return false;
+		}
+	  }
+	  return true;
+	};
 	std::map<std::string, Component *> getComponentList();
 	void addChild(GameObject *child);
 	GameObject* getChild(GameObject *child);
+	GameObject* getChild(std::string name);
 	void removeChild(GameObject *child);
 	std::vector<GameObject *> getChildObjectList();
-	bool operator==(const GameObject& go) const;
+	bool operator==(GameObject& go);
 private:
 	std::map<std::string, Component *> *_components_p;
 	std::vector<GameObject *> *_childObjects_p;
@@ -68,9 +93,13 @@ private:
 		return typeid(T).name();
 	};
 };
-inline bool GameObject::operator==(const GameObject& go) const
+inline bool GameObject::operator==(GameObject& go)
 {
-	if (!this->_transform == go._transform)
+	if (!(this->_transform == go._transform))
+	{
+		return false;
+	}
+	if (!(this->_name == go._name))
 	{
 		return false;
 	}
@@ -101,7 +130,7 @@ inline bool GameObject::operator==(const GameObject& go) const
 	}
 	*/
 	// Check each child
-	if (this->getComponentList() != NULL && go.getComponentList() != NULL)
+	if (!(this->getChildObjectList().empty()) && !(go.getChildObjectList().empty()))
 	{
 		bool childEqual;
 		for (GameObject *child : this->getChildObjectList())
