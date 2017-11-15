@@ -28,7 +28,6 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\GameObject.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\RenderComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\RigidBodyComponent.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\Vector3.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\Scene.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />

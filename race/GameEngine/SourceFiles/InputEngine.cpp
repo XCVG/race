@@ -37,10 +37,11 @@ void InputEngine::setUpInput()
 				InputInitializeContent* content = static_cast<InputInitializeContent*>(myMessage->getContent());
 				_camera_p = content->camera;
 				_player_p = content->player;
-				_playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
-					_camera_p->_transform._position.y - _player_p->_transform._position.y,
-					_camera_p->_transform._position.z - _player_p->_transform._position.z);
-				_camera_p->_transform._rotation.y = (GLfloat)atan2(_playerToCamera->z, _playerToCamera->x) - PI / 2;
+				Vector3 vec = Vector3(_camera_p->_transform._position - _player_p->_transform._position).normalize();
+				_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
+				GLfloat angleY = (GLfloat)atan2(vec.z, vec.x);
+				Quaternion q;
+				_camera_p->_transform._orientation = q.MakeQFromEulerAngles(0, angleY - PI / 2.0f, 0);
 				_messageQueue.pop();
 				break;
 			}
@@ -73,11 +74,11 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 		{
 			cameraIndependant = !cameraIndependant;
 			if (!cameraIndependant) {
-				GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
-				_camera_p->_transform._rotation.y = angleY - PI / 2;
+				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+				_camera_p->_transform._rotation.y = angleY - PI / 2.0f;
 			}
 			else {
-				_camera_p->_transform._forward = Vector3(*_playerToCamera).normalize();
+				_camera_p->_transform._forward = _playerToCamera.normalize();
 				_camera_p->_transform._forward.y = 0;
 			}
 			
@@ -101,17 +102,19 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		}
 		else
 		{
-			glm::mat4x4 matrix = glm::eulerAngleXYZ(0.0f, -X * _deltaTime, 0.0f);
-			_camera_p->_transform._position = _playerToCamera->matrixMulti(matrix) + _player_p->_transform._position;
-			_playerToCamera = new Vector3(_camera_p->_transform._position.x - _player_p->_transform._position.x,
-				_camera_p->_transform._position.y - _player_p->_transform._position.y,
-				_camera_p->_transform._position.z - _player_p->_transform._position.z);
-
-			GLfloat angleY = atan2(_playerToCamera->z, _playerToCamera->x);
-
-			_camera_p->_transform._rotation.y = angleY - PI / 2;
+			if (X != 0 || Y != 0)
+			{
+				_camera_p->_transform.rotateAround(_player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
+				_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
+				Vector3 vec = Vector3(_camera_p->_transform._position - _player_p->_transform._position).normalize();
+				GLfloat angleY = atan2(vec.z, vec.x);
+				if (angleY < 0) {
+					angleY = PI - (angleY);
+				}
+				Quaternion q;
+				_camera_p->_transform._orientation = q.MakeQFromEulerAngles(0, angleY - PI / 2.0f, 0);
+			}
 		}
-
 		break;
 	}
 	case INPUT_TYPES::MOVE_AXIS:
@@ -124,7 +127,7 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		else
 		{
 			//_player_p->_transform.rotateY(-X * _deltaTime);
-			_turningDegree = X * (PI / 4);
+			_turningDegree = X * (PI / 4.0f);
 		}
 	}
 	break;
@@ -183,7 +186,9 @@ void InputEngine::checkInput(GLfloat deltaTime)
     }
 	if (!cameraIndependant) {
 		//SDL_Log("Mag: %f", _playerToCamera->magnitude());
-		_camera_p->_transform._position = Vector3(*_playerToCamera) + _player_p->_transform._position;
+		_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
 		//_camera_p->_transform._position = Vector3(_camera_p->_transform._position) - _player_p->_transform._position + _cameraDistance;
+		//_camera_p->_transform.rotateAround(_player_p->_transform._position, Vector3(0.0f, 0.0f, 0.0f));
+		//_camera_p->_transform._position = Vector3();
 	}
 }

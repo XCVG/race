@@ -7,6 +7,7 @@
 #include <SDL.h>
 #endif
 #include "Vector3.h"
+#include "Quaternion.h"
 class Transform
 {
 public:
@@ -16,6 +17,7 @@ public:
     Transform(const Transform &obj);
 
 #pragma region Rotation Calculation Methods
+	void rotateAround(Vector3 objectPos, Vector3 rotation);
 	void rotate(Vector3 amount);
 	void rotateX(GLfloat angle);
 	void rotateY(GLfloat angle);
@@ -35,11 +37,13 @@ public:
 	GLfloat getScale();
 	Vector3 getForward();
 	void adjustDirections(Vector3);
+	////////////////////////////////
     Vector3 _position;
     Vector3 _rotation;
     GLfloat _scale;
 	Vector3 _forward;
 	Vector3 _right;
 	Vector3 _up;
+	Quaternion _orientation;
 private:
 };

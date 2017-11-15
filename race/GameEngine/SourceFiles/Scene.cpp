@@ -45,7 +45,7 @@ RenderableScene* Scene::getRenderInformation()
 			rc.nearPlane = cc->getNearPlane();
 			rc.farPlane = cc->getFarPlane();
 			rc.position = Vector3ToGLMVector(it->second->_transform.getPosition());
-			rc.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
+			rc.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
 			rc.viewAngle = cc->getAngle();
 			rs->camera = rc;
 		}			
@@ -60,7 +60,7 @@ RenderableScene* Scene::getRenderInformation()
 				rl.angle = lc->_angle;
 				rl.range = lc->_range;
 				rl.position = Vector3ToGLMVector(it->second->_transform.getPosition());
-				rl.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
+				rl.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
 				rl.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->lights.push_back(rl);
 			}
@@ -73,7 +73,7 @@ RenderableScene* Scene::getRenderInformation()
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
 				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());			
-				ro.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
+				ro.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
 			}

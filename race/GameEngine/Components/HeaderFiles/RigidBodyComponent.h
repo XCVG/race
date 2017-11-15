@@ -45,5 +45,4 @@ private:
 	glm::mat3x3 _mInertia;
 	Vector3 _angularAccel;
 	Vector3 _angularMoment;
-	Quaternion _orientation;
 };

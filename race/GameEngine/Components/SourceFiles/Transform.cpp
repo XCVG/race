@@ -3,6 +3,7 @@ Transform::Transform()
 {
     this->_position = new Vector3();
     this->_rotation = new Vector3();
+	_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
     this->_scale = 1;
 	_forward = Vector3(0, 0, 1);
 	_right = Vector3(1, 0, 0);
@@ -13,6 +14,7 @@ Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
     this->_position = _position;
     this->_rotation = _rotation;
+	_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
     this->_scale = _scale;
 	_forward = Vector3(0, 0, 1);
 	_right = Vector3(1, 0, 0);
@@ -23,6 +25,7 @@ Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
     this->_position = *_position;
     this->_rotation = *_rotation;
+	_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
     this->_scale = _scale;
 	_forward = Vector3(0, 0, 1);
 	_right = Vector3(1, 0, 0);
@@ -34,6 +37,7 @@ Transform::Transform(const Transform &obj)
 {
     this->_position = obj._position;
     this->_rotation = obj._rotation;
+	_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
     this->_scale = obj._scale;
 	_forward = obj._forward;
 	_right = obj._right;
@@ -85,6 +89,11 @@ void Transform::adjustDirections(Vector3 rot)
 * Please specify positive/negative when calling. e.g., rotate(&go, -1.2);
 * </summary>
 */
+void Transform::rotateAround(Vector3 objectPos, Vector3 rotation) 
+{
+	Vector3 distance = this->_position - objectPos;
+	this->_position = distance.matrixMulti(glm::eulerAngleXYZ(rotation.x, rotation.y, rotation.z)) + objectPos;
+};
 void Transform::rotate(Vector3 amount)
 {
 	adjustDirections(amount);

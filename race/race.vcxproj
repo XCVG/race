@@ -27,7 +27,6 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\RenderComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\RigidBodyComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\Vector3.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\Message.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessageReceiver.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
