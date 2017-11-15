@@ -94,7 +94,7 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 };
 
 void Scene::setUpSceneOne() {
-	GameObject *go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 1.0f));
+	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, -5), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
