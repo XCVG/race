@@ -54,11 +54,75 @@ public:
 		}
 	};
 	std::map<std::string, Component *> getComponentList();
+	void addChild(GameObject *child);
+	GameObject* getChild(GameObject *child);
+	void removeChild(GameObject *child);
+	std::vector<GameObject *> getChildObjectList();
+	bool operator==(const GameObject& go) const;
 private:
 	std::map<std::string, Component *> *_components_p;
+	std::vector<GameObject *> *_childObjects_p;
 	template <typename T>
 	std::string getType()
 	{
 		return typeid(T).name();
 	};
+};
+inline bool GameObject::operator==(const GameObject& go) const
+{
+	if (!this->_transform == go._transform)
+	{
+		return false;
+	}
+	// Check each component // REVIEW: How do I write this??
+	/**
+	if (this->getComponentList() != NULL && go.getComponentList() != NULL)
+	{
+		bool compEqual;
+		for (Component *comp : this->getComponentList())
+		{
+			compEqaul = false;
+			for (Component *comp2 : this->getComponentList())
+			{
+				if (*comp == *comp2)
+				{
+					compEqual = true;
+				}
+			}
+			if (!compEqual)
+			{
+				return false;
+			}
+		}
+		if (!compEqual)
+		{
+			return false;
+		}
+	}
+	*/
+	// Check each child
+	if (this->getComponentList() != NULL && go.getComponentList() != NULL)
+	{
+		bool childEqual;
+		for (GameObject *child : this->getChildObjectList())
+		{
+			childEqual = false;
+			for (GameObject *child2 : go.getChildObjectList())
+			{
+				if (*child == *child2)
+				{
+					childEqual = true;
+				}
+			}
+			if (!childEqual)
+			{
+				return false; // No similar children found
+			}
+		}
+		if (!childEqual)
+		{
+			return false;
+		}
+	}
+	return true;
 };

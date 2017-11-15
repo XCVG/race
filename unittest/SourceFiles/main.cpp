@@ -67,6 +67,15 @@ TEST_CASE("GameObject", "[gameobject]")
         // REQUIRE(go->compareMaps(go->getComponentList(), *componentList2) == true);
         REQUIRE(go->hasComponent<ColliderComponent *>() == true);
     }
+    go = new GameObject(); // Reset game object
+    SECTION("Children")
+    {
+        go->addChild(new GameObject());
+        GameObject *child = new GameObject();
+        REQUIRE(*(go->getChild(child)) == *child); // NOTE: Hello? Working?!
+        go->removeChild(child);
+        REQUIRE(go->getChildObjectList() == NULL); // check if empty
+    }
 }
 TEST_CASE("Transform", "[transform]")
 {

@@ -253,7 +253,7 @@ GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 		// NOTE: This isn't needed
 	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>().getVelocity(); 
 		// DEBUG: Test this outs
-	GLfloat L = ; // Distance from front of object to rear of object
+	GLfloat L = 0; // Distance from front of object to rear of object
 	GLfloat theta = 0; // Degree
 	omega = objectVelocity / (L / sin(theta));
 	return omega;
