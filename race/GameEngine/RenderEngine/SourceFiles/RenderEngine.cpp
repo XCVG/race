@@ -1602,7 +1602,8 @@ private:
 
 		//glEnable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_LESS);
-		//glEnable(GL_CULL_FACE);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
 
 		glClear(GL_DEPTH_BUFFER_BIT);
 
@@ -1656,6 +1657,7 @@ private:
 		}
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glCullFace(GL_BACK);
 
 	}
 
@@ -1696,10 +1698,10 @@ private:
 			switch (it->type)
 			{
 			case RenderableLightType::POINT:
-				//drawLightingPointLight(*it, scene);
+				drawLightingPointLight(*it, scene);
 				break;
 			case RenderableLightType::SPOT:
-				//drawLightingSpotLight(*it, scene);
+				drawLightingSpotLight(*it, scene);
 				break;
 			}
 		}

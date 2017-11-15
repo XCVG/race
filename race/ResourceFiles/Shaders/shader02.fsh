@@ -16,7 +16,7 @@ void main()
 	
 	float shadowValue =  texture( sDepth, shadowCoord.xy ).r ;
 	
-	float bias = 0.005;
+	float bias = 0.009;
 	float visibility = 1.0;
 	if ( shadowValue  <  shadowCoord.z-bias)
 	{
