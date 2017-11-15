@@ -199,7 +199,10 @@ private:
 	GLuint _framebufferDrawTex1ID = 0;
 	GLuint _framebufferDrawTex2ID = 0;
 	GLuint _framebufferDrawTex3ID = 0;
+	GLuint _framebufferDrawTexSID = 0;
 	GLuint _framebufferDrawAmbientID = 0;
+	GLuint _framebufferDrawDirectionalID = 0;
+	GLuint _framebufferDrawBiasID = 0;
 
 	//shadow pass program and uniforms, texture ID
 	GLuint _shadowPassProgramID = 0;
@@ -241,6 +244,9 @@ private:
 	
 	glm::mat4 _baseModelViewMatrix;
 	glm::mat4 _baseModelViewProjectionMatrix;
+	glm::mat4 _depthModelViewMatrix;
+	glm::mat4 _depthModelViewProjectionMatrix;
+	RenderableLight _mainDirectionalLight;
 
 	/// <summary>
 	/// Threaded loop method
@@ -594,7 +600,10 @@ private:
 		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
 		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
+		_framebufferDrawTexSID = glGetUniformLocation(_framebufferDrawProgramID, "sDepth");
 		_framebufferDrawAmbientID = glGetUniformLocation(_framebufferDrawProgramID, "ambientLight");
+		_framebufferDrawDirectionalID = glGetUniformLocation(_framebufferDrawProgramID, "directionalLight");
+		_framebufferDrawBiasID = glGetUniformLocation(_framebufferDrawProgramID, "biasMVP");
 
 		//setup point pass shader
 		_plightPassProgramID = Shaders::LoadShadersPointPass();
@@ -1557,12 +1566,11 @@ private:
 	{
 
 		//grab the main light
-		RenderableLight mainDirectionalLight;
 		for (int eachLight = 0; eachLight < scene->lights.size(); eachLight++)
 		{
 			if (scene->lights[eachLight].type == RenderableLightType::DIRECTIONAL)
 			{
-				mainDirectionalLight = (scene->lights[eachLight]);
+				_mainDirectionalLight = (scene->lights[eachLight]);
 				//SDL_Log("Found a directional light!");
 				break;
 			}
@@ -1578,13 +1586,14 @@ private:
 		//build base matrix
 		glm::mat4 projection = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
 		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
-		glm::mat4 translation = glm::translate(look, mainDirectionalLight.position * -1.0f);
+		glm::mat4 translation = glm::translate(look, _mainDirectionalLight.position * -1.0f);
 		glm::mat4 rotation = glm::mat4();
-		rotation = glm::rotate(rotation, mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
-		rotation = glm::rotate(rotation, mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
-		rotation = glm::rotate(rotation, mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
 		glm::mat4 view = rotation * translation;
-		glm::mat4 depthVPM = projection * view;
+		_depthModelViewMatrix = view;
+		_depthModelViewProjectionMatrix = projection * view;
 
 		//bind framebuffer and program
 		glUseProgram(_shadowPassProgramID);
@@ -1639,7 +1648,7 @@ private:
 			objectMVM = glm::rotate(objectMVM, object->rotation.y, glm::vec3(0, 1, 0));
 			objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
 			objectMVM = glm::rotate(objectMVM, object->rotation.z, glm::vec3(0, 0, 1));
-			glm::mat4 objectMVPM = depthVPM *  objectMVM;
+			glm::mat4 objectMVPM = _depthModelViewProjectionMatrix *  objectMVM;
 			glUniformMatrix4fv(_shadowPassMVPMatrixID, 1, GL_FALSE, &objectMVPM[0][0]);
 			glDrawArrays(GL_TRIANGLES, 0, modelData.numVerts);
 
@@ -1687,10 +1696,10 @@ private:
 			switch (it->type)
 			{
 			case RenderableLightType::POINT:
-				drawLightingPointLight(*it, scene);
+				//drawLightingPointLight(*it, scene);
 				break;
 			case RenderableLightType::SPOT:
-				drawLightingSpotLight(*it, scene);
+				//drawLightingSpotLight(*it, scene);
 				break;
 			}
 		}
@@ -1730,8 +1739,28 @@ private:
 		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
 		glUniform1i(_framebufferDrawTex3ID, 3);
 
+		//bind shadow mapping buffer
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
+		glUniform1i(_framebufferDrawTexSID, 4);
+
+		//calculate and bind shadow bias matrix
+		glm::mat4 biasMatrix(
+			0.5, 0.0, 0.0, 0.0,
+			0.0, 0.5, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0,
+			0.5, 0.5, 0.5, 1.0
+		);
+		glm::mat4 depthBiasMVP = biasMatrix * _depthModelViewProjectionMatrix;  
+		//glm::mat4 depthBiasMVP = glm::inverse(_depthModelViewProjectionMatrix);
+		glUniformMatrix4fv(_framebufferDrawBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+
 		//bind ambient light
 		glUniform3f(_framebufferDrawAmbientID, ambient.r, ambient.g, ambient.b);
+
+		//bind directional light
+		glm::vec3 directional = _mainDirectionalLight.color * _mainDirectionalLight.intensity;
+		glUniform3f(_framebufferDrawDirectionalID, directional.r, directional.g, directional.b);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
