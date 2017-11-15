@@ -50,23 +50,22 @@ TEST_CASE("GameObject", "[gameobject]")
     GameObject *go = new GameObject();
     SECTION("Components")
     {
-        
-        go->addComponent(new AccelerationComponent());
-        go->addComponent(new VelocityComponent());
-        AccelerationComponent *ac = new AccelerationComponent();
-        VelocityComponent *vc = new VelocityComponent();
+        go->addComponent(new ColliderComponent());
+        go->addComponent(new LightComponent());
+        ColliderComponent *cc = new ColliderComponent();
+        LightComponent *lc = new LightComponent();
         // LIst 1
         std::map<std::string, Component *> *componentList = new std::map<std::string, Component*>();
-        (*componentList)[typeid(*ac).name()] = ac;
-        (*componentList)[typeid(*vc).name()] = vc;
+        (*componentList)[typeid(*cc).name()] = cc;
+        (*componentList)[typeid(*lc).name()] = lc;
         // List 2
         std::map<std::string, Component *> *componentList2 = new std::map<std::string, Component*>();
-        (*componentList2)[typeid(*ac).name()] = ac;
+        (*componentList2)[typeid(*cc).name()] = cc;
         // REQUIRE(go->compareMaps(go->getComponentList(), *componentList) == true);
-        REQUIRE(*(go->getComponent<AccelerationComponent *>()) == *ac);
-        go->removeComponent<VelocityComponent *>();
+        REQUIRE(*(go->getComponent<ColliderComponent *>()) == *cc);
+        go->removeComponent<LightComponent *>();
         // REQUIRE(go->compareMaps(go->getComponentList(), *componentList2) == true);
-        REQUIRE(go->hasComponent<AccelerationComponent *>() == true);
+        REQUIRE(go->hasComponent<ColliderComponent *>() == true);
     }
 }
 TEST_CASE("Transform", "[transform]")
@@ -90,6 +89,5 @@ TEST_CASE("Transform", "[transform]")
         t->setScale(t->getScale() * 15);
         REQUIRE(t->getScale() == 15);
     }
-    t->adjustDirections(); //TODO: What does this do?
-
+    // t->adjustDirections(); //TODO: What does this do?
 }

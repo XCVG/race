@@ -23,6 +23,7 @@ public:
   GLfloat y; 
   GLfloat z; 
   Vector3& operator=(const Vector3* obj);
+  Vector3& operator=(const Vector3& obj);
   Vector3& operator+=(const Vector3* obj);
   Vector3& operator+=(const Vector3& obj);
   Vector3& operator-=(const Vector3* obj);
@@ -31,6 +32,8 @@ public:
   Vector3& operator*=(const Vector3& obj);
   Vector3& operator/=(const Vector3* obj);
   Vector3& operator/=(const Vector3& obj);
+  bool operator==(const Vector3& vec) const;
+  Vector3& operator*(const Vector3 vec);
   Vector3 operator*(const float_t& num);
   Vector3 operator/(const float_t& num);
   Vector3 operator+(const Vector3* obj);
@@ -68,6 +71,13 @@ inline Vector3& Vector3::operator=(const Vector3* obj)
 	this->z = obj->z;
 	return *this;
 };
+inline Vector3& Vector3::operator=(const Vector3& obj)  
+  { 
+    this->x = obj.x; 
+    this->y = obj.y; 
+    this->z = obj.z; 
+    return *this; 
+  };
 inline Vector3& Vector3::operator+=(const Vector3* obj)
 {
 	this->x += obj->x;
@@ -122,6 +132,19 @@ inline Vector3& Vector3::operator/=(const Vector3& obj)
 	this->x /= obj.x;
 	this->y /= obj.y;
 	this->z /= obj.z;
+	return *this;
+};
+inline bool Vector3::operator==(const Vector3& vec) const
+{
+	return  x == vec.x &&
+            y == vec.y &&
+            z == vec.z;
+};
+inline Vector3& Vector3::operator*(const Vector3 vec)
+{
+	this->x *= vec.x;
+	this->y *= vec.y;
+	this->z *= vec.z;
 	return *this;
 };
 inline Vector3 Vector3::operator*(const float_t& num)
