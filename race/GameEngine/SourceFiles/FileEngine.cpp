@@ -42,20 +42,22 @@ void FileEngine::loop()
 			{
 				//handle urgent messages first
 				_urgentMessageQueueMutex_p->lock();
-				Message *msg = _urgentMessageQueue.front().get();
-				HandleMessage(msg);
+				std::shared_ptr<Message> msg = _urgentMessageQueue.front();
 				_urgentMessageQueue.pop();
 				_urgentMessageQueueMutex_p->unlock();
+				HandleMessage(msg);
+				
 
 			}
 			else if (!_messageQueue.empty())
 			{
 				//then non-urgent messages
 				_messageQueueMutex_p->lock();
-				Message *msg = _messageQueue.front().get();
-				HandleMessage(msg);
+				std::shared_ptr<Message> msg = _messageQueue.front();
 				_messageQueue.pop();
 				_messageQueueMutex_p->unlock();
+				HandleMessage(msg);
+				
 			}
 			else
 			{
@@ -72,7 +74,7 @@ void FileEngine::loop()
 
 }
 
-void FileEngine::HandleMessage(Message *inBaseMessage)
+void FileEngine::HandleMessage(std::shared_ptr<Message> inBaseMessage)
 {	
 	MESSAGE_TYPE contentType = inBaseMessage->getType();
 	switch (contentType)

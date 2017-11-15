@@ -5,34 +5,27 @@ uniform sampler2D fColor;
 uniform sampler2D fPosition;
 uniform sampler2D fNormal;
 uniform sampler2D fDepth;
-uniform int testBuffer;
+uniform sampler2D sDepth;
+uniform vec3 ambientLight;
+uniform vec3 directionalLight;
+uniform mat4 biasMVP;
 void main()
 {
-	if(testBuffer == 1) // 1: position
+	vec3 position = texture( fPosition, uv).rgb;
+	vec4 shadowCoord = biasMVP * vec4(position,1);
+	
+	float shadowValue =  texture( sDepth, shadowCoord.xy ).r ;
+	
+	float bias = 0.009;
+	float visibility = 1.0;
+	if ( shadowValue  <  shadowCoord.z-bias)
 	{
-		color = texture(fPosition, uv).rgb;
+		visibility = 0.0;
 	}
-	else if(testBuffer == 2) // 2: normals
-	{
-		color = texture(fNormal, uv).rgb;
-	}
-	else if(testBuffer == 3) // 3: depth
-	{
-		float d = texture(fDepth, uv).r;
-		color.r = d;
-		color.g = d;
-		color.b = d;
-	}
-	else if(testBuffer == 4) // 4: smoothness
-	{
-		float s = texture(fColor, uv).a;
-		color.r = s;
-		color.g = s;
-		color.b = s;
-	}
-	else // 0/default: color buffer
-	{
-		color = texture(fColor, uv).rgb;
-	}
-   
+	
+	vec3 sDirectionalLight = directionalLight * visibility;
+	
+	color = texture(fColor, uv).rgb * (ambientLight + sDirectionalLight);  
+	//color = shadowCoord.rgb;
+	//color = texture( sDepth, uv).rgb;
 }

@@ -1,6 +1,7 @@
 #include "../HeaderFiles/Scene.h"
 
 const float MATH_PI = 3.14159;
+
 Scene::Scene()
 {
 	setUpSceneOne();
@@ -27,11 +28,17 @@ GameObject* Scene::getGameObject(std::string id)
 	return _worldObjects.find(id)->second;
 }
 
+std::map<std::string, GameObject*> Scene::getWorldObjects() {
+	return _worldObjects;
+}
+
 RenderableScene* Scene::getRenderInformation()
 {
+	//_objectsMutex.lock();
 	RenderableScene* rs = new RenderableScene();
 
 	for (std::map<std::string, GameObject*>::iterator it = _worldObjects.begin(); it != _worldObjects.end(); ++it) {
+		it->second->_lockMutex.lock();
 		if (it->first == "Camera" && it->second->getComponent<CameraComponent*>() != nullptr) 
 		{
 			RenderableCamera rc;
@@ -43,12 +50,13 @@ RenderableScene* Scene::getRenderInformation()
 			rc.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
 			rc.viewAngle = cc->getAngle();
 			rs->camera = rc;
-		} else if (it->first == "Light") 
+		}			
+		else 
 		{
 			if (it->second->hasComponent<LightComponent*>()) {
 				RenderableLight rl;
 				LightComponent *lc = it->second->getComponent<LightComponent*>();
-				rl.type = RenderableLightType::AMBIENT;
+				rl.type = lc->_type;
 				rl.intensity = lc->_intensity;
 				rl.color = Vector3ToGLMVector(lc->_color);
 				rl.angle = lc->_angle;
@@ -58,9 +66,7 @@ RenderableScene* Scene::getRenderInformation()
 				rl.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->lights.push_back(rl);
 			}
-		}
-		else 
-		{
+
 			if (it->second->hasComponent<RenderComponent*>()) {
 				RenderableObject ro;
 				RenderComponent *rc = it->second->getComponent<RenderComponent *>();
@@ -68,14 +74,15 @@ RenderableScene* Scene::getRenderInformation()
 				ro.normalName = rc->getNormalName();
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
-				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());
+				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());			
 				ro.rotation = Vector3ToGLMVector(it->second->_transform.getRotation());
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
 			}
 		}
+		it->second->_lockMutex.unlock();
 	}
-
+	//_objectsMutex.unlock();
 	return rs;
 };
 
@@ -90,34 +97,59 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 };
 
 void Scene::setUpSceneOne() {
-	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, 10), new Vector3(0, 0, 0), 1.0f));
+	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, -5), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	PhysicsInitializeContent* content = new PhysicsInitializeContent();
+	InputInitializeContent* content = new InputInitializeContent(); 
 	content->camera = go;
-	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsInitializeCallType, false));
-	msg->setContent(content);
-	MessagingSystem::instance().postMessage(msg);
 
-	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 1.25 * MATH_PI, 0), 1.0f));
-	go->addComponent(new RenderComponent("cube", "test_texture", "", 0));
+	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, MATH_PI / 4, 0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "crate", "", 0));
 	addGameObject("Cube", go);
 
-	go = new GameObject(new Transform());
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0));
+	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f)); 
 	addGameObject("Sphere", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
+	go->addComponent(new RenderComponent("carModel", "test_texture3", "test_normal", 0.75f));
+	go->addComponent(new AccelerationComponent(new Vector3(), 10.0f));
+	go->addComponent(new VelocityComponent(new Vector3(), 10.0f));
+	addGameObject("Player", go);
+
+	content->player = go;
+	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));
+	msg->setContent(content);
+	MessagingSystem::instance().postMessage(msg);
 
 	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("road_floor", "test_texture2", "", 0));
 	addGameObject("Road", go);
 
-	go = new GameObject(new Transform(new Vector3(0, 0, -10), new Vector3(-1.5 * MATH_PI, 0, 0), 3.0f));
+	go = new GameObject(new Transform(new Vector3(0, 0, -15), new Vector3(-1.5 * MATH_PI, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("road_floor", "test_texture", "", 0));
 	addGameObject("Road2", go);
 
 	go = new GameObject();
-	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f));
-	addGameObject("Light", go);
+	go->addComponent(new LightComponent(0.25f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
+	addGameObject("LightAmb", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 10.0f, 0), new Vector3(1.25f, 0, 0), 1.0f));
+	//go->addComponent(new RenderComponent("cube", "crate", "", 0)); 
+	go->addComponent(new LightComponent(0.75f, new Vector3(1.0f, 0.9f, 0.85f), 1000.0f, 0.0f, RenderableLightType::DIRECTIONAL));
+	addGameObject("LightDir", go);
+
+	go = new GameObject( new Transform(new Vector3(3.0f, 5.0f, 3.0f), new Vector3(0,0,0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	go->addComponent(new LightComponent(2.0f, new Vector3(0.5,0.5, 1), 20.0f, 0.0f, RenderableLightType::POINT));
+	addGameObject("Light2", go);
+
+	go = new GameObject(new Transform(new Vector3(-5.0f, 2.0f, 0.0f), new Vector3(0, 1.5f, 0), 1.0f));
+	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	go->addComponent(new LightComponent(5.0f, new Vector3(1.0f, 1.0f, 1.0f), 15.0f, 0.6f, RenderableLightType::SPOT));
+	addGameObject("Light3", go);
+	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SceneDoneLoadType));
+	MessagingSystem::instance().postMessage(myMessage);
 };
 

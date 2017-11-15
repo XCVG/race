@@ -4,6 +4,7 @@
 #include <map>
 #include <typeinfo>
 #include <typeindex>
+#include <mutex>
 #include "Transform.h"
 #include "ComponentHeaders.h"
 class GameObject
@@ -53,6 +54,7 @@ public:
 		}
 	};
 	std::map<std::string, Component *> getComponentList();
+	std::mutex _lockMutex;
 private:
 	std::map<std::string, Component *> *_components_p;
 	template <typename T>

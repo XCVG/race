@@ -14,14 +14,32 @@ public:
     Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale);
     Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale);
     Transform(const Transform &obj);
+
+#pragma region Rotation Calculation Methods
+	void rotate(Vector3 amount);
+	void rotateX(GLfloat angle);
+	void rotateY(GLfloat angle);
+	void rotateZ(GLfloat angle);
+#pragma endregion
+#pragma region Translation Calculation Methods
+	void translate(Vector3 translation);
+	void translate(GLfloat x, GLfloat y, GLfloat z);
+	void translateForward(GLfloat);
+	void translateRight(GLfloat num);
+#pragma endregion
     void setPosition(Vector3 _position);
 	void setRotation(Vector3 _rotation);
     void setScale(GLfloat _scale);
     Vector3 getPosition();
 	Vector3 getRotation();
 	GLfloat getScale();
+	Vector3 getForward();
+	void adjustDirections(Vector3);
     Vector3 _position;
     Vector3 _rotation;
     GLfloat _scale;
+	Vector3 _forward = Vector3(0, 0, 1);
+	Vector3 _right = Vector3(1, 0, 0);
+	Vector3 _up = Vector3(0, 1, 0);
 private:
 };

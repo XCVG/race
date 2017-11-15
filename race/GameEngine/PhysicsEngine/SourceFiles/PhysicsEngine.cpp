@@ -30,8 +30,7 @@
 PhysicsEngine::PhysicsEngine()
 {
 	subscribe(MESSAGE_TYPE::PhysicsCallMessageType);
-	subscribe(MESSAGE_TYPE::InputMessageType);
-	subscribe(MESSAGE_TYPE::PhysicsInitializeCallType);
+	subscribe(MESSAGE_TYPE::PhysicsAccelerateCallType);
 }
 
 ///
@@ -121,39 +120,55 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) {
 	case MESSAGE_TYPE::PhysicsCallMessageType:
 	{
 		PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-		rotate(content->go, Vector3(0.2, 0.3, 0.5) * content->deltaTime);
+		
+		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
+			GameObject* go = it->second;
+			go->_lockMutex.lock();
+			generalPhysicsCall(go);
+			
+			if (it->first == "Sphere") {
+				it->second->_transform.rotate(Vector3(0, MATH_PI / 2, 0) * content->deltaTime);
+			}
+			go->_lockMutex.unlock();
+		}
 		_deltaTime = content->deltaTime;
+		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
+		MessagingSystem::instance().postMessage(myMessage);
 		break;
 	}
-	case MESSAGE_TYPE::InputMessageType:
+	case MESSAGE_TYPE::PhysicsAccelerateCallType: 
 	{
-		InputMessageContent* content = static_cast<InputMessageContent*>(myMessage->getContent());
-		getControllerInput(content);
-	}
+		PhysicsAccelerateContent* content = static_cast<PhysicsAccelerateContent*>(myMessage->getContent());
+		GameObject* go = content->object;
+		GLfloat amount = content->amount;
+		if (go->getComponent<AccelerationComponent*>()->_acceleration.magnitude() < go->getComponent<AccelerationComponent*>()->_maxAcceleration)
+		{
+			go->getComponent<AccelerationComponent*>()->_acceleration += Vector3(go->_transform._forward) * amount * _deltaTime;
+			applyAcceleration(go);
+			//SDL_Log("%f, %f, %f", go->getComponent<AccelerationComponent*>()->_acceleration.x, go->getComponent<AccelerationComponent*>()->_acceleration.y, go->getComponent<AccelerationComponent*>()->_acceleration.z);
+		}
 		break;
-	case MESSAGE_TYPE::PhysicsInitializeCallType:
-	{
-		PhysicsInitializeContent* content = static_cast<PhysicsInitializeContent*>(myMessage->getContent());
-		_camera_p = content->camera;
 	}
-	break;
+		
 	default:
 		break;
 	}
 }
 
-void PhysicsEngine::getControllerInput(InputMessageContent *content) {
-	switch (content->buttonPressed) {
-	case INPUT_TYPES::RIGHT_ANALOG_Y: {
-		//SDL_Log("A Button Pressed");
-		rotateX(_camera_p, content->valueOfInput * _deltaTime);
+void PhysicsEngine::generalPhysicsCall(GameObject* go) {
+	if (go->hasComponent<AccelerationComponent*>() && go->hasComponent<VelocityComponent*>() && go->getComponent<VelocityComponent*>()->getVelocity().magnitude() > 0) 
+	{
+		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
+		go->_transform.translate(Vector3(go->getComponent<VelocityComponent*>()->_velocity) * _deltaTime);
+		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
+
 	}
-		break;
-	case INPUT_TYPES::RIGHT_ANALOG_X: {
-		rotateY(_camera_p, content->valueOfInput * _deltaTime);
-	}
-	default:
-		break;
+}
+
+void PhysicsEngine::applyAcceleration(GameObject* go) {
+	VelocityComponent* vc = go->getComponent<VelocityComponent*>();
+	if (vc->_velocity.magnitude() < vc->_maxVelocity) {
+		accelerate(go, go->getComponent<AccelerationComponent*>()->_acceleration);
 	}
 }
 
@@ -162,34 +177,14 @@ void PhysicsEngine::getControllerInput(InputMessageContent *content) {
  */
 void PhysicsEngine::stop()
 {
-	if (_camera_p != nullptr)
-		delete(_camera_p);
-	if (_player_p != nullptr)
-		delete(_player_p);
+
 	//SDL_Log("Physics::Stop");
 }
 
 void PhysicsEngine::flagLoop() {
 	_running = false;
 }
-/**
- *  <summary>
- *  Move the game object in a direciton. The translation should be modified by the delta time.
- *  </summary>
- */
-void PhysicsEngine::translate(GameObject *go, Vector3 translation)
-{
-	go->_transform._position += translation;
-};
-/**
- *  <summary>
- *  Move the game object in a direciton. Each axis should be modified by the delta time.
- *  </summary>
- */
-void PhysicsEngine::translate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
-{
-	go->_transform._position += Vector3(x, y, z);
-};
+
 /**
  *  <summary>
  *  Accelerate the game object. The amount should be modified by the delta time.
@@ -197,7 +192,7 @@ void PhysicsEngine::translate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
  */
 void PhysicsEngine::accelerate(GameObject *go, Vector3 amount)
 {
-	go->getComponent<AccelerationComponent*>()->_acceleration += amount;
+	go->getComponent<VelocityComponent*>()->_velocity += amount * _deltaTime;
 };
 /**
  * <summary>
@@ -206,7 +201,7 @@ void PhysicsEngine::accelerate(GameObject *go, Vector3 amount)
  */
 void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {
-	go->getComponent<AccelerationComponent*>()->_acceleration += Vector3(x, y, z);
+	go->getComponent<VelocityComponent*>()->_velocity += Vector3(x, y, z);
 };
 void PhysicsEngine::decelerate(GameObject *go, Vector3 amount)
 {
@@ -215,27 +210,4 @@ void PhysicsEngine::decelerate(GameObject *go, Vector3 amount)
 void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {
 	go->getComponent<AccelerationComponent*>()->_acceleration -= Vector3(x, y, z);
-};
-/**
- * <summary>
- * Rotate the object by a set amount. This rotation is in radians only, 
- * and is only ever increasing the rotation.
- * Please specify positive/negative when calling. e.g., rotate(&go, -1.2);
- * </summary>
- */
-void PhysicsEngine::rotate(GameObject *go, Vector3 amount)
-{
-	go->_transform._rotation += amount;
-};
-void PhysicsEngine::rotateX(GameObject *go, GLfloat angle)
-{
-	go->_transform._rotation.x += angle;
-};
-void PhysicsEngine::rotateY(GameObject *go, GLfloat angle)
-{
-	go->_transform._rotation.y += angle;
-};
-void PhysicsEngine::rotateZ(GameObject *go, GLfloat angle)
-{
-	go->_transform._rotation.z += angle;
 };
