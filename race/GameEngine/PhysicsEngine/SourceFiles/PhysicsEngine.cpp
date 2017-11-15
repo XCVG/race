@@ -163,10 +163,8 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		if (amount == 0 && amount2 == 0)
 		{
 			rbc->setAccelerationVector(Vector3(0, 0, 0));
-			//rbc->setTurningDegree(0);
+			// rbc->setTurningDegree(0);
 		}
-		
-		
 		break;
 	}
 	default:
@@ -194,6 +192,12 @@ void PhysicsEngine::applyAcceleration(GameObject* go)
 	{
 		accelerate(go, rc);
 	}
+}
+
+void PhysicsEngine::applyTurning(GameObject* go)
+{
+	Transform* t = go->getComponent<Transform*>();
+	turnGameObject(go, t);
 }
 
 /**
@@ -241,4 +245,16 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 {
 	go->getComponent<RigidBodyComponent*>()->getVelocity() -= Vector3(x, y, z) * _deltaTime;
+};
+
+GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
+{
+	GLfloat omega = 0; // REVIEW: This should be a single value (because about y axis)
+		// NOTE: This isn't needed
+	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>().getVelocity(); 
+		// DEBUG: Test this outs
+	GLfloat L = ; // Distance from front of object to rear of object
+	GLfloat theta = 0; // Degree
+	omega = objectVelocity / (L / sin(theta));
+	return omega;
 };

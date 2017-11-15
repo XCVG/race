@@ -127,8 +127,6 @@ class RenderFinishedMessageContent : public BaseMessageContent
 	
 };
 
-//*****FILE MESSAGES
-
 class PhysicsCallMessageContent: public BaseMessageContent
 {
 	public:
