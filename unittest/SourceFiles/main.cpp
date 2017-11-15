@@ -61,11 +61,21 @@ TEST_CASE("GameObject", "[gameobject]")
         // List 2
         std::map<std::string, Component *> *componentList2 = new std::map<std::string, Component*>();
         (*componentList2)[typeid(*cc).name()] = cc;
-        // REQUIRE(go->compareMaps(go->getComponentList(), *componentList) == true);
+        // REQUIRE(go->compareMaps(go->getComponentList(), *componentList) == true); // DEBUG: Breaking
         REQUIRE(*(go->getComponent<ColliderComponent *>()) == *cc);
         go->removeComponent<LightComponent *>();
-        // REQUIRE(go->compareMaps(go->getComponentList(), *componentList2) == true);
+        // REQUIRE(go->compareMaps(go->getComponentList(), *componentList2) == true); // DEBUG: Breaking
         REQUIRE(go->hasComponent<ColliderComponent *>() == true);
+        REQUIRE(go->hasComponent<LightComponent *>() == false);
+    }
+    go = new GameObject(); // Reset game object
+    SECTION("Children")
+    {
+        GameObject *child = new GameObject(std::string(std::string("child")));
+        go->addChild(child);
+        REQUIRE(*(go->getChild(std::string("child"))) == *child); // NOTE: Hello? Working?!
+        go->removeChild(child);
+        REQUIRE(go->getChildObjectList().empty() == true); // check if empty
     }
 }
 TEST_CASE("Transform", "[transform]")
