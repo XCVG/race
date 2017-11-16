@@ -108,7 +108,7 @@ void GameObject::rotate(Vector3 vec)
 		i++;
 	}
 };
-void GameObject::rotateX(GLfloat angle)
+void GameObject::rotateX(GLfloat angle) 
 {
 	this->_transform.rotateX(angle);
 	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
@@ -117,6 +117,7 @@ void GameObject::rotateX(GLfloat angle)
 		(*i)->_transform.rotateX(angle);
 		i++;
 	}
+
 };
 void GameObject::rotateY(GLfloat angle)
 {

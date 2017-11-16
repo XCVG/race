@@ -45,7 +45,7 @@ public:
   Vector3 matrixMulti(glm::mat4x4 matrix);
   Vector3 normalize();
   GLfloat dotProduct(Vector3 vec);
-  Vector3* crossProduct(Vector3 vec);
+  Vector3 crossProduct(Vector3 vec);
 };
 inline Vector3::Vector3()
 {
@@ -195,11 +195,11 @@ inline GLfloat Vector3::dotProduct(Vector3 vec)
 {
 	return this->x * vec.x + this->y * vec.y + this->z * vec.z;
 };
-inline Vector3* Vector3::crossProduct(Vector3 vec)
+inline Vector3 Vector3::crossProduct(Vector3 vec)
 {
 	// a(x y z | x)
 	// b(x y z | x)
-	return new Vector3(
+	return Vector3(
 		(this->x * vec.y) - (vec.x * this->y),
 		(this->y * vec.z) - (vec.y * this->z),
 		(this->z * vec.x) - (vec.z * this->x)

@@ -254,11 +254,19 @@ GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 	GLfloat L = (go->getChild(std::string("front"))->_transform._position 
 		- go->getChild(std::string("rear"))->_transform._position).magnitude(); // Distance from front of object to rear of object
 	GLfloat theta = tireDegree; // NOTE: Is the tireDegree correct?
-	return (objectVelocity.crossProduct(go->_transform._forward))->z / (L / sin(theta));
+	if (L == 0 || theta == 0)
+	{
+		return 0;
+	}
+	Vector3 crossProd = objectVelocity.crossProduct(go->_transform._forward);
+	GLfloat sinTheta = sin(theta);
+	GLfloat denominator = (L / sinTheta);
+	GLfloat omega = crossProd.z / denominator;
+	return omega;
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
 	GLfloat angle = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotateY(angle);
+	go->rotateY(angle); // BUG: Breaking when angle = 0;
 };
