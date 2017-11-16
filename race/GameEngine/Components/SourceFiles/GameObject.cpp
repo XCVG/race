@@ -98,3 +98,39 @@ std::vector<GameObject *> GameObject::getChildObjectList()
 {
 	return *this->_childObjects_p;
 };
+void GameObject::rotate(Vector3 vec)
+{
+	this->_transform.rotate(vec);
+	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
+		i != this->_childObjects_p->end();)
+	{
+		(*i)->_transform.rotate(vec);
+	}
+};
+void GameObject::rotateX(GLfloat angle)
+{
+	this->_transform.rotateX(angle);
+	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
+		i != this->_childObjects_p->end();)
+	{
+		(*i)->_transform.rotateX(angle);
+	}
+};
+void GameObject::rotateY(GLfloat angle)
+{
+	this->_transform.rotateY(angle);
+	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
+		i != this->_childObjects_p->end();)
+	{
+		(*i)->_transform.rotateY(angle);
+	}
+};
+void GameObject::rotateZ(GLfloat angle)
+{
+	this->_transform.rotateZ(angle);
+	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
+		i != this->_childObjects_p->end();)
+	{
+		(*i)->_transform.rotateZ(angle);
+	}
+};

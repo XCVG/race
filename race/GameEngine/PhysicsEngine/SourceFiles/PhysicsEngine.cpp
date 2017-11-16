@@ -158,7 +158,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 				rbc->setForce(F_Long);
 			}
 			rbc->setAccelerationVector(rbc->getForce() / rbc->getWeight());
-			rbc->setTurningDegree(content->turningDegree);
+			rbc->setTurningDegree(content->turningDegree); // Turning input from user
 		}
 		if (amount == 0 && amount2 == 0)
 		{
@@ -178,6 +178,7 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 	{
 		RigidBodyComponent* rbc = go->getComponent<RigidBodyComponent*>();
 		applyAcceleration(go);
+		applyTurning(go);
 		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
 		go->_transform.translate(Vector3(rbc->getVelocity()) * _deltaTime);
 		//go->_transform.rotateY((MATH_PI / 2) * _deltaTime);
@@ -196,8 +197,7 @@ void PhysicsEngine::applyAcceleration(GameObject* go)
 
 void PhysicsEngine::applyTurning(GameObject* go)
 {
-	Transform* t = go->getComponent<Transform*>();
-	turnGameObject(go, t);
+	turnGameObject(go);
 }
 
 /**
@@ -249,12 +249,16 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 
 GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
-	GLfloat omega = 0; // REVIEW: This should be a single value (because about y axis)
-		// NOTE: This isn't needed
-	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>().getVelocity(); 
+	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
 		// DEBUG: Test this outs
-	GLfloat L = 0; // Distance from front of object to rear of object
-	GLfloat theta = 0; // Degree
-	omega = objectVelocity / (L / sin(theta));
-	return omega;
+	GLfloat L = (go->getChild(std::string("front"))->_transform._position 
+		- go->getChild(std::string("rear"))->_transform._position).magnitude(); // Distance from front of object to rear of object
+	GLfloat theta = tireDegree; // NOTE: Is the tireDegree correct?
+	return (objectVelocity.crossProduct(go->_transform._forward))->z / (L / sin(theta));
+};
+
+void PhysicsEngine::turnGameObject(GameObject *go)
+{
+	GLfloat angle = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
+	go->rotateY(angle);
 };

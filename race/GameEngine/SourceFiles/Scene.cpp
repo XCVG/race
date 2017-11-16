@@ -112,7 +112,13 @@ void Scene::setUpSceneOne() {
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
+	GameObject *childF = new GameObject(new Transform(new Vector3(6, 2.5, 0), new Vector3(0, 0, 0), 2.0f), "front");
+	GameObject *childR = new GameObject(new Transform(new Vector3(6, 2.5, 0), new Vector3(0, 0, 0), 2.0f), "rear");
+	go->addChild(childF);
+	go->addChild(childR);
 	addGameObject("Player", go);
+	addGameObject("Player.ChildF", childF); // DEBUG: Check this is running properly
+	addGameObject("Player.ChildR", childR);
 
 	content->player = go;
 	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));

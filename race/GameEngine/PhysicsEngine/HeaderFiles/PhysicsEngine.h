@@ -101,5 +101,8 @@ class PhysicsEngine : public MessageReceiver
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
 		void applyAcceleration(GameObject*);
+		void applyTurning(GameObject* go);
 		void generalPhysicsCall(GameObject*);
+		GLfloat getAngleFromTurn(GameObject *go, GLfloat tireDegree);
+		void turnGameObject(GameObject *go);
 };
