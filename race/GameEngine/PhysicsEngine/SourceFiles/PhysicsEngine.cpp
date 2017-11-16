@@ -156,7 +156,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			if (amount2 != 0)
 			{
 				F_Long += Vector3(-go->_transform._forward.normalize()) * (amount2 * 6000);
-				rbc->setForce(F_Long);
+				rbc->setForce(F_Long); 
 			}
 			rbc->setAccelerationVector(rbc->getForce() / rbc->getWeight());
 		}
