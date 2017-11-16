@@ -22,8 +22,7 @@ public:
 	std::map<std::string, GameObject*> getWorldObjects();
 	glm::vec3 Vector3ToGLMVector(Vector3 vec);
 	glm::vec3 FloatToGLMVector(GLfloat num);
-	std::mutex _objectsMutex;
-	std::unique_lock<std::mutex> lock1;
+	std::mutex _worldMutex;
 private:
 	void setUpSceneOne();
 

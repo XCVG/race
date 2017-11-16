@@ -1,10 +1,20 @@
 #pragma once
+#include "Message.h"
+#include "MessagingSystem.h"
+#include <memory>
+#include <SDL.h>
+#include <SDL_mixer.h>
 
-class SoundEngine {
+class SoundEngine : MessageReceiver {
 public:
-    void start();
     SoundEngine();
     ~SoundEngine();
+	void loop();
+
 private:
-    void loop();
+	std::string basePath;
+	std::map<std::string, Mix_Music*> gameSoundtracks;
+	std::map<std::string, Mix_Chunk*> gameSoundEffects;
+	void HandleMessage(std::shared_ptr<Message> inBaseMessage);
+	void SoundMessage(SoundMessageContent inMessageContent);
 };
