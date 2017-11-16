@@ -247,26 +247,27 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 	go->getComponent<RigidBodyComponent*>()->getVelocity() -= Vector3(x, y, z) * _deltaTime;
 };
 
-GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
+Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
+	if (tireDegree >= PI/4.0f || tireDegree != 0)
+		SDL_Log("Breaking");
 	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
-		// DEBUG: Test this outs
 	GLfloat L = (go->getChild(std::string("front"))->_transform._position 
 		- go->getChild(std::string("rear"))->_transform._position).magnitude(); // Distance from front of object to rear of object
-	GLfloat theta = tireDegree; // NOTE: Is the tireDegree correct?
+	GLfloat theta = tireDegree;
 	if (L == 0 || theta == 0)
 	{
-		return 0;
+		return Vector3();
 	}
-	Vector3 crossProd = objectVelocity.crossProduct(go->_transform._forward);
 	GLfloat sinTheta = sin(theta);
 	GLfloat denominator = (L / sinTheta);
-	GLfloat omega = crossProd.z / denominator;
+	Vector3 omega = objectVelocity / denominator;
+	omega = omega.crossProduct(go->_transform._up);
 	return omega;
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
-	GLfloat angle = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotateY(angle); // BUG: Breaking when angle = 0;
+	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
+	go->rotate(angularVelocity * _deltaTime); // angularVelocity * deltaTime = current angle
 };

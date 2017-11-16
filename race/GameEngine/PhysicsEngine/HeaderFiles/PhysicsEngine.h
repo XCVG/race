@@ -36,6 +36,7 @@
 #include "GameObject.h"
 #include "../../HeaderFiles/InputTypes.h"
 #include "../../Components/HeaderFiles/ComponentHeaders.h"
+#define PI 3.14159265
 
 /*========================================================================================
 	Dependencies
@@ -103,6 +104,6 @@ class PhysicsEngine : public MessageReceiver
 		void applyAcceleration(GameObject*);
 		void applyTurning(GameObject* go);
 		void generalPhysicsCall(GameObject*);
-		GLfloat getAngleFromTurn(GameObject *go, GLfloat tireDegree);
+		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
 		void turnGameObject(GameObject *go);
 };
