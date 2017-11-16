@@ -115,7 +115,7 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			if (angleY < 0)
 				angleY = PI - (angleY);
 			Quaternion q;
-			_camera_p->_transform._orientation = q.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 		}
 		break;
 	}

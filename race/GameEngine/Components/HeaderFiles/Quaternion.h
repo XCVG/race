@@ -19,6 +19,7 @@ class Quaternion
 public:
 	Quaternion();
 	Quaternion(float n, float x, float y, float z);
+	Quaternion(float n, Vector3 vec);
 	~Quaternion();
 	GLfloat Magnitude();
 	Vector3 getVector();
@@ -60,6 +61,11 @@ inline Quaternion::Quaternion(float n, float x, float y, float z)
 	_n = n;
 	_v = Vector3(x, y, z);
 };
+
+inline Quaternion::Quaternion(float n, Vector3 vec) {
+	_n = n;
+	_v = vec;
+}
 
 inline Quaternion::~Quaternion()
 {
