@@ -249,21 +249,29 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
-	if (tireDegree >= PI/4.0f || tireDegree != 0)
-		SDL_Log("Breaking");
+	//if (tireDegree >= PI/4.0f || tireDegree != 0)
+	//	SDL_Log("Breaking");
 	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
 	GLfloat L = (go->getChild(std::string("front"))->_transform._position 
 		- go->getChild(std::string("rear"))->_transform._position).magnitude(); // Distance from front of object to rear of object
-	GLfloat theta = tireDegree;
-	if (L == 0 || theta == 0)
-	{
-		return Vector3();
-	}
-	GLfloat sinTheta = sin(theta);
-	GLfloat denominator = (L / sinTheta);
-	Vector3 omega = objectVelocity / denominator;
-	omega = omega.crossProduct(go->_transform._up);
-	return omega;
+	//if (L == 0 || theta == 0)
+	//{
+	//	return Vector3();
+	//}
+	//GLfloat sinTheta = sin(theta);
+	//GLfloat denominator = (L / sinTheta);
+	//Vector3 omega = objectVelocity / denominator;
+	//omega = go->_transform._up.crossProduct(objectVelocity);
+
+	float x = (L / fabs((float)tan(tireDegree)) + 1.0f / 2);
+	float r = (float)sqrtf(x * x + (L / 2) * (L / 2));
+	float theta = objectVelocity.magnitude() / r;
+	if (tireDegree < 0.0f)
+		theta = -theta;
+	Quaternion q;
+	q.CreateFromAxisAngle(Vector3(0, 1, 0), theta);
+	Vector3 u = q.MakeEulerAnglesFromQ();
+	return u;
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)

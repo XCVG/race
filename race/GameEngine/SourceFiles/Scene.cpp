@@ -73,7 +73,7 @@ RenderableScene* Scene::getRenderInformation()
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
 				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());			
-				ro.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
+				ro.rotation = Vector3ToGLMVector(it->second->_transform._rotation);
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
 			}

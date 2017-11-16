@@ -42,6 +42,8 @@ public:
 	Quaternion& MakeQFromEulerAngles(float x, float y, float z);
 	Vector3 MakeEulerAnglesFromQ();
 
+	Quaternion& CreateFromAxisAngle(Vector3 vec, GLfloat angle);
+
 private:
 	GLfloat _n;
 	Vector3 _v;
@@ -240,3 +242,13 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ()
 	u.z = (GLfloat)atan2(r21, r11);
 	return u;
 };
+
+inline Quaternion& Quaternion::CreateFromAxisAngle(Vector3 vec, GLfloat angle)
+{
+	GLfloat s = sinf(angle / 2.0f);
+	this->_v.x = vec.x * s;
+	this->_v.y = vec.y * s;
+	this->_v.z = vec.z * s;
+	this->_n = cosf(angle / 2.0f);
+	return *this;
+}
