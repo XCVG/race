@@ -19,6 +19,7 @@ class Quaternion
 public:
 	Quaternion();
 	Quaternion(float n, float x, float y, float z);
+	Quaternion(float n, Vector3 vec);
 	~Quaternion();
 	GLfloat Magnitude();
 	Vector3 getVector();
@@ -60,6 +61,11 @@ inline Quaternion::Quaternion(float n, float x, float y, float z)
 	_n = n;
 	_v = Vector3(x, y, z);
 };
+
+inline Quaternion::Quaternion(float n, Vector3 vec) {
+	_n = n;
+	_v = vec;
+}
 
 inline Quaternion::~Quaternion()
 {
@@ -212,34 +218,21 @@ inline Quaternion& Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 
 inline Vector3 Quaternion::MakeEulerAnglesFromQ() 
 {
-	double r11, r21, r31, r32, r33, r12, r13;
-	double q00, q11, q22, q33;
-	double temp;
 	Vector3 u;
-	q00 = this->_n * this->_n;
-	q11 = this->_v.x * this->_v.x;
-	q22 = this->_v.y * this->_v.y;
-	q33 = this->_v.z * this->_v.z;
-	
-	r11 = q00 + q11 - q22 - q33;
-	r21 = 2 * (this->_v.x * this->_v.y + this->_n * this->_v.z);
-	r31 = 2 * (this->_v.x * this->_v.z - this->_n * this->_v.y);
-	r32 = 2 * (this->_v.y * this->_v.z + this->_n * this->_v.x);
-	r33 = q00 - q11 - q22 + q33;
 
-	temp = fabs(r31);
-	if (temp > 0.9999999) {
-		r12 = 2 * (this->_v.x * this->_v.y - this->_n * this->_v.z);
-		r13 = 2 * (this->_v.x * this->_v.z + this->_n * this->_v.y);
+	GLfloat sinr = 2.0f * (this->_n * this->_v.x + this->_v.y * this->_v.z);
+	GLfloat cosr = 1.0f - (2.0f * (this->_v.x * this->_v.x + this->_v.y * this->_v.y));
+	u.x = (GLfloat)atan2(sinr, cosr);
 
-		u.x = (GLfloat)0.0f;
-		u.y = (GLfloat)(-(PI / 2) * r31 / temp);
-		u.z = (GLfloat)(atan2(-r12, -r31 * r13));
-		return u;
-	}
-	u.x = (GLfloat)atan2(r32, r33);
-	u.y = (GLfloat)asin(-r31);
-	u.z = (GLfloat)atan2(r21, r11);
+	GLfloat sinp = 2.0f * (this->_n * this->_v.y - this->_v.z * this->_v.x);
+	if (fabs(sinp) >= 1)
+		u.y = (GLfloat)copysign(PI / 2, sinp);
+	else
+		u.y = (GLfloat)asin(sinp);
+
+	GLfloat siny = 2.0f * (this->_n * this->_v.z + this->_v.x * this->_v.y);
+	GLfloat cosy = 1.0f - (2.0f * (this->_v.y * this->_v.y + this->_v.z * this->_v.z));
+	u.z = (GLfloat)atan2(siny, cosy);
 	return u;
 };
 

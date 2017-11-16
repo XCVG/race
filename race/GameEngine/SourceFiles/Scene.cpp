@@ -60,7 +60,7 @@ RenderableScene* Scene::getRenderInformation()
 				rl.angle = lc->_angle;
 				rl.range = lc->_range;
 				rl.position = Vector3ToGLMVector(it->second->_transform.getPosition());
-				rl.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
+				rl.rotation = Vector3ToGLMVector(it->second->_transform._rotation);
 				rl.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->lights.push_back(rl);
 			}

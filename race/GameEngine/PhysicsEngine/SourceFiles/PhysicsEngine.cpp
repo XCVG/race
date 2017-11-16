@@ -126,7 +126,8 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			generalPhysicsCall(go);
 			
 			if (it->first == "Sphere") {
-				it->second->_transform.rotate(Vector3(0, MATH_PI / 2, 0) * content->deltaTime);
+				it->second->_transform.rotate(Vector3(0.0f, MATH_PI / 2, 0.0f) * content->deltaTime);
+				//it->second->_transform._position += it->second->_transform._forward * content->deltaTime;
 			}
 		}
 		_deltaTime = content->deltaTime;
