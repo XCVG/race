@@ -97,7 +97,7 @@ Vector3 Transform::rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rot
 };
 void Transform::rotate(Vector3 amount)
 {
-	adjustDirections(amount);
+	//adjustDirections(amount);
 	//glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
 	this->_rotation += amount;
 	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);

@@ -62,6 +62,7 @@ class PhysicsEngine : public MessageReceiver
 		GLfloat _deltaTime;
 		const float MATH_PI = 3.14159f;
 		float count = 0;
+		float rotationAccel = 0;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -94,7 +95,6 @@ class PhysicsEngine : public MessageReceiver
 	#pragma region Physics Calculation Methods
 			void accelerate(GameObject *go, RigidBodyComponent* rbc);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
-			void decelerate(GameObject *go, RigidBodyComponent* rbc);
 			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 	#pragma endregion
 
