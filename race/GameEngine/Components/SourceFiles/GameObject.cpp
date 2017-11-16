@@ -105,6 +105,7 @@ void GameObject::rotate(Vector3 vec)
 		i != this->_childObjects_p->end();)
 	{
 		(*i)->_transform.rotate(vec);
+		i++;
 	}
 };
 void GameObject::rotateX(GLfloat angle)
@@ -114,6 +115,7 @@ void GameObject::rotateX(GLfloat angle)
 		i != this->_childObjects_p->end();)
 	{
 		(*i)->_transform.rotateX(angle);
+		i++;
 	}
 };
 void GameObject::rotateY(GLfloat angle)
@@ -123,6 +125,7 @@ void GameObject::rotateY(GLfloat angle)
 		i != this->_childObjects_p->end();)
 	{
 		(*i)->_transform.rotateY(angle);
+		i++;
 	}
 };
 void GameObject::rotateZ(GLfloat angle)
@@ -132,5 +135,6 @@ void GameObject::rotateZ(GLfloat angle)
 		i != this->_childObjects_p->end();)
 	{
 		(*i)->_transform.rotateZ(angle);
+		i++;
 	}
 };
