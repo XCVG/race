@@ -48,6 +48,7 @@ enum class MESSAGE_TYPE
 	InputButtonDownCallType,
 	FileLoadMessageType,
 	InputMessageType,
+	SceneDoneLoadType,
 	FileLoadImageMessageType,
 	FileLoadedMessageType,
 	FileLoadedImageMessageType,
@@ -128,7 +129,35 @@ class RenderFinishedMessageContent : public BaseMessageContent
 	
 };
 
-//*****FILE MESSAGES
+class PhysicsCallMessageContent: public BaseMessageContent
+{
+	public:
+	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
+	std::string contentVar;
+	std::map<std::string, GameObject*> worldObjects;
+	float_t deltaTime;
+	PhysicsCallMessageContent(std::string s) { contentVar = s; }
+};
+
+class PhysicsAccelerateContent : public BaseMessageContent
+{
+public:
+	GameObject *object;
+	GLfloat amountFast, amountSlow, turningDegree;
+};
+
+class InputInitializeContent : public BaseMessageContent
+{
+	public:
+		GameObject* camera;
+		GameObject* player;
+};
+
+class InputButtonDownContent : public BaseMessageContent 
+{
+public:
+	SDL_Event ev;
+};
 
 class FileLoadMessageContent : public BaseMessageContent
 {
@@ -163,36 +192,6 @@ public:
 };
 
 //*****INPUT MESSAGES
-
-class PhysicsCallMessageContent : public BaseMessageContent
-{
-public:
-	//std::vector<std::shared_ptr<GameObject>> _objectsToUpdate;
-	std::string contentVar;
-	std::map<std::string, GameObject*> worldObjects;
-	float_t deltaTime;
-	PhysicsCallMessageContent(std::string s) { contentVar = s; }
-};
-
-class PhysicsAccelerateContent : public BaseMessageContent
-{
-public:
-	GameObject* object;
-	GLfloat amount;
-};
-
-class InputInitializeContent : public BaseMessageContent
-{
-public:
-	GameObject* camera;
-	GameObject* player;
-};
-
-class InputButtonDownContent : public BaseMessageContent
-{
-public:
-	SDL_Event ev;
-};
 
 class InputMessageContent : public BaseMessageContent
 {

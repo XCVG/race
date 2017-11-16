@@ -38,13 +38,13 @@ void main()
     // If the diffuse component is greater than 0, set the specular component.
 	if(diffuseC > 0)
 	{
-		spec = pow(                             // Specular coefficient
-                    max(                        // Cosine angle
+		spec = pow(
+                    max(
                         0.0, 
                         dot(
                             eyeDir, 
-                            reflect(            // Reflection vector
-                                -lightDir,      // Incidence vector
+                            reflect(
+                                -lightDir, 
                                 normal))), 
                     50) 
                     * attn 
@@ -52,4 +52,29 @@ void main()
 	}
 
 	color = (diffuse * lightColorFac) + (spec * lightColorFac);     // The ouput is the weighted sum of diffuse and specular reflection.
+
+    
+    float brightness = dot(normal, lightDir) / (length(lightDir) * length(normal));
+    brightness = clamp(brightness, 0, 1);
+
+    vec3 incidenceVector = -lightDir;
+    vec3 reflectionVector = reflect(incidenceVector, normal);
+    vec3 surfaceToCamera = eyeDir;
+    float cosAngle = max(0.0, dot(surfaceToCamera, reflectionVector));
+    float specularCoefficient = pow(cosAngle, smoothness);
+
+    if (diffuseC > 0)
+    {
+        spec = specularCoefficient * attn * smoothness;
+    }
+    else
+    {
+        spec = 0.0;
+    }
+
+    vec3 red = vec3(0, 0, 1);
+    vec3 green = vec3(0, 0, 1);
+    vec3 blue = vec3(0, 0, 1);
+    vec3 white = vec3(1, 1, 1);
+    color = (blue * diffuse) + (white * spec);
 }

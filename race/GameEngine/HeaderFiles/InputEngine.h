@@ -37,9 +37,9 @@ private:
 	SDL_GameController *gameController;
 	GameObject* _player_p;
 	GameObject* _camera_p;
-	const float MATH_PI = 3.14159f;
 	bool cameraIndependant;
-	Vector3 *_playerToCamera;
+	Vector3 _playerToCamera;
 	GLfloat _deltaTime;
+	GLfloat _turningDegree = 0;
 	
 };

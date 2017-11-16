@@ -36,6 +36,7 @@
 #include "GameObject.h"
 #include "../../HeaderFiles/InputTypes.h"
 #include "../../Components/HeaderFiles/ComponentHeaders.h"
+#define PI 3.14159265
 
 /*========================================================================================
 	Dependencies
@@ -60,6 +61,8 @@ class PhysicsEngine : public MessageReceiver
 		bool _running = false;
 		GLfloat _deltaTime;
 		const float MATH_PI = 3.14159f;
+		float count = 0;
+		float rotationAccel = 0;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -90,16 +93,17 @@ class PhysicsEngine : public MessageReceiver
 			void flagLoop();
 			// TODO: Physics function calls
 	#pragma region Physics Calculation Methods
-			void accelerate(GameObject *go, Vector3 amount);
+			void accelerate(GameObject *go, RigidBodyComponent* rbc);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
-			void decelerate(GameObject *go, Vector3 amount);
 			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 	#pragma endregion
 
     private:
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
-		void getControllerInput(InputMessageContent*);
 		void applyAcceleration(GameObject*);
+		void applyTurning(GameObject* go);
 		void generalPhysicsCall(GameObject*);
+		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
+		void turnGameObject(GameObject *go);
 };

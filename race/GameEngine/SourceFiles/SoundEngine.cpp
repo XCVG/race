@@ -50,7 +50,7 @@ SoundEngine::~SoundEngine()
 	
 
 	Mix_Quit();
-	SDL_Quit();
+	//SDL_Quit();
 }
 
 void SoundEngine::loop()

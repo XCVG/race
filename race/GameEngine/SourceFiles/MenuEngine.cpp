@@ -36,7 +36,7 @@ void MenuEngine::initializeMenuItems()
 
 void MenuEngine::menuItemInteraction(MenuEngine playButton, MenuEngine settingsButton, MenuEngine exitButton) 
 {
-	int mouseX, mouseY;
+	/*int mouseX, mouseY;
 
 	if (playButton.checkBounds(mouseX, mouseY))
 	{
@@ -51,5 +51,5 @@ void MenuEngine::menuItemInteraction(MenuEngine playButton, MenuEngine settingsB
 	if (exitButton.checkBounds(mouseX, mouseY))
 	{
 
-	}
+	}*/
 }

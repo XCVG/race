@@ -19,7 +19,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GameEngine\Components\SourceFiles\AccelerationComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\BoxColliderComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\CameraComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\ColliderComponent.cpp" />
@@ -28,8 +27,6 @@
     <ClCompile Include="GameEngine\Components\SourceFiles\RenderComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\RigidBodyComponent.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\Vector3.cpp" />
-    <ClCompile Include="GameEngine\Components\SourceFiles\VelocityComponent.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\Message.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessageReceiver.cpp" />
     <ClCompile Include="GameEngine\MessagingSystem\SourceFiles\MessagingSystem.cpp" />
@@ -55,7 +52,6 @@
     <ClCompile Include="SourceFiles\Object.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameEngine\Components\HeaderFiles\AccelerationComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\AIComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\AudioComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\BoxColliderComponent.h" />
@@ -69,11 +65,11 @@
     <ClInclude Include="GameEngine\Components\HeaderFiles\MeshColliderComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\MessageHandlerComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\PlayerComponent.h" />
+    <ClInclude Include="GameEngine\Components\HeaderFiles\Quaternion.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\RenderComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\RigidBodyComponent.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Transform.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Vector3.h" />
-    <ClInclude Include="GameEngine\Components\HeaderFiles\VelocityComponent.h" />
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\EngineHeaders.h" />
     <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
