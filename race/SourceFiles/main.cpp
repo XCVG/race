@@ -15,7 +15,7 @@ std::thread* engineThread_p;
 /// <param name="argc">Number of arguments passed to the application</param>
 /// <param name="argv">Array containg string arguments passed to the application</param>
 /// <return>Status code on application exit.</return>
-int main(int argc, char ** argv) {
+	int main(int argc, char ** argv) {
 	SDL_Init(SDL_INIT_VIDEO);
 	//open opengl and window
 	InputEngine *ie = new InputEngine();
@@ -63,7 +63,7 @@ int main(int argc, char ** argv) {
 				case SDLK_0:
 				{
 					SoundMessageContent *content = new SoundMessageContent;
-					content->name = "testmusic";
+					content->name = "Music02";
 					content->subType = S_TYPE::playMusic;
 					std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
 					myMessage->setContent(content);
@@ -84,7 +84,7 @@ int main(int argc, char ** argv) {
 				case SDLK_2:
 				{
 					SoundMessageContent *content = new SoundMessageContent;
-					content->name = "testsfx";
+					content->name = "SFX06";
 					content->subType = S_TYPE::playSound;
 					std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
 					myMessage->setContent(content);

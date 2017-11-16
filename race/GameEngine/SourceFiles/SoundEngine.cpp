@@ -14,14 +14,40 @@ SoundEngine::SoundEngine()
 	}
 
 	//TODO dynamic loading
-	gameSoundtracks.emplace("testmusic", Mix_LoadMUS((basePath + "Music.mp3").c_str()));
-	gameSoundEffects.emplace("testsfx", Mix_LoadWAV((basePath + "SEffect.wav").c_str()));
+
+	//Music
+	gameSoundtracks.emplace("Music01", Mix_LoadMUS((basePath + "MenuMusic.mp3").c_str())); // Menu Screen
+	gameSoundtracks.emplace("Music02", Mix_LoadMUS((basePath + "InGameMusic01.mp3").c_str())); // In Game 01
+	gameSoundtracks.emplace("Music03", Mix_LoadMUS((basePath + "InGameMusic02.mp3").c_str())); // In Game 02
+	gameSoundtracks.emplace("Music04", Mix_LoadMUS((basePath + "InGameMusic03.mp3").c_str())); // In Game 03
+	gameSoundtracks.emplace("Music05", Mix_LoadMUS((basePath + "EndGameMusic.mp3").c_str())); // End Game Screen
+
+	//SFX
+	gameSoundEffects.emplace("SFX01", Mix_LoadWAV((basePath + "MenuMove.wav").c_str())); // Menu Move
+	gameSoundEffects.emplace("SFX02", Mix_LoadWAV((basePath + "MenuSelect.wav").c_str())); // Menu Select
+	gameSoundEffects.emplace("SFX03", Mix_LoadWAV((basePath + "VehicleMoving01.wav").c_str())); // Vehicle Moving 01
+	gameSoundEffects.emplace("SFX04", Mix_LoadWAV((basePath + "VehicleMoving01.wav").c_str())); // Vehicle Moving 02 
+	gameSoundEffects.emplace("SFX05", Mix_LoadWAV((basePath + "VehicleCollide.wav").c_str())); // Vehicle Colliding
+	gameSoundEffects.emplace("SFX06", Mix_LoadWAV((basePath + "VehicleDestroyed.wav").c_str())); // Vehicle Destroyed
 }
 
 SoundEngine::~SoundEngine() 
 {
-	Mix_FreeChunk(gameSoundEffects.at("testsfx"));
-	Mix_FreeMusic(gameSoundtracks.at("testmusic"));
+	//Music
+	Mix_FreeMusic(gameSoundtracks.at("Music01"));
+	Mix_FreeMusic(gameSoundtracks.at("Music02"));
+	Mix_FreeMusic(gameSoundtracks.at("Music03"));
+	Mix_FreeMusic(gameSoundtracks.at("Music04"));
+	Mix_FreeMusic(gameSoundtracks.at("Music05"));
+
+	//SFX
+	Mix_FreeChunk(gameSoundEffects.at("SFX01"));
+	Mix_FreeChunk(gameSoundEffects.at("SFX02"));
+	Mix_FreeChunk(gameSoundEffects.at("SFX03"));
+	Mix_FreeChunk(gameSoundEffects.at("SFX04"));
+	Mix_FreeChunk(gameSoundEffects.at("SFX05"));
+	Mix_FreeChunk(gameSoundEffects.at("SFX06"));
+	
 
 	Mix_Quit();
 	SDL_Quit();
