@@ -15,6 +15,7 @@ Engine::~Engine() {
 
 std::thread* Engine::start() {
 	subscribe(MESSAGE_TYPE::PhysicsReturnCall);
+	subscribe(MESSAGE_TYPE::SceneDoneLoadType);
     // Create the other engines, or at least get pointer to them
 	_fileEngine_p = new FileEngine();
 	if (_fileEngine_p == nullptr) {
@@ -60,6 +61,7 @@ std::thread* Engine::start() {
     }
 
 	_sceneObj = new Scene();
+	while (checkMessages());
 	_inputEngine_p->setUpInput();
 
 	ticksAtLast = SDL_GetTicks();
@@ -72,6 +74,7 @@ std::thread* Engine::start() {
 	rsd.models.push_back("carModel");
 	rsd.models.push_back("raceTrack");
 	rsd.textures.push_back("rainbow");
+	rsd.textures.push_back("test_normal");
 	rsd.textures.push_back("test_texture");
 	rsd.textures.push_back("test_texture2");
 	rsd.textures.push_back("test_texture3");
@@ -180,6 +183,11 @@ bool Engine::checkMessages()
 			{
 				// process a normal messages
 				if (_messageQueue.front()->getType() == MESSAGE_TYPE::PhysicsReturnCall) {
+					_messageQueueMutex_p->unlock();
+					_messageQueue.pop();
+					return false;
+				}
+				if (_messageQueue.front()->getType() == MESSAGE_TYPE::SceneDoneLoadType) {
 					_messageQueueMutex_p->unlock();
 					_messageQueue.pop();
 					return false;

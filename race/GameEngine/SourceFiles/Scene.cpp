@@ -98,7 +98,7 @@ void Scene::setUpSceneOne() {
 	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
-	InputInitializeContent* content = new InputInitializeContent();
+	InputInitializeContent* content = new InputInitializeContent(); 
 	content->camera = go;
 
 	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, PI / 4, 0), 1.0f));
@@ -106,7 +106,7 @@ void Scene::setUpSceneOne() {
 	addGameObject("Cube", go);
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f));
+	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f)); 
 	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
@@ -130,17 +130,24 @@ void Scene::setUpSceneOne() {
 	addGameObject("Road", go);
 
 	go = new GameObject();
-	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
-	addGameObject("Light", go);
+	go->addComponent(new LightComponent(0.25f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
+	addGameObject("LightAmb", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 10.0f, 0), new Vector3(1.25f, 0, 0), 1.0f));
+	//go->addComponent(new RenderComponent("cube", "crate", "", 0)); 
+	go->addComponent(new LightComponent(0.75f, new Vector3(1.0f, 0.9f, 0.85f), 1000.0f, 0.0f, RenderableLightType::DIRECTIONAL));
+	addGameObject("LightDir", go);
 
 	go = new GameObject( new Transform(new Vector3(3.0f, 5.0f, 3.0f), new Vector3(0,0,0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));
 	go->addComponent(new LightComponent(2.0f, new Vector3(0.0,0.0, 0.0), 20.0f, 0.0f, RenderableLightType::POINT));
 	addGameObject("Light2", go);
 
-	go = new GameObject(new Transform(new Vector3(-3.0f, 3.0f, 0.0f), new Vector3(0, 0, 0), 1.0f));
+	go = new GameObject(new Transform(new Vector3(-5.0f, 2.0f, 0.0f), new Vector3(0, 1.5f, 0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));
-	go->addComponent(new LightComponent(2.0f, new Vector3(0.0f, 0.0, 0.0), 20.0f, 0.0f, RenderableLightType::POINT));
-	addGameObject("Light3", go); 
+	go->addComponent(new LightComponent(5.0f, new Vector3(1.0f, 1.0f, 1.0f), 15.0f, 0.6f, RenderableLightType::SPOT));
+	addGameObject("Light3", go);
+	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SceneDoneLoadType));
+	MessagingSystem::instance().postMessage(myMessage);
 };
 

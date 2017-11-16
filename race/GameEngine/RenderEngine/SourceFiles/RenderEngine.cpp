@@ -176,6 +176,8 @@ private:
 	GLuint _shaderModelMatrixID = 0;
 	GLuint _shaderMVPMatrixID = 0;
 	GLuint _shaderTextureID = 0;
+	GLuint _shaderNormalID = 0;
+	GLuint _shaderHasNormID = 0;
 	GLuint _shaderSmoothnessID = 0;
 
 	//framebuffer stuff
@@ -197,9 +199,17 @@ private:
 	GLuint _framebufferDrawTex1ID = 0;
 	GLuint _framebufferDrawTex2ID = 0;
 	GLuint _framebufferDrawTex3ID = 0;
+	GLuint _framebufferDrawTexSID = 0;
 	GLuint _framebufferDrawAmbientID = 0;
+	GLuint _framebufferDrawDirectionalID = 0;
+	GLuint _framebufferDrawBiasID = 0;
 
-	//TODO shadow pass program and uniforms, texture ID
+	//shadow pass program and uniforms, texture ID
+	GLuint _shadowPassProgramID = 0;
+	GLuint _shadowPassModelMatrixID = 0;
+	GLuint _shadowPassMVPMatrixID = 0;
+	GLuint _shadowFramebufferID = 0;
+	GLuint _shadowFramebufferDepthID = 0;
 
 	//point light pass program and uniforms
 	GLuint _plightPassProgramID;
@@ -215,6 +225,17 @@ private:
 
 	//spot light pass program and uniforms
 	GLuint _slightPassProgramID;
+	GLuint _slightPassTex0ID = 0;
+	GLuint _slightPassTex1ID = 0;
+	GLuint _slightPassTex2ID = 0;
+	GLuint _slightPassTex3ID = 0;
+	GLuint _slightPassCameraPosID = 0;
+	GLuint _slightPassLightPosID = 0;
+	GLuint _slightPassLightDirID = 0;
+	GLuint _slightPassLightIntensityID = 0;
+	GLuint _slightPassLightColorID = 0;
+	GLuint _slightPassLightRangeID = 0;
+	GLuint _slightPassLightAngleID = 0;
 
 	//the texture of shame
 	GLuint _fallbackTextureID = 0;
@@ -223,6 +244,9 @@ private:
 	
 	glm::mat4 _baseModelViewMatrix;
 	glm::mat4 _baseModelViewProjectionMatrix;
+	glm::mat4 _depthModelViewMatrix;
+	glm::mat4 _depthModelViewProjectionMatrix;
+	RenderableLight _mainDirectionalLight;
 
 	/// <summary>
 	/// Threaded loop method
@@ -418,6 +442,8 @@ private:
 		_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
 		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
 		_shaderTextureID = glGetUniformLocation(_programID, "iTexImage");
+		_shaderNormalID = glGetUniformLocation(_programID, "iNormImage");
+		_shaderHasNormID = glGetUniformLocation(_programID, "iHasNorm");
 		_shaderSmoothnessID = glGetUniformLocation(_programID, "iSmoothness");
 	}
 
@@ -497,14 +523,14 @@ private:
 
 		glGenTextures(1, &_framebufferTexture1ID);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, _framebufferTexture1ID, 0);
 
 		glGenTextures(1, &_framebufferTexture2ID);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8_SNORM, _renderWidth, _renderHeight, 0, GL_RGB, GL_FLOAT, 0);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, _framebufferTexture2ID, 0);
@@ -574,7 +600,10 @@ private:
 		_framebufferDrawTex1ID = glGetUniformLocation(_framebufferDrawProgramID, "fPosition");
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
 		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
+		_framebufferDrawTexSID = glGetUniformLocation(_framebufferDrawProgramID, "sDepth");
 		_framebufferDrawAmbientID = glGetUniformLocation(_framebufferDrawProgramID, "ambientLight");
+		_framebufferDrawDirectionalID = glGetUniformLocation(_framebufferDrawProgramID, "directionalLight");
+		_framebufferDrawBiasID = glGetUniformLocation(_framebufferDrawProgramID, "biasMVP");
 
 		//setup point pass shader
 		_plightPassProgramID = Shaders::LoadShadersPointPass();
@@ -590,6 +619,17 @@ private:
 		
 		//setup spot pass shader
 		_slightPassProgramID = Shaders::LoadShadersSpotPass();
+		_slightPassTex0ID = glGetUniformLocation(_slightPassProgramID, "fColor");
+		_slightPassTex1ID = glGetUniformLocation(_slightPassProgramID, "fPosition");
+		_slightPassTex2ID = glGetUniformLocation(_slightPassProgramID, "fNormal");
+		_slightPassTex3ID = glGetUniformLocation(_slightPassProgramID, "fDepth");
+		_slightPassCameraPosID = glGetUniformLocation(_slightPassProgramID, "cameraPos");
+		_slightPassLightColorID = glGetUniformLocation(_slightPassProgramID, "lightColor");
+		_slightPassLightPosID = glGetUniformLocation(_slightPassProgramID, "lightPos");
+		_slightPassLightDirID = glGetUniformLocation(_slightPassProgramID, "lightFacing");
+		_slightPassLightIntensityID = glGetUniformLocation(_slightPassProgramID, "lightIntensity");
+		_slightPassLightRangeID = glGetUniformLocation(_slightPassProgramID, "lightRange");
+		_slightPassLightAngleID = glGetUniformLocation(_slightPassProgramID, "lightAngle");
 	}
 
 	/// <summary>
@@ -598,7 +638,29 @@ private:
 	/// </summary>
 	void setupShadowMapping()
 	{
-		//TODO impl
+		/* Set up directional/shadow shader. */
+		_shadowPassProgramID = Shaders::LoadShadersShadows();
+		//_shaderModelMatrixID = glGetUniformLocation(_programID, "iModelMatrix");
+		_shaderMVPMatrixID = glGetUniformLocation(_programID, "iModelViewProjectionMatrix");
+
+		/* Generate FBO for shadow depth buffer. */
+		glGenFramebuffers(1, &_shadowFramebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferID);
+
+		/* Generate the shadow depth buffer. */
+		glGenTextures(1, &_shadowFramebufferDepthID);
+		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0); //TODO CONST
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, _shadowFramebufferDepthID, 0);
+
+		glDrawBuffer(GL_NONE);
+
+		/* Unbind the FBO. */
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 
 	/// <summary>
@@ -623,7 +685,9 @@ private:
 	/// </summary>
 	void cleanupShadowMapping()
 	{
-		//TODO impl
+		glDeleteTextures(1, &_shadowFramebufferDepthID);
+		glDeleteFramebuffers(1, &_shadowFramebufferID);
+		glDeleteProgram(_shadowPassProgramID);
 	}
 
 	/// <summary>
@@ -1375,7 +1439,8 @@ private:
 
 		//check if a model exists
 		bool hasModel = false;
-		bool hasTexture = false;
+		bool hasATexture = false;
+		bool hasNTexture = false;
 		ModelData modelData;
 		TextureData texData;
 
@@ -1385,9 +1450,12 @@ private:
 		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model is missing!");
 
 		if (_textures_p->count(object->albedoName) > 0)
-			hasTexture = true;
+			hasATexture = true;
 		//else
 		//	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture is missing!");
+
+		if (!(object->normalName.empty()) && _textures_p->count(object->normalName) > 0)
+			hasNTexture = true;
 
 		//try to bind model
 		if (hasModel)
@@ -1413,7 +1481,7 @@ private:
 
 
 		//try to bind texture
-		if (hasTexture)
+		if (hasATexture)
 		{
 			texData = _textures_p->find(object->albedoName)->second;
 			if (texData.texID != 0)
@@ -1424,16 +1492,39 @@ private:
 			}
 			else
 			{
-				hasTexture = false;
+				hasATexture = false;
 				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture has no texID!");
 			}
-		}	
+		}
 
-		if (!hasTexture)
+		if (!hasATexture)
 		{
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, _fallbackTextureID);
 			glUniform1i(_shaderTextureID, 0);
+		}
+
+		//try to bind normal map
+		if (hasNTexture)
+		{
+			texData = _textures_p->find(object->normalName)->second;
+			if (texData.texID != 0)
+			{
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, texData.texID);
+				glUniform1i(_shaderNormalID, 1);
+				glUniform1i(_shaderHasNormID, GL_TRUE);
+			}
+			else
+			{
+				hasNTexture = false;
+				SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: texture has no texID!");
+			}
+		}
+
+		if (!hasNTexture)
+		{
+			glUniform1i(_shaderHasNormID, GL_FALSE);
 		}
 
 		glUniform1f(_shaderSmoothnessID, object->smoothness);
@@ -1469,10 +1560,104 @@ private:
 	}
 
 	/// <summary>
-	/// TODO prepares the shadow map
+	/// prepares the shadow map
 	/// </summary>
 	void drawShadows(RenderableScene *scene)
 	{
+
+		//grab the main light
+		for (int eachLight = 0; eachLight < scene->lights.size(); eachLight++)
+		{
+			if (scene->lights[eachLight].type == RenderableLightType::DIRECTIONAL)
+			{
+				_mainDirectionalLight = (scene->lights[eachLight]);
+				//SDL_Log("Found a directional light!");
+				break;
+			}
+		}
+
+		//get direction
+		//glm::mat4 rotMatrix = glm::mat4();
+		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		//glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+
+		//build base matrix
+		glm::mat4 projection = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+		glm::mat4 translation = glm::translate(look, _mainDirectionalLight.position * -1.0f);
+		glm::mat4 rotation = glm::mat4();
+		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		glm::mat4 view = rotation * translation;
+		_depthModelViewMatrix = view;
+		_depthModelViewProjectionMatrix = projection * view;
+
+		//bind framebuffer and program
+		glUseProgram(_shadowPassProgramID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferID);
+		glViewport(0, 0, 1024, 1024);
+
+		//glEnable(GL_DEPTH_TEST);
+		//glDepthFunc(GL_LESS);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT);
+
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		//draw objects into shadow map
+		for (int i = 0; i < scene->objects.size(); i++)
+		{
+			RenderableObject *object = &scene->objects[i];
+
+			//check if a model exists
+			bool hasModel = false;
+			ModelData modelData;
+
+			if (_models_p->count(object->modelName) > 0)
+				hasModel = true;
+			
+			//try to bind model
+			if (hasModel)
+			{
+				modelData = _models_p->find(object->modelName)->second;
+				if (modelData.vaoID != 0)
+				{
+					glBindVertexArray(modelData.vaoID);
+				}
+				else
+				{
+					hasModel = false;
+					SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "Renderer: model has no VAO!");
+				}
+
+			}
+
+			if (!hasModel)
+			{
+				SDL_LogWarn(SDL_LOG_CATEGORY_RENDER, "Renderer: object has no model!");
+				break;
+			}
+
+			//transform!
+			glm::mat4 objectMVM = glm::mat4();
+			objectMVM = glm::translate(objectMVM, object->position);
+			//SDL_Log("%f, %f, %f", object->position.x, object->position.y, object->position.z);
+			objectMVM = glm::scale(objectMVM, object->scale);
+			objectMVM = glm::rotate(objectMVM, object->rotation.y, glm::vec3(0, 1, 0));
+			objectMVM = glm::rotate(objectMVM, object->rotation.x, glm::vec3(1, 0, 0));
+			objectMVM = glm::rotate(objectMVM, object->rotation.z, glm::vec3(0, 0, 1));
+			glm::mat4 objectMVPM = _depthModelViewProjectionMatrix *  objectMVM;
+			glUniformMatrix4fv(_shadowPassMVPMatrixID, 1, GL_FALSE, &objectMVPM[0][0]);
+			glDrawArrays(GL_TRIANGLES, 0, modelData.numVerts);
+
+			glBindVertexArray(0);
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glCullFace(GL_BACK);
 
 	}
 
@@ -1541,6 +1726,7 @@ private:
 		//bind buffers
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
+		//glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
 		glUniform1i(_framebufferDrawTex0ID, 0);
 
 		glActiveTexture(GL_TEXTURE1);
@@ -1555,8 +1741,28 @@ private:
 		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
 		glUniform1i(_framebufferDrawTex3ID, 3);
 
+		//bind shadow mapping buffer
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
+		glUniform1i(_framebufferDrawTexSID, 4);
+
+		//calculate and bind shadow bias matrix
+		glm::mat4 biasMatrix(
+			0.5, 0.0, 0.0, 0.0,
+			0.0, 0.5, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0,
+			0.5, 0.5, 0.5, 1.0
+		);
+		glm::mat4 depthBiasMVP = biasMatrix * _depthModelViewProjectionMatrix;  
+		//glm::mat4 depthBiasMVP = glm::inverse(_depthModelViewProjectionMatrix);
+		glUniformMatrix4fv(_framebufferDrawBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
+
 		//bind ambient light
 		glUniform3f(_framebufferDrawAmbientID, ambient.r, ambient.g, ambient.b);
+
+		//bind directional light
+		glm::vec3 directional = _mainDirectionalLight.color * _mainDirectionalLight.intensity;
+		glUniform3f(_framebufferDrawDirectionalID, directional.r, directional.g, directional.b);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
@@ -1570,7 +1776,7 @@ private:
 	}
 
 	/// <summary>
-	/// Draws a single point light in a lighting pass
+	/// Draws a single point light in a lighting pass (using fullscreen quad for now)
 	/// </summary>
 	void drawLightingPointLight(RenderableLight light, RenderableScene *scene)
 	{
@@ -1618,7 +1824,55 @@ private:
 	/// </summary>
 	void drawLightingSpotLight(RenderableLight light, RenderableScene *scene)
 	{
-		//TODO implementation
+		//prepare direction vector for "rotation"
+		glm::mat4 rotMatrix = glm::mat4();
+		rotMatrix = glm::rotate(rotMatrix, light.rotation.y, glm::vec3(0, 1, 0));
+		rotMatrix = glm::rotate(rotMatrix, light.rotation.x, glm::vec3(1, 0, 0));
+		rotMatrix = glm::rotate(rotMatrix, light.rotation.z, glm::vec3(0, 0, 1));
+		glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f , 1.0f);
+
+		glUseProgram(_slightPassProgramID);
+
+		//bind buffers
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture0ID);
+		glUniform1i(_slightPassTex0ID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture1ID);
+		glUniform1i(_slightPassTex1ID, 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, _framebufferTexture2ID);
+		glUniform1i(_slightPassTex2ID, 2);
+
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glUniform1i(_slightPassTex3ID, 3);
+
+		//bind camera and lighting data
+		glm::vec3 cPos = scene->camera.position;
+		glUniform3f(_slightPassCameraPosID, cPos.x, cPos.y, cPos.z);
+
+		glm::vec3 lPos = light.position;
+		glUniform3f(_slightPassLightPosID, lPos.x, lPos.y, lPos.z);
+
+		glUniform3f(_slightPassLightDirID, lightFacing.x, lightFacing.y, lightFacing.z);
+
+		glm::vec3 lColor = light.color;
+		glUniform3f(_slightPassLightColorID, lColor.x, lColor.y, lColor.z);
+		glUniform1f(_slightPassLightIntensityID, light.intensity);
+		glUniform1f(_slightPassLightRangeID, light.range);
+		glUniform1f(_slightPassLightAngleID, light.angle);
+
+		//setup vertices
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+
+		//draw
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		//unbind
+		glBindVertexArray(0);
 
 	}
 
