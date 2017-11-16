@@ -128,8 +128,6 @@ class RenderFinishedMessageContent : public BaseMessageContent
 	
 };
 
-//*****FILE MESSAGES
-
 class PhysicsCallMessageContent: public BaseMessageContent
 {
 	public:
@@ -143,8 +141,8 @@ class PhysicsCallMessageContent: public BaseMessageContent
 class PhysicsAccelerateContent : public BaseMessageContent
 {
 public:
-	GameObject* object;
-	GLfloat amount;
+	GameObject *object;
+	GLfloat amountFast, amountSlow, turningDegree;
 };
 
 class InputInitializeContent : public BaseMessageContent
