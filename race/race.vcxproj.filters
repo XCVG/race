@@ -32,6 +32,7 @@
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\Shaders.cpp" />
     <ClCompile Include="GameEngine\Components\SourceFiles\Transform.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderInputMessageReceiver.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\MenuEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameEngine\HeaderFiles\AIEngine.h" />
@@ -82,5 +83,6 @@
     <ClInclude Include="GameEngine\HeaderFiles\InputTypes.h" />
     <ClInclude Include="GameEngine\RenderEngine\HeaderFiles\RenderInputMessageReceiver.h" />
     <ClInclude Include="GameEngine\Components\HeaderFiles\Quaternion.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\MenuEngine.h" />
   </ItemGroup>
 </Project>

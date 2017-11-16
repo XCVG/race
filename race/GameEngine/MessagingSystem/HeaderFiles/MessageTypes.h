@@ -58,7 +58,8 @@ enum class MESSAGE_TYPE
 	RenderDrawMessageType,
 	RenderDrawOverlayMessageType,
 	RenderUnloadMessageType,
-	RenderFinishedMessageType
+	RenderFinishedMessageType,
+	SoundMessageType
 };
 
 /*========================================================================================
@@ -190,11 +191,34 @@ public:
 	std::shared_ptr<SDL_Surface> image;
 };
 
+//*****INPUT MESSAGES
+
 class InputMessageContent : public BaseMessageContent
 {
 public:
 	INPUT_TYPES type;
 	float lookX, lookY;
+};
+
+
+
+//*****SOUND MESSAGES
+
+enum class S_TYPE
+{
+	playSound,
+	playMusic,
+	stopMusic
+};
+
+class SoundMessageContent: public BaseMessageContent
+{
+public:
+	S_TYPE subType;
+	std::string name;
+
+private:
+
 };
 
 #endif

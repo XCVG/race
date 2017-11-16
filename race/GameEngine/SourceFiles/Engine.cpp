@@ -47,7 +47,7 @@ std::thread* Engine::start() {
         _renderEngine_p->start(); // Render handles it's own thread
         _physicsThread_p = _physicsEngine_p->start();
         //_aiThread_p = _aiEngine_p->start();
-        _soundEngine_p->start();		
+        //_soundEngine_p->start();		
     } catch (std::exception e) {
         std::cout << ErrorHandler::getErrorString(1) << std::endl;
     }
@@ -135,7 +135,6 @@ void Engine::loop() {
 /// 
 void Engine::stop() 
 {
-	_soundEngine_p->~SoundEngine();
 	_inputEngine_p->~InputEngine();
 	//_aiEngine_p->~AIEngine();
 	_physicsEngine_p->flagLoop();

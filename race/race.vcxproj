@@ -41,6 +41,7 @@
     <ClCompile Include="GameEngine\SourceFiles\FileHelper.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\GlobalPrefs.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\InputEngine.cpp" />
+    <ClCompile Include="GameEngine\SourceFiles\MenuEngine.cpp" />
     <ClCompile Include="GameEngine\SourceFiles\OBJImport.cpp" />
     <ClCompile Include="GameEngine\PhysicsEngine\SourceFiles\PhysicsEngine.cpp" />
     <ClCompile Include="GameEngine\RenderEngine\SourceFiles\RenderEngine.cpp" />
@@ -73,6 +74,7 @@
     <ClInclude Include="GameEngine\HeaderFiles\EngineHeaders.h" />
     <ClInclude Include="GameEngine\HeaderFiles\GlobalPrefs.h" />
     <ClInclude Include="GameEngine\HeaderFiles\InputTypes.h" />
+    <ClInclude Include="GameEngine\HeaderFiles\MenuEngine.h" />
     <ClInclude Include="GameEngine\HeaderFiles\Scene.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\Message.h" />
     <ClInclude Include="GameEngine\MessagingSystem\HeaderFiles\MessageReceiver.h" />
