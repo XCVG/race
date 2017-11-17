@@ -200,8 +200,11 @@ private:
 	GLuint _framebufferDrawTex2ID = 0;
 	GLuint _framebufferDrawTex3ID = 0;
 	GLuint _framebufferDrawTexSID = 0;
+	GLuint _framebufferDrawColorID = 0;
 	GLuint _framebufferDrawAmbientID = 0;
-	GLuint _framebufferDrawDirectionalID = 0;
+	GLuint _framebufferDrawDirColorID = 0;
+	GLuint _framebufferDrawDirFacingID = 0;
+	GLuint _framebufferDrawCameraPosID = 0;
 	GLuint _framebufferDrawBiasID = 0;
 
 	//shadow pass program and uniforms, texture ID
@@ -601,8 +604,11 @@ private:
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
 		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
 		_framebufferDrawTexSID = glGetUniformLocation(_framebufferDrawProgramID, "sDepth");
+		_framebufferDrawColorID = glGetUniformLocation(_framebufferDrawProgramID, "clearColor");
 		_framebufferDrawAmbientID = glGetUniformLocation(_framebufferDrawProgramID, "ambientLight");
-		_framebufferDrawDirectionalID = glGetUniformLocation(_framebufferDrawProgramID, "directionalLight");
+		_framebufferDrawDirColorID = glGetUniformLocation(_framebufferDrawProgramID, "dLightColor");
+		_framebufferDrawDirFacingID = glGetUniformLocation(_framebufferDrawProgramID, "dLightFacing");;
+		_framebufferDrawCameraPosID = glGetUniformLocation(_framebufferDrawProgramID, "cameraPos");;
 		_framebufferDrawBiasID = glGetUniformLocation(_framebufferDrawProgramID, "biasMVP");
 
 		//setup point pass shader
@@ -650,7 +656,7 @@ private:
 		/* Generate the shadow depth buffer. */
 		glGenTextures(1, &_shadowFramebufferDepthID);
 		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0); //TODO CONST
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, GlobalPrefs::rShadowMapSize, GlobalPrefs::rShadowMapSize, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0); //TODO CONST
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -1411,8 +1417,7 @@ private:
 
 		glEnable(GL_CULL_FACE);
 
-		glm::vec3 clearColor = scene->camera.clearColor;
-		glClearColor(clearColor.r, clearColor.g, clearColor.b, 0.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//draw objects 
@@ -1566,25 +1571,28 @@ private:
 	{
 
 		//grab the main light
+		bool foundMainDirectionalLight = false;
 		for (int eachLight = 0; eachLight < scene->lights.size(); eachLight++)
 		{
 			if (scene->lights[eachLight].type == RenderableLightType::DIRECTIONAL)
 			{
 				_mainDirectionalLight = (scene->lights[eachLight]);
 				//SDL_Log("Found a directional light!");
+				foundMainDirectionalLight = true;
 				break;
 			}
 		}
 
-		//get direction
-		//glm::mat4 rotMatrix = glm::mat4();
-		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
-		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
-		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
-		//glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		//fallback: black directional light
+		if (!foundMainDirectionalLight)
+		{
+			RenderableLight mdl;
+			mdl.intensity = 0.0f;
+			_mainDirectionalLight = mdl;
+		}
 
 		//build base matrix
-		glm::mat4 projection = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+		glm::mat4 projection = glm::ortho<float>(-GlobalPrefs::rShadowMapSide, GlobalPrefs::rShadowMapSide, -GlobalPrefs::rShadowMapSide, GlobalPrefs::rShadowMapSide, -GlobalPrefs::rShadowMapNear, GlobalPrefs::rShadowMapFar);
 		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
 		glm::mat4 translation = glm::translate(look, _mainDirectionalLight.position * -1.0f);
 		glm::mat4 rotation = glm::mat4();
@@ -1598,7 +1606,7 @@ private:
 		//bind framebuffer and program
 		glUseProgram(_shadowPassProgramID);
 		glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferID);
-		glViewport(0, 0, 1024, 1024);
+		glViewport(0, 0, GlobalPrefs::rShadowMapSize, GlobalPrefs::rShadowMapSize);
 
 		//glEnable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_LESS);
@@ -1668,9 +1676,7 @@ private:
 	/// </summary>
 	void drawLighting(RenderableScene *scene)
 	{
-		//precalc ambient
-		glm::vec3 ambient = computeAmbientLight(scene);
-
+		
 		//setup framebuffer
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferID);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -1678,20 +1684,18 @@ private:
 		int w, h;
 		SDL_GL_GetDrawableSize(_window_p, &w, &h);
 		glViewport(0, 0, w, h);
-
-		//TODO draw background as a fullscreen quad because glClearColor isn't working (or just fix glClearColor)
-
-		glClearColor(0, 0, 0, 1.0f);
+		
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//I think I need this
+		//enable blending for lights
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
 		glDepthMask(GL_FALSE);
 
 		//draw main scene/lighting pass (ambient and main directional)
-		drawLightingMainPass(ambient);
+		drawLightingMainPass(scene);			
 
 		for (auto it = scene->lights.begin(); it < scene->lights.end(); it++)
 		{
@@ -1702,7 +1706,7 @@ private:
 				break;
 			case RenderableLightType::SPOT:
 				drawLightingSpotLight(*it, scene);
-				break;
+				break; 
 			}
 		}
 
@@ -1710,16 +1714,14 @@ private:
 
 		glDepthMask(GL_TRUE); 
 
-	}
+	} 
 
 	/// <summary>
 	/// Draws the main lighting pass
 	/// Includes ambient component and main directional light, with shadows
 	/// </summary>
-	void drawLightingMainPass(glm::vec3 ambient) //will need more args
+	void drawLightingMainPass(RenderableScene *scene) //will need more args
 	{
-		//TODO shadow setup
-
 		//bind shader
 		glUseProgram(_framebufferDrawProgramID);
 
@@ -1757,12 +1759,29 @@ private:
 		//glm::mat4 depthBiasMVP = glm::inverse(_depthModelViewProjectionMatrix);
 		glUniformMatrix4fv(_framebufferDrawBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
+		//bind clear color		
+		glm::vec3 clear = scene->camera.clearColor;
+		glUniform3f(_framebufferDrawColorID, clear.r, clear.g, clear.b);
+
 		//bind ambient light
+		glm::vec3 ambient = computeAmbientLight(scene);
 		glUniform3f(_framebufferDrawAmbientID, ambient.r, ambient.g, ambient.b);
 
-		//bind directional light
+		//bind directional light color
 		glm::vec3 directional = _mainDirectionalLight.color * _mainDirectionalLight.intensity;
-		glUniform3f(_framebufferDrawDirectionalID, directional.r, directional.g, directional.b);
+		glUniform3f(_framebufferDrawDirColorID, directional.r, directional.g, directional.b);
+
+		//bind directional light facing
+		glm::mat4 rotMatrix = glm::mat4();
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		glUniform3f(_framebufferDrawDirFacingID, lightFacing.x, lightFacing.y, lightFacing.z); 
+
+		//bind camera position
+		glm::vec3 cPos = scene->camera.position;
+		glUniform3f(_framebufferDrawCameraPosID, cPos.x, cPos.y, cPos.z);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
