@@ -202,7 +202,9 @@ private:
 	GLuint _framebufferDrawTexSID = 0;
 	GLuint _framebufferDrawColorID = 0;
 	GLuint _framebufferDrawAmbientID = 0;
-	GLuint _framebufferDrawDirectionalID = 0;
+	GLuint _framebufferDrawDirColorID = 0;
+	GLuint _framebufferDrawDirFacingID = 0;
+	GLuint _framebufferDrawCameraPosID = 0;
 	GLuint _framebufferDrawBiasID = 0;
 
 	//shadow pass program and uniforms, texture ID
@@ -604,7 +606,9 @@ private:
 		_framebufferDrawTexSID = glGetUniformLocation(_framebufferDrawProgramID, "sDepth");
 		_framebufferDrawColorID = glGetUniformLocation(_framebufferDrawProgramID, "clearColor");
 		_framebufferDrawAmbientID = glGetUniformLocation(_framebufferDrawProgramID, "ambientLight");
-		_framebufferDrawDirectionalID = glGetUniformLocation(_framebufferDrawProgramID, "dLightColor");
+		_framebufferDrawDirColorID = glGetUniformLocation(_framebufferDrawProgramID, "dLightColor");
+		_framebufferDrawDirFacingID = glGetUniformLocation(_framebufferDrawProgramID, "dLightFacing");;
+		_framebufferDrawCameraPosID = glGetUniformLocation(_framebufferDrawProgramID, "cameraPos");;
 		_framebufferDrawBiasID = glGetUniformLocation(_framebufferDrawProgramID, "biasMVP");
 
 		//setup point pass shader
@@ -1763,9 +1767,21 @@ private:
 		glm::vec3 ambient = computeAmbientLight(scene);
 		glUniform3f(_framebufferDrawAmbientID, ambient.r, ambient.g, ambient.b);
 
-		//bind directional light
+		//bind directional light color
 		glm::vec3 directional = _mainDirectionalLight.color * _mainDirectionalLight.intensity;
-		glUniform3f(_framebufferDrawDirectionalID, directional.r, directional.g, directional.b);
+		glUniform3f(_framebufferDrawDirColorID, directional.r, directional.g, directional.b);
+
+		//bind directional light facing
+		glm::mat4 rotMatrix = glm::mat4();
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		glUniform3f(_framebufferDrawDirFacingID, lightFacing.x, lightFacing.y, lightFacing.z); 
+
+		//bind camera position
+		glm::vec3 cPos = scene->camera.position;
+		glUniform3f(_framebufferDrawCameraPosID, cPos.x, cPos.y, cPos.z);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
