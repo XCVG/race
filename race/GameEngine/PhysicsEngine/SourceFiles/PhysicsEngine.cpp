@@ -120,17 +120,20 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 	case MESSAGE_TYPE::PhysicsCallMessageType:
 	{
 		PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-		
+		_deltaTime = content->deltaTime;
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
 			
 			if (it->first == "Sphere") {
-				it->second->_transform.rotate(Vector3(0.0f, MATH_PI / 2, 0.0f) * content->deltaTime);
+				it->second->_transform.rotateQuat(Vector3(0.0f, 1.0f, 0.0f), (PI / 4.0f) * _deltaTime);
+				Vector3 vec = it->second->_transform._orientation.getVector();
+				SDL_Log("Rotation Quaternion: %f, %f, %f", it->second->_transform._orientation.getScalar(), vec.y, vec.z);
+				Vector3 vec2 = it->second->_transform._orientation.MakeEulerAnglesFromQ();
+				SDL_Log("Euler Angle of Q: %f, %f, %f", vec2.x, vec2.y, vec2.z);
 				//it->second->_transform._position += it->second->_transform._forward * content->deltaTime;
 			}
 		}
-		_deltaTime = content->deltaTime;
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
 		MessagingSystem::instance().postMessage(myMessage);
 		break;
@@ -142,30 +145,24 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		GLfloat amount = content->amountFast;
 		GLfloat amount2 = content->amountSlow;
 		RigidBodyComponent *rbc = go->getComponent<RigidBodyComponent*>();
-		Vector3 F_Long;
 		
+		Vector3 F_Drag = Vector3(rbc->getVelocity() * rbc->getVelocity().magnitude()) * -1.0;
+		Vector3 F_RollingRes = rbc->getVelocity() * -12.8;
+		Vector3 F_Long = F_Drag + F_RollingRes;
 		if (amount != 0 || amount2 != 0) {
-			Vector3 F_Drag = Vector3(rbc->getVelocity() * rbc->getVelocity().magnitude()) * -0.4257;
-			Vector3 F_RollingRes = rbc->getVelocity() * 12.8;
-			Vector3 F_Long = F_Drag + F_RollingRes;
+
 			if (amount != 0)
 			{
 				F_Long += go->_transform._forward.normalize() * (amount * 5000);
-				rbc->setForce(F_Long);
 			}
 			if (amount2 != 0)
 			{
 				F_Long += Vector3(-go->_transform._forward.normalize()) * (amount2 * 6000);
-				rbc->setForce(F_Long); 
 			}
-			rbc->setAccelerationVector(rbc->getForce() / rbc->getWeight());
 		}
+		rbc->setForce(F_Long);
+		rbc->setAccelerationVector(F_Long / rbc->getWeight());
 		rbc->setTurningDegree(content->turningDegree); // Turning input from user
-		if (amount == 0 && amount2 == 0)
-		{
-			rbc->setAccelerationVector(Vector3(0, 0, 0));
-			// rbc->setTurningDegree(0);
-		}
 		break;
 	}
 	default:
@@ -261,7 +258,7 @@ Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 		return Vector3();
 	}
 	GLfloat sinTheta = sin(theta);
-	GLfloat denominator = (L / (sinTheta * 0.4));
+	GLfloat denominator = (L / (sinTheta));
 	GLfloat omega = objectVelocity.magnitude() / denominator;
 	return Vector3(0, omega, 0);
 };
@@ -269,5 +266,5 @@ Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
 	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(angularVelocity * (_deltaTime * 10)); // angularVelocity * deltaTime = current angle
+	go->rotate(angularVelocity * (_deltaTime)); // angularVelocity * deltaTime = current angle
 };

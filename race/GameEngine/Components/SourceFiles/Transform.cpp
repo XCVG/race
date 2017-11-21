@@ -102,6 +102,11 @@ void Transform::rotate(Vector3 amount)
 	this->_rotation += amount;
 	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);
 };
+void Transform::rotateQuat(Vector3 axis, GLfloat amount) {
+
+	this->_orientation += this->_orientation * (axis * amount) * 0.5f;
+	this->_orientation.Normalize();
+};
 void Transform::rotateX(GLfloat angle)
 {
 	adjustDirections(Vector3(angle, 0, 0));

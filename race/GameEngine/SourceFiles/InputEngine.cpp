@@ -1,5 +1,4 @@
 #include "InputEngine.h"
-#define PI 3.14159265
 
 InputEngine::InputEngine() {
 	subscribe(MESSAGE_TYPE::InputInitializeCallType);
@@ -109,7 +108,6 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 				//GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
 				if (angleY < 0)
 					angleY = PI - (angleY);
-				Quaternion q;
 				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 			}
 			

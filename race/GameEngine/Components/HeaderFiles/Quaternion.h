@@ -12,7 +12,8 @@
 #include <gtx\euler_angles.hpp>
 #include <SDL.h> 
 #endif
-#define PI 3.14159265
+#define PI 3.14159265f
+#define ATANLIMIT 0.0001f
 #include "Vector3.h"
 class Quaternion
 {
@@ -44,6 +45,8 @@ public:
 	Vector3 MakeEulerAnglesFromQ();
 
 	Quaternion& CreateFromAxisAngle(Vector3 vec, GLfloat angle);
+
+	Quaternion & Normalize();
 
 private:
 	GLfloat _n;
@@ -190,9 +193,10 @@ inline Vector3 QVRotate(Quaternion q, Vector3 v)
 
 inline Quaternion& Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 {
-	double roll = x;
-	double pitch = y;
-	double yaw = z;
+	
+	double pitch = x; // pitch = y
+	double yaw = y; // yaw = z
+	double roll = z; // roll = x
 
 	double cyaw, cpitch, croll, syaw, spitch, sroll;
 	double cyawcpitch, syawspitch, cyawspitch, syawcpitch;
@@ -210,29 +214,46 @@ inline Quaternion& Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 	syawcpitch = syaw * cpitch;
 
 	this->_n = (GLfloat)(cyawcpitch * croll + syawspitch * sroll);
-	this->_v.x = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
-	this->_v.y = (GLfloat)(cyawspitch * croll + syawcpitch * sroll);
-	this->_v.z = (GLfloat)(syawspitch * croll - cyawspitch * sroll);
-	return *this;
+	this->_v.x = (GLfloat)(syawcpitch * sroll + cyawspitch * croll);
+	this->_v.y = (GLfloat)(syawcpitch * croll - cyawspitch * sroll);
+	this->_v.z = (GLfloat)(cyawcpitch * sroll + syawspitch * croll);
+	return this->Normalize();
 };
 
 inline Vector3 Quaternion::MakeEulerAnglesFromQ() 
 {
 	Vector3 u;
 
-	GLfloat sinr = 2.0f * (this->_n * this->_v.x + this->_v.y * this->_v.z);
-	GLfloat cosr = 1.0f - (2.0f * (this->_v.x * this->_v.x + this->_v.y * this->_v.y));
-	u.x = (GLfloat)atan2(sinr, cosr);
+	GLfloat r11, r21, r31, r32, r33, r12, r13;
+	GLfloat q00, q11, q22, q33;
+	GLfloat tmp;
+	q00 = this->_n * this->_n;
+	q11 = this->_v.x * this->_v.x;
+	q22 = this->_v.y * this->_v.y;
+	q33 = this->_v.z * this->_v.z;
 
-	GLfloat sinp = 2.0f * (this->_n * this->_v.y - this->_v.z * this->_v.x);
-	if (fabs(sinp) >= 1)
-		u.y = (GLfloat)copysign(PI / 2, sinp);
-	else
-		u.y = (GLfloat)asin(sinp);
+	r11 = q00 + q11 - q22 - q33;
+	r21 = 2 * (this->_v.x * this->_v.y + this->_n * this->_v.z);
+	r31 = 2 * (this->_v.x * this->_v.z - this->_n * this->_v.y);
+	r32 = 2 * (this->_v.y * this->_v.z + this->_n * this->_v.x);
+	r33 = q00 - q11 - q22 + q33;
+	tmp = fabs(r31);
+	if (tmp > 0.99999999) {
+		r12 = 2 * (this->_v.x * this->_v.y - this->_n * this->_v.z);
+		r13 = 2 * (this->_v.x * this->_v.z + this->_n * this->_v.y);
 
-	GLfloat siny = 2.0f * (this->_n * this->_v.z + this->_v.x * this->_v.y);
-	GLfloat cosy = 1.0f - (2.0f * (this->_v.y * this->_v.y + this->_v.z * this->_v.z));
-	u.z = (GLfloat)atan2(siny, cosy);
+		u.x = 0.0f;
+		u.y = (GLfloat)(-(PI / 2) * r31 / tmp);
+		u.z = atan2(-r12, -r31 * r13);
+		//u.z = copysignf(u.z, -r31 * r13);
+		return u;
+	}
+
+	u.x = atan2(r32, r33);
+	//u.x = copysignf(u.x, r33);
+	u.y = asin(-r31);
+	u.z = atan2(r21, r11);
+	//u.z = copysignf(u.z, r11);
 	return u;
 };
 
@@ -243,5 +264,15 @@ inline Quaternion& Quaternion::CreateFromAxisAngle(Vector3 vec, GLfloat angle)
 	this->_v.y = vec.y * s;
 	this->_v.z = vec.z * s;
 	this->_n = cosf(angle / 2.0f);
+	return this->Normalize();
+}
+
+inline Quaternion& Quaternion::Normalize()
+{
+	GLfloat mag = this->Magnitude();
+	this->_n /= mag;
+	this->_v.x /= mag;
+	this->_v.y /= mag;
+	this->_v.z /= mag;
 	return *this;
 }

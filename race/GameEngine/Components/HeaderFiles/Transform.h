@@ -18,8 +18,8 @@ public:
 	bool operator==(const Transform& t);
 #pragma region Rotation Calculation Methods
 	Vector3 rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rotation);
-	Vector3 rotateAroundCar(Vector3 distance, Vector3 objectPos, Vector3 rotation);
 	void rotate(Vector3 amount);
+	void rotateQuat(Vector3 axis, GLfloat amount);
 	void rotateX(GLfloat angle);
 	void rotateY(GLfloat angle);
 	void rotateZ(GLfloat angle);
