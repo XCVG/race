@@ -126,12 +126,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			generalPhysicsCall(go);
 			
 			if (it->first == "Sphere") {
-				it->second->_transform.rotateQuat(Vector3(1.0f, 1.0f, 0.0f), (PI / 4.0f) * _deltaTime);
-				Vector3 vec = it->second->_transform._orientation.getVector();
-				SDL_Log("Rotation Quaternion: %f, %f, %f", it->second->_transform._orientation.getScalar(), vec.y, vec.z);
-				Vector3 vec2 = it->second->_transform._orientation.MakeEulerAnglesFromQ();
-				SDL_Log("Euler Angle of Q: %f, %f, %f", vec2.x, vec2.y, vec2.z);
-				//it->second->_transform._position += it->second->_transform._forward * content->deltaTime;
+				it->second->_transform.rotateQuat(Vector3(0.0f, 0.0f, 1.0f), (PI / 2.0f) * _deltaTime);
 			}
 		}
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
