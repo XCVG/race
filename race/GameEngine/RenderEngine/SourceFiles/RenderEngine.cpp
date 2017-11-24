@@ -240,6 +240,15 @@ private:
 	GLuint _slightPassLightRangeID = 0;
 	GLuint _slightPassLightAngleID = 0;
 
+	//postprocessing program and buffers
+	GLuint _postProgramID = 0;
+	GLuint _postProgramTexID = 0;
+	GLuint _postProgramLastTexID = 0;
+	GLuint _postFramebufferID = 0;
+	GLuint _postFramebufferTexID = 0;
+	GLuint _postSmearbufferID = 0;
+	GLuint _postSmearbufferTexID = 0;
+
 	//the texture of shame
 	GLuint _fallbackTextureID = 0;
 
@@ -372,6 +381,7 @@ private:
 		setupFramebuffers();
 		setupFramebufferDraw();
 		setupShadowMapping();
+		setupPostProcessing();
 		setupFallbacks();
 	}
 
@@ -385,6 +395,7 @@ private:
 		cleanupFramebuffers();
 		cleanupFramebufferDraw();
 		cleanupShadowMapping();
+		cleanupPostProcessing();
 		cleanupFallbacks();
 	}
 
@@ -639,6 +650,22 @@ private:
 	}
 
 	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes shaders
+	/// </summary>
+	void cleanupFramebufferDraw()
+	{
+		// delete VBOs/VAOs
+		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
+		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
+
+		//delete programs
+		glDeleteProgram(_framebufferDrawProgramID);
+		glDeleteProgram(_plightPassProgramID);
+		glDeleteProgram(_slightPassProgramID);
+	}
+
+	/// <summary>
 	/// Helper method initial setup
 	/// Sets up geometry, buffers, and shaders for shadow mapping
 	/// </summary>
@@ -671,22 +698,6 @@ private:
 
 	/// <summary>
 	/// Helper method for final cleanup
-	/// Deletes shaders
-	/// </summary>
-	void cleanupFramebufferDraw()
-	{
-		// delete VBOs/VAOs
-		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
-		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
-
-		//delete programs
-		glDeleteProgram(_framebufferDrawProgramID);
-		glDeleteProgram(_plightPassProgramID);
-		glDeleteProgram(_slightPassProgramID);
-	}
-
-	/// <summary>
-	/// Helper method for final cleanup
 	/// Deletes shadow mapping buffers, programs, and geometry
 	/// </summary>
 	void cleanupShadowMapping()
@@ -694,6 +705,61 @@ private:
 		glDeleteTextures(1, &_shadowFramebufferDepthID);
 		glDeleteFramebuffers(1, &_shadowFramebufferID);
 		glDeleteProgram(_shadowPassProgramID);
+	}
+
+	/// <summary>
+	/// Helper method initial setup
+	/// Sets up program and buffers for postprocessing
+	/// </summary>
+	void setupPostProcessing()
+	{
+		//load shader
+		_postProgramID = Shaders::LoadShadersPointPass();
+		_postProgramTexID = glGetUniformLocation(_postProgramID, "fBuffer");
+		_postProgramLastTexID = glGetUniformLocation(_postProgramID, "sBuffer");
+
+		//generate base framebuffer FBO and texture
+		glGenFramebuffers(1, &_postFramebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postFramebufferID);
+		glGenTextures(1, &_postFramebufferTexID);
+		glBindTexture(GL_TEXTURE_2D, _postFramebufferTexID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _renderWidth, _renderHeight, 0, GL_RGBA, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _postFramebufferTexID, 0);
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//generate smearbuffer FBO and texture
+		glGenFramebuffers(1, &_postSmearbufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postSmearbufferID);
+		glGenTextures(1, &_postSmearbufferTexID);
+		glBindTexture(GL_TEXTURE_2D, _postSmearbufferTexID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _renderWidth, _renderHeight, 0, GL_RGBA, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _postSmearbufferTexID, 0);
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+	}
+
+	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes postprocessing buffers and program
+	/// </summary>
+	void cleanupPostProcessing()
+	{
+		glDeleteTextures(1, &_postFramebufferTexID);
+		glDeleteFramebuffers(1, &_postFramebufferTexID);
+		glDeleteTextures(1, &_postSmearbufferID);
+		glDeleteFramebuffers(1, &_postSmearbufferTexID);
+
+		glDeleteProgram(_postProgramID);
 	}
 
 	/// <summary>
@@ -1344,6 +1410,7 @@ private:
 			drawObjects(_lastScene_p); //do the geometry pass
 			drawShadows(_lastScene_p); //do the shadow map
 			drawLighting(_lastScene_p); //do the lighting pass
+			drawPostProcessing(_lastScene_p); //do the postprocessing
 		}
 
 		if (_lastOverlay_p == nullptr)
@@ -1679,10 +1746,10 @@ private:
 		
 		//setup framebuffer
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferID);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postFramebufferID);
 
 		int w, h;
-		SDL_GL_GetDrawableSize(_window_p, &w, &h);
+		SDL_GL_GetDrawableSize(_window_p, &w, &h); //TODO switch to using render resolution
 		glViewport(0, 0, w, h);
 		
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -1713,6 +1780,7 @@ private:
 		glDisable(GL_BLEND);
 
 		glDepthMask(GL_TRUE); 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	} 
 
@@ -1913,6 +1981,39 @@ private:
 		}
 
 		return totalAmbientLight;
+	}
+
+	/// <summary>
+	/// Applies postprocessing and blits buffers
+	/// May be broken up with helper methods later
+	/// </summary>
+	void drawPostProcessing(RenderableScene *scene)
+	{
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, _postFramebufferID);
+
+		int w, h;
+		SDL_GL_GetDrawableSize(_window_p, &w, &h);
+
+		glBlitFramebuffer(0, 0, w, h,
+			0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+		/*
+		int w, h;
+		SDL_GL_GetDrawableSize(_window_p, &w, &h);
+		glViewport(0, 0, w, h);
+
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(_postProgramID);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _postFramebufferTexID);
+		glUniform1i(_postProgramTexID, 0);
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
+		*/
 	}
 
 	/// <summary>
