@@ -3,10 +3,11 @@ BoxColliderComponent::BoxColliderComponent(std::string filename)
 {
     std::string fileContents = FileHelper::loadFileFromStringRelative(MODEL_BASEPATH_CONST + filename + MODEL_EXTENSION_CONST);
     std::vector<GLfloat> vertices = OBJImport::importObjInfoVertices(fileContents);
-    for (int i = 0; i < vertices.size() - 1; i+=3)
-    {
-        if (this->_minX > vertices.at(i)) this->_minX = vertices.at(i);
-    }
+	for (int i = 0; i < vertices.size() - 1; i += 3)
+	{
+		if (this->_minX > vertices.at(i)) this->_minX = vertices.at(i);
+		else if (this->_maxX < vertices.at(i)) this->_maxX = vertices.at(i);
+	}
 }
 
 void BoxColliderComponent::setMinX(int _x)

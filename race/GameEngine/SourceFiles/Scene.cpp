@@ -123,6 +123,7 @@ void Scene::setUpSceneOne() {
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
+	go->addComponent(new BoxColliderComponent("carModel"));
 	GameObject *childF = new GameObject(new Transform(new Vector3(0, 0.5, 2.5), new Vector3(0, 0, 0), 0.25f), "front");
 	childF->addComponent(new RenderComponent("cube", "test_texture2", "", 0.0f));
 	GameObject *childR = new GameObject(new Transform(new Vector3(0, 0.5, -2.5), new Vector3(0, 0, 0), 0.25f), "rear");
