@@ -15,6 +15,7 @@
 #define PI 3.14159265f
 #define ATANLIMIT 0.0001f
 #include "Vector3.h"
+
 class Quaternion
 {
 public:
@@ -35,13 +36,13 @@ public:
 	Quaternion operator-(Quaternion q1);
 	Quaternion operator*(Quaternion q);
 	Quaternion operator*(GLfloat s);
-	Quaternion operator*(Vector3 v);
 	Quaternion operator/(GLfloat s);
-
 	GLfloat QGetAngle();
 	Vector3 QGetAxis();
 	Quaternion QRotate(Quaternion q1, Quaternion q2);
+	Vector3 QVRotate(Vector3);
 	Quaternion& MakeQFromEulerAngles(float x, float y, float z);
+	Quaternion & MakeQFromEulerAngles(Vector3 vec);
 	Vector3 MakeEulerAnglesFromQ();
 
 	Quaternion& CreateFromAxisAngle(Vector3 vec, GLfloat angle);
@@ -148,12 +149,21 @@ inline Quaternion Quaternion::operator*(GLfloat s)
 	return Quaternion(this->_n * s, this->_v.x * s, this->_v.y * s, this->_v.z * s);
 };
 
-inline Quaternion Quaternion::operator*(Vector3 v)
+inline Quaternion operator*(Quaternion q, Vector3 v)
 {
-	return Quaternion(-(this->_v.x * v.x + this->_v.y * v.y + this->_v.z * v.z),
-		(this->_n * v.x + this->_v.z * v.y - this->_v.y * v.z),
-		(this->_n * v.y + this->_v.x * v.z - this->_v.z * v.x),
-		(this->_n * v.z + this->_v.y * v.x - this->_v.x * v.y));
+	Vector3 vec = q.getVector();
+	return Quaternion(-(vec.x * v.x + vec.y * v.y + vec.z * v.z),
+		(q.getScalar() * v.x + vec.y * v.z - vec.z * v.y),
+		(q.getScalar() * v.y + vec.z * v.x - vec.x * v.z),
+		(q.getScalar() * v.z + vec.x * v.y - vec.y * v.x));
+};
+inline Quaternion operator*(Vector3 v, Quaternion q)
+{
+	Vector3 vec = q.getVector();
+	return Quaternion(-(vec.x * v.x + vec.y * v.y + vec.z * v.z),
+		(q.getScalar() * v.x + vec.z * v.y - vec.y * v.z),
+		(q.getScalar() * v.y + vec.x * v.z - vec.z * v.x),
+		(q.getScalar() * v.z + vec.y * v.x - vec.x * v.y));
 };
 
 inline Quaternion Quaternion::operator/(GLfloat s)
@@ -184,10 +194,10 @@ inline Quaternion Quaternion::QRotate(Quaternion q1, Quaternion q2)
 	return q1 * q2 * (~q1);
 };
 
-inline Vector3 QVRotate(Quaternion q, Vector3 v) 
+inline Vector3 Quaternion::QVRotate(Vector3 v) 
 {
 	Quaternion t;
-	t = q * v * (~q);
+	t = *this * v * ~(*this);
 	return t.getVector();
 };
 
@@ -216,7 +226,35 @@ inline Quaternion& Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 	this->_n = (GLfloat)(cyawcpitch * croll + syawspitch * sroll);
 	this->_v.x = (GLfloat)(syawcpitch * sroll + cyawspitch * croll);
 	this->_v.y = (GLfloat)(syawcpitch * croll - cyawspitch * sroll);
-	this->_v.z = (GLfloat)(cyawcpitch * sroll + syawspitch * croll);
+	this->_v.z = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
+	return this->Normalize();
+};
+
+inline Quaternion& Quaternion::MakeQFromEulerAngles(Vector3 vec)
+{
+	double yaw = vec.y; // yaw = z
+	double pitch = vec.x; // pitch = y
+	double roll = vec.z; // roll = x
+
+	double cyaw, cpitch, croll, syaw, spitch, sroll;
+	double cyawcpitch, syawspitch, cyawspitch, syawcpitch;
+
+	cyaw = cos(0.5f * yaw);
+	cpitch = cos(0.5f * pitch);
+	croll = cos(0.5f * roll);
+	syaw = sin(0.5f * yaw);
+	spitch = sin(0.5f * pitch);
+	sroll = sin(0.5f * roll);
+
+	cyawcpitch = cyaw * cpitch;
+	syawspitch = syaw * spitch;
+	cyawspitch = cyaw * spitch;
+	syawcpitch = syaw * cpitch;
+
+	this->_n = (GLfloat)(cyawcpitch * croll + syawspitch * sroll);
+	this->_v.x = (GLfloat)(syawcpitch * sroll + cyawspitch * croll);
+	this->_v.y = (GLfloat)(syawcpitch * croll - cyawspitch * sroll);
+	this->_v.z = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
 	return this->Normalize();
 };
 
@@ -236,13 +274,8 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ()
 	r23 = 2 * (this->_v.y * this->_v.z - this->_n * this->_v.x);
 	r31 = 2 * (this->_v.x * this->_v.z - this->_n * this->_v.y);
 	r33 = q00 - q11 - q22 + q33;
-
-	//u.x = atan2(r32, r33);
-	//u.x = copysignf(u.x, r33);
-	//u.y = asin(-r31);
-	//u.z = atan2(r21, r11);
-	//u.z = copysignf(u.z, r11);
-	u.x = asin(r23);
+	
+	u.x = asin(-r23);
 	u.y = atan2(r31, r33);
 	u.z = atan2(r21,r22);
 	return u;

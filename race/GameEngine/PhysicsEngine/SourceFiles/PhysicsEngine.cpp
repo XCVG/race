@@ -125,8 +125,9 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
 			
-			if (it->first == "Sphere") {
-				it->second->_transform.rotateQuat(Vector3(0.0f, 0.0f, 1.0f), (PI / 2.0f) * _deltaTime);
+			if (it->first.compare("Cube") == 0) {
+				it->second->rotate(Vector3(0.0f, 0.0f, 1.0f), PI * _deltaTime * 0.5f);
+				//it->second->_transform.translateForward(1.0f * _deltaTime);
 			}
 		}
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
@@ -240,7 +241,7 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 	go->getComponent<RigidBodyComponent*>()->getVelocity() -= Vector3(x, y, z) * _deltaTime;
 };
 
-Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
+GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
 	if (tireDegree >= PI/4.0f || tireDegree != 0)
 		SDL_Log("Joystick X");
@@ -250,16 +251,16 @@ Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 	GLfloat theta = tireDegree;
 	if (L == 0 || theta == 0)
 	{
-		return Vector3();
+		return 0;
 	}
 	GLfloat sinTheta = sin(theta);
 	GLfloat denominator = (L / (sinTheta));
 	GLfloat omega = objectVelocity.magnitude() / denominator;
-	return Vector3(0, omega, 0);
+	return omega;
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
-	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(angularVelocity * (_deltaTime)); // angularVelocity * deltaTime = current angle
+	GLfloat angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
+	go->rotate(Vector3(0.0f, 1.0f, 0.0f), angularVelocity * (_deltaTime)); // angularVelocity * deltaTime = current angle
 };

@@ -2,47 +2,43 @@
 Transform::Transform()
 {
     this->_position = new Vector3();
-    this->_rotation = new Vector3();
-	this->_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
+	this->_orientation.MakeQFromEulerAngles(0, 0, 0);
     this->_scale = 1;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
 	this->_up = Vector3(0, 1, 0);
-	adjustDirections(_rotation);
+	adjustDirections();
 };
 Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
     this->_position = _position;
-    this->_rotation = _rotation;
-	this->_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
+	this->_orientation.MakeQFromEulerAngles(_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
 	this->_up = Vector3(0, 1, 0);
-	adjustDirections(this->_rotation);
+	adjustDirections();
 };
 Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
     this->_position = *_position;
-    this->_rotation = *_rotation;
-	this->_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
+	this->_orientation.MakeQFromEulerAngles(*_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
 	this->_up = Vector3(0, 1, 0);
-	adjustDirections(this->_rotation);
+	adjustDirections();
 
 };
 Transform::Transform(const Transform &obj)
 {
     this->_position = obj._position;
-    this->_rotation = obj._rotation;
-	this->_orientation.MakeQFromEulerAngles(this->_rotation.x, this->_rotation.y, this->_rotation.z);
+	this->_orientation = obj._orientation;
     this->_scale = obj._scale;
 	this->_forward = obj._forward;
 	this->_right = obj._right;
 	this->_up = obj._up;
-	adjustDirections(this->_rotation);
+	adjustDirections();
 };
 void Transform::setPosition(Vector3 _position)
 {
@@ -51,7 +47,7 @@ void Transform::setPosition(Vector3 _position)
 void Transform::setRotation(Vector3 _rotation)
 {
     this->_rotation = _rotation;
-	adjustDirections(this->_rotation);
+	adjustDirections();
 };
 void Transform::setScale(GLfloat _scale)
 {
@@ -74,12 +70,11 @@ Vector3 Transform::getForward()
 	return this->_forward;
 };
 
-void Transform::adjustDirections(Vector3 rot) 
+void Transform::adjustDirections() 
 {
-	glm::mat4x4 matrix = glm::eulerAngleXYZ(rot.x, rot.y, rot.z);
-	this->_forward = _forward.matrixMulti(matrix);
-	this->_right = _right.matrixMulti(matrix);
-	this->_up = _up.matrixMulti(matrix);
+	this->_forward = this->_orientation.QVRotate(Vector3(0, 0, 1));
+	this->_right = this->_orientation.QVRotate(Vector3(1, 0, 0));
+	this->_up = this->_orientation.QVRotate(Vector3(0, 1, 0));
 }
 
 /**
@@ -97,29 +92,31 @@ Vector3 Transform::rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rot
 };
 void Transform::rotate(Vector3 amount)
 {
-	adjustDirections(-amount);
+	//adjustDirections();
 	//glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
-	this->_rotation += amount;
+	//this->_rotation += amount;
 	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);
 };
-void Transform::rotateQuat(Vector3 axis, GLfloat amount) {
-
-	this->_orientation += this->_orientation * (axis * amount) * 0.5f;
+void Transform::rotateQuat(Vector3 axis, GLfloat amount) 
+{
+	Quaternion q;
+	this->_orientation += this->_orientation * q.MakeQFromEulerAngles(axis * amount);
 	this->_orientation.Normalize();
+	this->adjustDirections();
 };
 void Transform::rotateX(GLfloat angle)
 {
-	adjustDirections(Vector3(angle, 0, 0));
+	adjustDirections();
 	this->_rotation.x += angle;
 };
 void Transform::rotateY(GLfloat angle)
 {
-	adjustDirections(Vector3(0, angle, 0));
+	adjustDirections();
 	this->_rotation.y += angle;
 };
 void Transform::rotateZ(GLfloat angle)
 {
-	adjustDirections(Vector3(0, 0, angle));
+	adjustDirections();
 	this->_rotation.z += angle;
 };
 

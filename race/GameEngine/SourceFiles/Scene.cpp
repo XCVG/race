@@ -59,7 +59,7 @@ RenderableScene* Scene::getRenderInformation()
 				rl.angle = lc->_angle;
 				rl.range = lc->_range;
 				rl.position = Vector3ToGLMVector(it->second->_transform.getPosition());
-				rl.rotation = Vector3ToGLMVector(it->second->_transform._rotation);
+				rl.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
 				rl.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->lights.push_back(rl);
 			}
@@ -71,7 +71,7 @@ RenderableScene* Scene::getRenderInformation()
 				ro.normalName = rc->getNormalName();
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
-				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());			
+				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());
 				ro.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
@@ -100,9 +100,21 @@ void Scene::setUpSceneOne() {
 	InputInitializeContent* content = new InputInitializeContent(); 
 	content->camera = go;
 
-	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, PI / 4, 0), 1.0f));
+	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 0.0f, 0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	GameObject *forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(0, 0, 0), 0.25f), "forward");
+	GameObject *right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, 0), 0.25f), "right");
+	GameObject *up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
+	forward->addComponent(new RenderComponent("cube", "test_texture", "", 0.0f));
+	right->addComponent(new RenderComponent("cube", "test_texture2", "", 0.0f));
+	up->addComponent(new RenderComponent("cube", "rainbow", "", 0.0f));
+	go->addChild(forward);
+	go->addChild(up);
+	go->addChild(right);
 	addGameObject("Cube", go);
+	addGameObject("Cube.ChildF", forward);
+	addGameObject("Cube.childR", right);
+	addGameObject("Cube.childU", up);
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
 	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f)); 
@@ -111,8 +123,10 @@ void Scene::setUpSceneOne() {
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
-	GameObject *childF = new GameObject(new Transform(new Vector3(0, 2.5, 10), new Vector3(0, 0, 0), 2.0f), "front");
-	GameObject *childR = new GameObject(new Transform(new Vector3(0, 2.5, -10), new Vector3(0, 0, 0), 2.0f), "rear");
+	GameObject *childF = new GameObject(new Transform(new Vector3(0, 0.5, 2.5), new Vector3(0, 0, 0), 0.25f), "front");
+	childF->addComponent(new RenderComponent("cube", "test_texture2", "", 0.0f));
+	GameObject *childR = new GameObject(new Transform(new Vector3(0, 0.5, -2.5), new Vector3(0, 0, 0), 0.25f), "rear");
+	childR->addComponent(new RenderComponent("cube", "test_texture2", "", 0.0f));
 	go->addChild(childF);
 	go->addChild(childR);
 	addGameObject("Player", go);

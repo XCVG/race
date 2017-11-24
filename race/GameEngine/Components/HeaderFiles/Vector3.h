@@ -143,10 +143,7 @@ inline bool Vector3::operator==(const Vector3& vec) const
 };
 inline Vector3& Vector3::operator*(const Vector3 vec)
 {
-	this->x *= vec.x;
-	this->y *= vec.y;
-	this->z *= vec.z;
-	return *this;
+	return Vector3(this->x * vec.x, this->y * vec.y, this->z * vec.z);
 };
 inline Vector3 Vector3::operator*(const float_t& num)
 {

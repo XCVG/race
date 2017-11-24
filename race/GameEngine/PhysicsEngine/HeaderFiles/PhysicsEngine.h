@@ -104,6 +104,6 @@ class PhysicsEngine : public MessageReceiver
 		void applyAcceleration(GameObject*);
 		void applyTurning(GameObject* go);
 		void generalPhysicsCall(GameObject*);
-		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
+		GLfloat getAngleFromTurn(GameObject *go, GLfloat tireDegree);
 		void turnGameObject(GameObject *go);
 };
