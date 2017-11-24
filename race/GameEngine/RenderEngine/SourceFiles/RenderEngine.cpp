@@ -40,10 +40,6 @@
 //CONSTANTS: will change at least some to config options
 
 const int_least64_t IDLE_DELAY_CONST = 10;
-const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
-const std::string TEXTURE_BASEPATH_CONST = "ResourceFiles/Textures/";
-const std::string MODEL_EXTENSION_CONST = ".obj";
-const std::string TEXTURE_EXTENSION_CONST = ".png";
 
 /// <summary>
 /// Actual RenderEngine implementation, using PIMPL pattern for a modicum of isolation

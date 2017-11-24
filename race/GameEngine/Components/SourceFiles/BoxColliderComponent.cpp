@@ -1,4 +1,10 @@
 #include "BoxColliderComponent.h"
+BoxColliderComponent::BoxColliderComponent(std::string filename)
+{
+    std::string fileContents = FileHelper::loadFileFromStringRelative(MODEL_BASEPATH_CONST + filename + MODEL_EXTENSION_CONST);
+    std::vector<GLfloat> vertices = OBJImport::importObjInfo(fileContents);
+}
+
 void BoxColliderComponent::setMinX(int _x)
 {
     this->_minX = _x;

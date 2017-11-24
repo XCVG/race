@@ -1,8 +1,11 @@
 #pragma once
 #include "ColliderComponent.h"
+#include "FileHelper.h"
+#include "OBJImport.h"
 class BoxColliderComponent : public ColliderComponent
 {
 public:
+	BoxColliderComponent(std::string filename);
 	void setMinX(int _x);
 	void setMinY(int _y);
 	void setMinZ(int _z);

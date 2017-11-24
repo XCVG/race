@@ -33,7 +33,7 @@ public:
   Vector3& operator/=(const Vector3* obj);
   Vector3& operator/=(const Vector3& obj);
   bool operator==(const Vector3& vec) const;
-  Vector3& operator*(const Vector3 vec);
+//   Vector3& operator*(const Vector3 vec);
   Vector3 operator*(const float_t& num);
   Vector3 operator/(const float_t& num);
   Vector3 operator+(const Vector3* obj);
@@ -141,10 +141,10 @@ inline bool Vector3::operator==(const Vector3& vec) const
             y == vec.y &&
             z == vec.z;
 };
-inline Vector3& Vector3::operator*(const Vector3 vec)
-{
-	return Vector3(this->x * vec.x, this->y * vec.y, this->z * vec.z);
-};
+// inline Vector3& Vector3::operator*(const Vector3 vec)
+// {
+// 	return Vector3(this->x * vec.x, this->y * vec.y, this->z * vec.z);
+// };
 inline Vector3 Vector3::operator*(const float_t& num)
 {
 	return Vector3(this->x * num, this->y * num, this->z * num);
