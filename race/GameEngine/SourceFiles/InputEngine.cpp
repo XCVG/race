@@ -106,7 +106,7 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
 				//GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
 				//angleY = PI - (angleY);
-				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, PI / 2.0f - angleY, 0.0f);
+				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 			}
 			
 		}

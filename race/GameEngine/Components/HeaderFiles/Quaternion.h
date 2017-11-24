@@ -272,12 +272,14 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ()
 	r22 = q00 - q11 + q22 - q33;
 	r21 = 2 * (this->_v.x * this->_v.y + this->_n * this->_v.z);
 	r23 = 2 * (this->_v.y * this->_v.z - this->_n * this->_v.x);
-	r31 = 2 * (this->_v.x * this->_v.z - this->_n * this->_v.y);
+	r31 = 2 * (this->_v.x * this->_v.z + this->_n * this->_v.y);
 	r33 = q00 - q11 - q22 + q33;
 	
 	u.x = asin(-r23);
 	u.y = atan2(r31, r33);
+	//u.y = copysignf(u.y, r31 / r33);
 	u.z = atan2(r21,r22);
+	//u.z = copysignf(u.z, r21 / r22);
 	return u;
 };
 
