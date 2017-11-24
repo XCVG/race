@@ -243,11 +243,20 @@ private:
 	//postprocessing program and buffers
 	GLuint _postProgramID = 0;
 	GLuint _postProgramTexID = 0;
-	GLuint _postProgramLastTexID = 0;
+	GLuint _postProgramSmearTexID = 0;
+	GLuint _postProgramDepthTexID = 0;
+	GLuint _postProgramBlurAmountID = 0;
+	GLuint _postProgramDofAmountID = 0;
+	GLuint _postProgramFogAmountID = 0;
 	GLuint _postFramebufferID = 0;
 	GLuint _postFramebufferTexID = 0;
 	GLuint _postSmearbufferID = 0;
 	GLuint _postSmearbufferTexID = 0;
+	GLuint _postCopyProgramID = 0;
+	GLuint _postCopyProgramFactorID = 0;
+	GLuint _postCopyProgramBlurAmountID = 0;
+	GLuint _postCopyProgramLastTexID = 0;
+	GLuint _postCopyProgramSmearTexID = 0;
 
 	//the texture of shame
 	GLuint _fallbackTextureID = 0;
@@ -714,9 +723,20 @@ private:
 	void setupPostProcessing()
 	{
 		//load shader
-		_postProgramID = Shaders::LoadShadersPointPass();
+		_postProgramID = Shaders::LoadShadersPostProcessing();
 		_postProgramTexID = glGetUniformLocation(_postProgramID, "fBuffer");
-		_postProgramLastTexID = glGetUniformLocation(_postProgramID, "sBuffer");
+		_postProgramSmearTexID = glGetUniformLocation(_postProgramID, "sBuffer");
+		_postProgramDepthTexID = glGetUniformLocation(_postProgramID, "dBuffer");
+		_postProgramBlurAmountID = glGetUniformLocation(_postProgramID, "blurAmount");
+		_postProgramDofAmountID = glGetUniformLocation(_postProgramID, "dofAmount");
+		_postProgramFogAmountID = glGetUniformLocation(_postProgramID, "fogAmount");
+
+		//load smearbuffer copy shader
+		_postCopyProgramID = Shaders::LoadShadersSBCopy();
+		_postCopyProgramFactorID = glGetUniformLocation(_postCopyProgramID, "factor");
+		_postCopyProgramBlurAmountID = glGetUniformLocation(_postCopyProgramID, "blurAmount");
+		_postCopyProgramLastTexID = glGetUniformLocation(_postCopyProgramID, "lBuffer");
+		_postCopyProgramSmearTexID = glGetUniformLocation(_postCopyProgramID, "sBuffer");
 
 		//generate base framebuffer FBO and texture
 		glGenFramebuffers(1, &_postFramebufferID);
@@ -1748,9 +1768,7 @@ private:
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferID);
 		glBindFramebuffer(GL_FRAMEBUFFER, _postFramebufferID);
 
-		int w, h;
-		SDL_GL_GetDrawableSize(_window_p, &w, &h); //TODO switch to using render resolution
-		glViewport(0, 0, w, h);
+		glViewport(0, 0, _renderWidth, _renderHeight);
 		
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1989,31 +2007,95 @@ private:
 	/// </summary>
 	void drawPostProcessing(RenderableScene *scene)
 	{
+		const float blurFactor = 0.9f;
+		const float blurAmount = 0.75f;
+
+		//draw postprocessing
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, _postFramebufferID);
+		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _postFramebufferID);
 
 		int w, h;
-		SDL_GL_GetDrawableSize(_window_p, &w, &h);
-
-		glBlitFramebuffer(0, 0, w, h,
-			0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_LINEAR);
-
-		/*
-		int w, h;
-		SDL_GL_GetDrawableSize(_window_p, &w, &h);
+		SDL_GL_GetDrawableSize(_window_p, &w, &h); 
 		glViewport(0, 0, w, h);
 
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(_postProgramID);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, _postFramebufferTexID);
 		glUniform1i(_postProgramTexID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _postSmearbufferTexID);
+		glUniform1i(_postProgramSmearTexID, 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glUniform1i(_postProgramDepthTexID, 2);
+
+		glUniform1f(_postProgramBlurAmountID, blurAmount);
+		glUniform1f(_postProgramDofAmountID, 0);
+		glUniform1f(_postProgramFogAmountID, 0);
+
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
+
 		glBindVertexArray(0);
-		*/
+
+		 
+		drawPostProcessingCopySmearbuffer(blurFactor, blurAmount);  
+
+		//glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); 
+		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _postSmearbufferID); 
+		//glBlitFramebuffer(0, 0, _renderWidth, _renderHeight, 0, 0, _renderWidth, _renderHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, _postSmearbufferID);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBlitFramebuffer(0, 0, _renderWidth, _renderHeight, 0, 0, 128, 72, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	}
+
+	void drawPostProcessingCopySmearbuffer(float blurFactor, float blurAmount)
+	{
+		//copy smearbuffer into (temporary) texture
+		GLuint sBufferTexture = 0;
+		glGenTextures(1, &sBufferTexture);
+		glBindTexture(GL_TEXTURE_2D, sBufferTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _renderWidth, _renderHeight, 0, GL_RGBA, GL_FLOAT, 0);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, _postSmearbufferID);
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 0, 0, _renderWidth, _renderHeight, 0);
+
+		//blend into smearbuffer with shader
+		//glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postSmearbufferID);
+		//glBlitFramebuffer(0, 0, _renderWidth, _renderHeight, 0, 0, _renderWidth, _renderHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(_postCopyProgramID);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _postFramebufferTexID);
+		glUniform1i(_postCopyProgramLastTexID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, sBufferTexture);
+		glUniform1i(_postCopyProgramSmearTexID, 1);
+
+		glUniform1f(_postCopyProgramFactorID, blurFactor);
+		glUniform1f(_postCopyProgramBlurAmountID, blurAmount);
+		
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindVertexArray(0);	
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//delete temporary texture
+		glDeleteTextures(1, &sBufferTexture);
 	}
 
 	/// <summary>

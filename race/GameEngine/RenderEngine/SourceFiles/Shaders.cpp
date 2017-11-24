@@ -37,6 +37,8 @@ std::string Shaders::VSH_SPOT_PATH = "ResourceFiles/Shaders/light_spot.vsh";
 std::string Shaders::FSH_SPOT_PATH = "ResourceFiles/Shaders/light_spot.fsh";
 std::string Shaders::VSH_POST_PATH = "ResourceFiles/Shaders/postprocessing.vsh";
 std::string Shaders::FSH_POST_PATH = "ResourceFiles/Shaders/postprocessing.fsh";
+std::string Shaders::VSH_COPY_PATH = "ResourceFiles/Shaders/sbcopy.vsh";
+std::string Shaders::FSH_COPY_PATH = "ResourceFiles/Shaders/sbcopy.fsh";
 
 /*----------------------------------------------------------------------------------------
 	Class Methods
@@ -87,6 +89,14 @@ GLuint Shaders::LoadShadersSpotPass()
 GLuint Shaders::LoadShadersPostProcessing()
 {
 	return Shaders::LoadShadersGeneric(Shaders::VSH_POST_PATH, Shaders::FSH_POST_PATH);
+}
+
+///
+///
+///
+GLuint Shaders::LoadShadersSBCopy()
+{
+	return Shaders::LoadShadersGeneric(Shaders::VSH_COPY_PATH, Shaders::FSH_COPY_PATH);
 }
 
 ///
