@@ -21,7 +21,7 @@ void main()
 	
 	vec3 lightColorFac = lightColor * lightIntensity;
 	vec3 lightVec = lightPos - position;
-	vec3 lightDir = normalize(lightVec); //TODO cone
+	vec3 lightDir = normalize(lightVec);
 	float lightDist = length(lightVec);
 	normal = normalize(normal);
 	
@@ -51,5 +51,5 @@ void main()
 	}	
 	
 	
-	color = (diffuse * lightColorFac) + (spec * lightColorFac);
+	color.rgb = (diffuse * lightColorFac) + (spec * lightColorFac);
 }

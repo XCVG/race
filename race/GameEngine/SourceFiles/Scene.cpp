@@ -94,7 +94,7 @@ glm::vec3 Scene::FloatToGLMVector(GLfloat num)
 
 void Scene::setUpSceneOne() {
 	GameObject *go = new GameObject(new Transform(new Vector3(0, 2, -5), new Vector3(0, 0, 0), 1.0f));
-	go->addComponent(new CameraComponent(new Vector3(1,1,1), 0.1f, 1000.0f, 1.05f));
+	go->addComponent(new CameraComponent(new Vector3(0.5,0.5,0.5), 0.1f, 1000.0f, 1.05f));
 	addGameObject("Camera", go);
 
 	InputInitializeContent* content = new InputInitializeContent(); 
@@ -148,7 +148,7 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject(new Transform(new Vector3(0, 10.0f, 0), new Vector3(1.25f, 0, 0), 1.0f));
 	//go->addComponent(new RenderComponent("cube", "crate", "", 0)); 
-	go->addComponent(new LightComponent(0.75f, new Vector3(1.0f, 0.9f, 0.85f), 1000.0f, 0.0f, RenderableLightType::DIRECTIONAL));
+	go->addComponent(new LightComponent(0.5f, new Vector3(1.0f, 0.9f, 0.85f), 1000.0f, 0.0f, RenderableLightType::DIRECTIONAL)); 
 	addGameObject("LightDir", go);
 
 	go = new GameObject( new Transform(new Vector3(3.0f, 5.0f, 3.0f), new Vector3(0,0,0), 1.0f));
