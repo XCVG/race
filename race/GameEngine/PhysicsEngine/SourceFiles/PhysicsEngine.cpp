@@ -126,7 +126,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			generalPhysicsCall(go);
 			
 			if (it->first.compare("Cube") == 0) {
-				it->second->rotate(Vector3(0.5f, 0.5f, 0.5f), PI * _deltaTime * 0.5f);
+				it->second->rotate(Vector3(1.0f, 0.0f, 0.0f), PI * _deltaTime * 0.5f);
 				//it->second->_transform.translateForward(1.0f * _deltaTime);
 			}
 		}

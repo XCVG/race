@@ -104,7 +104,8 @@ void GameObject::rotate(Vector3 vec, GLfloat angle)
 	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
 		i != this->_childObjects_p->end();)
 	{
-		(*i)->_transform._orientation = this->_transform._orientation;
+		Quaternion q;
+		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
 		if ((*i)->_name == "up")
 			(*i)->_transform._position = this->_transform._position + this->_transform._up;
 		else if ((*i)->_name == "forward") 

@@ -2,7 +2,6 @@
 
 std::vector<GLfloat> OBJImport::importObjInfo(std::string string)
 {
-
 	std::stringstream ss(string);
 	std::string lines, lines2, lines3;
 	std::vector<GLfloat> vertexArray;

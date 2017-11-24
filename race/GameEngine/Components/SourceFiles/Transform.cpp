@@ -2,6 +2,7 @@
 Transform::Transform()
 {
     this->_position = new Vector3();
+	this->_rotation = new Vector3();
 	this->_orientation.MakeQFromEulerAngles(0, 0, 0);
     this->_scale = 1;
 	this->_forward = Vector3(0, 0, 1);
@@ -12,6 +13,7 @@ Transform::Transform()
 Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
     this->_position = _position;
+	this->_rotation = _rotation;
 	this->_orientation.MakeQFromEulerAngles(_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
@@ -22,6 +24,7 @@ Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
     this->_position = *_position;
+	this->_rotation = *_rotation;
 	this->_orientation.MakeQFromEulerAngles(*_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
@@ -33,6 +36,7 @@ Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 Transform::Transform(const Transform &obj)
 {
     this->_position = obj._position;
+	this->_rotation = obj._rotation;
 	this->_orientation = obj._orientation;
     this->_scale = obj._scale;
 	this->_forward = obj._forward;
@@ -72,9 +76,9 @@ Vector3 Transform::getForward()
 
 void Transform::adjustDirections() 
 {
-	this->_forward = this->_orientation.QVRotate(Vector3(0, 0, 1));
-	this->_right = this->_orientation.QVRotate(Vector3(1, 0, 0));
-	this->_up = this->_orientation.QVRotate(Vector3(0, 1, 0));
+	this->_forward = QVRotate(this->_orientation, Vector3(0, 0, 1));
+	this->_right = QVRotate(this->_orientation, Vector3(1, 0, 0));
+	this->_up = QVRotate(this->_orientation,Vector3(0, 1, 0));
 }
 
 /**

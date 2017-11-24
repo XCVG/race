@@ -39,8 +39,6 @@ public:
 	Quaternion operator/(GLfloat s);
 	GLfloat QGetAngle();
 	Vector3 QGetAxis();
-	Quaternion QRotate(Quaternion q1, Quaternion q2);
-	Vector3 QVRotate(Vector3);
 	Quaternion& MakeQFromEulerAngles(float x, float y, float z);
 	Quaternion & MakeQFromEulerAngles(Vector3 vec);
 	Vector3 MakeEulerAnglesFromQ();
@@ -189,15 +187,15 @@ inline Vector3 Quaternion::QGetAxis() {
 	}
 };
 
-inline Quaternion Quaternion::QRotate(Quaternion q1, Quaternion q2) 
+inline Quaternion QRotate(Quaternion q1, Quaternion q2) 
 {
 	return q1 * q2 * (~q1);
 };
 
-inline Vector3 Quaternion::QVRotate(Vector3 v) 
+inline Vector3 QVRotate(Quaternion q, Vector3 v) 
 {
 	Quaternion t;
-	t = *this * v * ~(*this);
+	t = q * v * ~(q);
 	return t.getVector();
 };
 
@@ -262,7 +260,7 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ()
 {
 	Vector3 u;
 
-	GLfloat r21, r22, r23, r31, r33;
+	GLfloat r21, r22, r23, r31, r33, r12, r13;
 	GLfloat q00, q11, q22, q33;
 	q00 = this->_n * this->_n;
 	q11 = this->_v.x * this->_v.x;
@@ -274,7 +272,16 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ()
 	r23 = 2 * (this->_v.y * this->_v.z - this->_n * this->_v.x);
 	r31 = 2 * (this->_v.x * this->_v.z + this->_n * this->_v.y);
 	r33 = q00 - q11 - q22 + q33;
-	
+	float tmp = fabs(r23);
+	if (tmp > 0.999999)
+	{
+		r12 = 2 * (this->_v.x*this->_v.y - this->_n*this->_v.z);
+		r13 = 2 * (this->_v.x*this->_v.z + this->_n*this->_v.y);
+		u.y = 0.0f;
+		u.x = (float)(-(PI / 2) * r23 / tmp);
+		u.z = (float)atan2(-r12, -r23*r13);
+		return u;
+	}
 	u.x = asin(-r23);
 	u.y = atan2(r31, r33);
 	//u.y = copysignf(u.y, r31 / r33);
