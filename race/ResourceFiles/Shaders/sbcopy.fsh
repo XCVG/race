@@ -13,8 +13,8 @@ void main()
 	vec3 iColor = mix(lColor, sColor, blurAmount);
 	
 	//blend into smearbuffer
-	//gl_FragColor.rgb = mix(sColor, iColor, factor);
+	gl_FragColor.rgb = mix(iColor, sColor, factor);
 	//gl_FragColor.rgb = mix(lColor, sColor, blurAmount);
-	gl_FragColor.rgb = iColor;
+	//gl_FragColor.rgb = iColor;
 	gl_FragColor.a = 1.0;
 }

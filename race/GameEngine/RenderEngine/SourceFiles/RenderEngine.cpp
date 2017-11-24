@@ -2007,8 +2007,8 @@ private:
 	/// </summary>
 	void drawPostProcessing(RenderableScene *scene)
 	{
-		const float blurFactor = 0.9f;
-		const float blurAmount = 0.75f;
+		const float blurFactor = 0.33f;
+		const float blurAmount = 0.6f;
 
 		//draw postprocessing
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -2064,6 +2064,8 @@ private:
 		glGenTextures(1, &sBufferTexture);
 		glBindTexture(GL_TEXTURE_2D, sBufferTexture);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _renderWidth, _renderHeight, 0, GL_RGBA, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, _postSmearbufferID);
 		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 0, 0, _renderWidth, _renderHeight, 0);
 
@@ -2072,8 +2074,10 @@ private:
 		glBindFramebuffer(GL_FRAMEBUFFER, _postSmearbufferID);
 		//glBlitFramebuffer(0, 0, _renderWidth, _renderHeight, 0, 0, _renderWidth, _renderHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-		//glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glViewport(0, 0, _renderWidth, _renderHeight); 
+
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(_postCopyProgramID);
 
