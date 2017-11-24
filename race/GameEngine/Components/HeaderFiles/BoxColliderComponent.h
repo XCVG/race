@@ -21,4 +21,6 @@ public:
 private:
 	int _minX, _minY, _minZ;
 	int _maxX, _maxY, _maxZ;
+	void setValuesAllZero();
+	void buildBoxColliderFromOBJ(std::string filename);
 };
