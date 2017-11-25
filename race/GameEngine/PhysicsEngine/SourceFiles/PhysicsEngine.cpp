@@ -153,7 +153,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			}
 			if (amount2 != 0)
 			{
-				F_Long += Vector3(-go->_transform._forward.normalize()) * (amount2 * 6000);
+				F_Long += -go->_transform._forward.normalize() * (amount2 * 6000);
 			}
 		}
 		rbc->setForce(F_Long);
@@ -246,8 +246,8 @@ GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 	if (tireDegree >= PI/4.0f || tireDegree != 0)
 		SDL_Log("Joystick X");
 	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
-	GLfloat L = (go->getChild(std::string("front"))->_transform._position 
-		- go->getChild(std::string("rear"))->_transform._position).magnitude(); // Distance from front of object to rear of object
+	GLfloat L = (go->getChild(std::string("forward"))->_transform._position 
+		- (-go->getChild(std::string("forward"))->_transform._position)).magnitude(); // Distance from front of object to rear of object
 	GLfloat theta = tireDegree;
 	if (L == 0 || theta == 0)
 	{

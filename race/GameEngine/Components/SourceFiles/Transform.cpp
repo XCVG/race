@@ -76,9 +76,9 @@ Vector3 Transform::getForward()
 
 void Transform::adjustDirections() 
 {
-	this->_forward = QVRotate(this->_orientation, Vector3(0, 0, 1));
-	this->_right = QVRotate(this->_orientation, Vector3(1, 0, 0));
-	this->_up = QVRotate(this->_orientation,Vector3(0, 1, 0));
+	this->_forward = QVRotate(this->_orientation, Vector3(0, 0, 1)).normalize();
+	this->_right = QVRotate(this->_orientation, Vector3(1, 0, 0)).normalize();
+	this->_up = QVRotate(this->_orientation,Vector3(0, 1, 0)).normalize();
 }
 
 /**
