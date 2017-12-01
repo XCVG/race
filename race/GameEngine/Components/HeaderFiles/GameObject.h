@@ -83,6 +83,7 @@ public:
 	GameObject* getChild(std::string name);
 	void removeChild(GameObject *child);
 	std::vector<GameObject *> getChildObjectList();
+	void translate(Vector3 vec);
 	// TODO: Rotate all child objects about this position
 	void rotate(Vector3 vec, GLfloat angle);
 	void rotateX(GLfloat angle);

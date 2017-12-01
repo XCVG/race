@@ -111,7 +111,7 @@ void PhysicsEngine::loop()
 	}
 	this->stop();
 	SDL_Log("Physics::Out of loop");
-}
+};
 
 void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) 
 {
@@ -141,90 +141,92 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		GLfloat amount = content->amountFast;
 		GLfloat amount2 = content->amountSlow;
 		RigidBodyComponent *rbc = go->getComponent<RigidBodyComponent*>();
-		
-		Vector3 F_Drag = Vector3(rbc->getVelocity() * rbc->getVelocity().magnitude()) * -1.0;
-		Vector3 F_RollingRes = rbc->getVelocity() * -12.8;
-		Vector3 F_Long = F_Drag + F_RollingRes;
-		if (amount != 0 || amount2 != 0) {
-
-			if (amount != 0)
-			{
-				F_Long += go->_transform._forward.normalize() * (amount * 5000);
-			}
-			if (amount2 != 0)
-			{
-				F_Long += -go->_transform._forward.normalize() * (amount2 * 6000);
-			}
+		Vector3 F_Long;
+		if (amount != 0)
+		{
+			F_Long += go->_transform._forward.normalize() * (amount * 500);
+		}
+		if (amount2 != 0)
+		{
+			F_Long += -go->_transform._forward.normalize() * (amount2 * 500);
 		}
 		rbc->setForce(F_Long);
-		rbc->setAccelerationVector(F_Long / rbc->getWeight());
 		rbc->setTurningDegree(content->turningDegree); // Turning input from user
 		break;
 	}
 	default:
 		break;
 	}
-}
+};
 
 void PhysicsEngine::generalPhysicsCall(GameObject* go) 
 {
 	if (go->hasComponent<RigidBodyComponent*>()) 
 	{
 		RigidBodyComponent* rbc = go->getComponent<RigidBodyComponent*>();
-		applyAcceleration(go);
-		applyTurning(go);
-		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
-		go->_transform.translate(Vector3(rbc->getVelocity()) * _deltaTime);
-		//go->_transform.rotateY((MATH_PI / 2) * _deltaTime);
-		//SDL_Log("Player Pos: %f", go->_transform._position.z);
+		if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) {
+			adjustForces(rbc);
+			applyAcceleration(rbc);
+			go->translate(Vector3(rbc->getVelocity()) * _deltaTime);
+		}
+		else {
+			rbc->setVelocity(Vector3());
+			rbc->setForce(Vector3());
+		}
 	}
+};
+
+void PhysicsEngine::applyAcceleration(RigidBodyComponent *rc) 
+{
+	if (rc->getVelocity().magnitude() < rc->getMaxVelocity()) 
+	{
+		linearAccelerate(rc);
+		angularAccelerate(rc);
+	}
+};
+
+void PhysicsEngine::adjustForces(RigidBodyComponent *rc) 
+{
+	Vector3 dragVector = -rc->getVelocity().normalize();
+	Vector3 newForce = rc->getForce() + (dragVector * (rc->getVelocity().magnitude() *
+		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
+
+	rc->setAccelerationVector(newForce / rc->getMass());
+	rc->setForce(newForce);
 }
 
-void PhysicsEngine::applyAcceleration(GameObject* go) 
-{
-	RigidBodyComponent* rc = go->getComponent<RigidBodyComponent*>();
-	if (!(rc->getVelocity().magnitude() > rc->getMaxVelocity()) || rc->getVelocity().dotProduct(go->_transform._forward) < 0) 
-	{
-		accelerate(go, rc);
-	}
-}
 
 void PhysicsEngine::applyTurning(GameObject* go)
 {
 	turnGameObject(go);
-}
+};
 
 /**
  *	Stops the physics engine.
  */
-void PhysicsEngine::stop()
-{
-
-	//SDL_Log("Physics::Stop");
-}
+void PhysicsEngine::stop() {};
 
 void PhysicsEngine::flagLoop() 
 {
 	_running = false;
-}
+};
 
 /**
  *  <summary>
  *  Accelerate the game object. The amount should be modified by the delta time.
  *  </summary>
  */
-void PhysicsEngine::accelerate(GameObject *go, RigidBodyComponent* rbc)
+void PhysicsEngine::linearAccelerate(RigidBodyComponent* rbc)
 {
-	if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) 
-	{
-		rbc->setVelocity(rbc->getVelocity() + (Vector3(rbc->getAccelerationVector()) * _deltaTime));
-	}
-	else 
-	{
-		rbc->setVelocity(Vector3(0.0f, 0.0f, 0.0f));
-		rbc->setForce(Vector3(0.0f, 0.0f, 0.0f));
-	}
+	rbc->setVelocity(rbc->getVelocity() + rbc->getAccelerationVector() * _deltaTime);
 };
+
+
+void PhysicsEngine::angularAccelerate(RigidBodyComponent* rbc) 
+{
+	//rbc->setAngularAccel();
+};
+
 /**
  * <summary>
  * Accelerate the game object. Each axis should be modified by the delta time.
@@ -241,11 +243,9 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 	go->getComponent<RigidBodyComponent*>()->getVelocity() -= Vector3(x, y, z) * _deltaTime;
 };
 
-GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
+Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
-	if (tireDegree >= PI/4.0f || tireDegree != 0)
-		SDL_Log("Joystick X");
-	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
+	/*Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
 	GLfloat L = (go->getChild(std::string("forward"))->_transform._position 
 		- (-go->getChild(std::string("forward"))->_transform._position)).magnitude(); // Distance from front of object to rear of object
 	GLfloat theta = tireDegree;
@@ -256,11 +256,14 @@ GLfloat PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 	GLfloat sinTheta = sin(theta);
 	GLfloat denominator = (L / (sinTheta));
 	GLfloat omega = objectVelocity.magnitude() / denominator;
-	return omega;
+	return omega;*/
+
+
+	return Vector3();
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
-	GLfloat angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(Vector3(0.0f, 1.0f, 0.0f), angularVelocity * (_deltaTime)); // angularVelocity * deltaTime = current angle
+	//GLfloat angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
+	go->rotate(getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree()), 0.5 * (_deltaTime)); // angularVelocity * deltaTime = current angle
 };

@@ -37,6 +37,11 @@
 #include "../../HeaderFiles/InputTypes.h"
 #include "../../Components/HeaderFiles/ComponentHeaders.h"
 
+#define RHO 1.225
+#define LINEARDRAGCOEF 5.0
+#define ANGULARDRAGCOEF 1200.0
+#define GRAVITY -9.81
+
 
 /*========================================================================================
 	Dependencies
@@ -93,7 +98,8 @@ class PhysicsEngine : public MessageReceiver
 			void flagLoop();
 			// TODO: Physics function calls
 	#pragma region Physics Calculation Methods
-			void accelerate(GameObject *go, RigidBodyComponent* rbc);
+			void linearAccelerate(RigidBodyComponent * rbc);
+			void angularAccelerate(RigidBodyComponent * rbc);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 	#pragma endregion
@@ -101,9 +107,10 @@ class PhysicsEngine : public MessageReceiver
     private:
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
-		void applyAcceleration(GameObject*);
+		void adjustForces(RigidBodyComponent * rbc);
 		void applyTurning(GameObject* go);
 		void generalPhysicsCall(GameObject*);
-		GLfloat getAngleFromTurn(GameObject *go, GLfloat tireDegree);
+		void applyAcceleration(RigidBodyComponent * rc);
+		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
 		void turnGameObject(GameObject *go);
 };

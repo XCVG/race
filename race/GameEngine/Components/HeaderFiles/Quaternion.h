@@ -54,7 +54,7 @@ private:
 
 inline Quaternion::Quaternion()
 {
-	_n = 0;
+	_n = 1;
 	_v = Vector3(0, 0, 0);
 };
 

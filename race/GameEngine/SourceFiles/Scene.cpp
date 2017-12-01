@@ -72,6 +72,9 @@ RenderableScene* Scene::getRenderInformation()
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
 				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());
+				if (it->first.compare("Player.ChildF") == 0) {
+					SDL_Log("Something");
+				}
 				ro.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
 
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
@@ -123,8 +126,8 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
-	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
-	forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward + Vector3(0, 0, -3.0f)), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
+	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 2000.0f, 0.0f, 0.0f, 0.0f, Vector3(1.0f, 1.0f, 2.0f)));
+	forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
 	right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
 	up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
 	forward->addComponent(new RenderComponent("cone", "test_texture", "", 0.0f));
