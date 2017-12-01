@@ -249,6 +249,8 @@ private:
 	GLuint _postProgramDofAmountID = 0;
 	GLuint _postProgramDofFactorID = 0;
 	GLuint _postProgramFogAmountID = 0;
+	GLuint _postProgramFogFactorID = 0;
+	GLuint _postProgramFogColorID = 0;
 	GLuint _postFramebufferID = 0;
 	GLuint _postFramebufferTexID = 0;
 	GLuint _postSmearbufferID = 0;
@@ -732,6 +734,8 @@ private:
 		_postProgramDofAmountID = glGetUniformLocation(_postProgramID, "dofAmount");
 		_postProgramDofFactorID = glGetUniformLocation(_postProgramID, "dofFactor");
 		_postProgramFogAmountID = glGetUniformLocation(_postProgramID, "fogAmount");
+		_postProgramFogFactorID = glGetUniformLocation(_postProgramID, "fogFactor");
+		_postProgramFogColorID = glGetUniformLocation(_postProgramID, "fogColor");
 		
 		//load smearbuffer copy shader
 		_postCopyProgramID = Shaders::LoadShadersSBCopy();
@@ -1833,7 +1837,7 @@ private:
 
 		//bind shadow mapping buffer
 		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
+		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID); 
 		glUniform1i(_framebufferDrawTexSID, 4);
 
 		//calculate and bind shadow bias matrix
@@ -2012,12 +2016,14 @@ private:
 		//left it like this because we may want to override later
 		const float blurFactor = GlobalPrefs::rBlurFactor;
 		const float blurAmount = GlobalPrefs::rBlurAmount;
-		const float dofAmount = GlobalPrefs::rDofAmount;
 		const float dofFactor = GlobalPrefs::rDofFactor;
+		const float dofAmount = GlobalPrefs::rDofAmount;		
+		const float fogFactor = GlobalPrefs::rFogFactor;
 		const float fogAmount = GlobalPrefs::rFogAmount;
+		const glm::vec3 fogColor = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		//draw postprocessing
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); 
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _postFramebufferID);
 
 		int w, h;
@@ -2040,11 +2046,13 @@ private:
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
 		glUniform1i(_postProgramDepthTexID, 2);
-		 
+		   
 		glUniform1f(_postProgramBlurAmountID, blurAmount);
 		glUniform1f(_postProgramDofAmountID, dofAmount);
 		glUniform1f(_postProgramDofFactorID, dofFactor);
 		glUniform1f(_postProgramFogAmountID, fogAmount);
+		glUniform1f(_postProgramFogFactorID, fogFactor);
+		glUniform3f(_postProgramFogColorID, fogColor.r, fogColor.g, fogColor.b); 
 		 
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -2052,7 +2060,7 @@ private:
 		glBindVertexArray(0);
 
 		 
-		drawPostProcessingCopySmearbuffer(blurFactor, blurAmount);  
+		drawPostProcessingCopySmearbuffer(blurFactor, blurAmount); 
 
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); 
 		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _postSmearbufferID); 

@@ -22,5 +22,6 @@ public:
 	static float rDofAmount;
 	static float rDofFactor;
 	static float rFogAmount;
+	static float rFogFactor;
 };
 

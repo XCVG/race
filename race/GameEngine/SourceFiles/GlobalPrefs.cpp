@@ -16,4 +16,5 @@ float GlobalPrefs::rBlurFactor = 0.33f;
 float GlobalPrefs::rBlurAmount = 0.6f;
 float GlobalPrefs::rDofAmount = 1.0f;
 float GlobalPrefs::rDofFactor = 1.0f;
-float GlobalPrefs::rFogAmount = 0.0f;
+float GlobalPrefs::rFogAmount = 1.0f;
+float GlobalPrefs::rFogFactor = 0.1f;
