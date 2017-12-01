@@ -110,15 +110,32 @@ void Scene::setUpSceneOne() {
 	addGameObject("Sphere", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
-	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
+	go->addComponent(new RenderComponent("car2_body", "car2_base", "", 0.75f));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
 	GameObject *childF = new GameObject(new Transform(new Vector3(0, 2.5, 10), new Vector3(0, 0, 0), 2.0f), "front");
 	GameObject *childR = new GameObject(new Transform(new Vector3(0, 2.5, -10), new Vector3(0, 0, 0), 2.0f), "rear");
 	go->addChild(childF);
-	go->addChild(childR);
-	addGameObject("Player", go);
+	go->addChild(childR); 
+	GameObject *childWheelFL, *childWheelFR, *childWheelRL, *childWheelRR;
+	childWheelFL = new GameObject(new Transform(new Vector3(1.2, 0.25, 2.4), new Vector3(0, 0, 0), 1.0f), "wheelFL");
+	childWheelFL->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	childWheelFR = new GameObject(new Transform(new Vector3(-1.2, 0.25, 2.4), new Vector3(0, 0, 0), 1.0f), "wheelFR");
+	childWheelFR->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	go->addChild(childWheelFL);
+	go->addChild(childWheelFR);
+	childWheelRL = new GameObject(new Transform(new Vector3(1.2, 0.25, -1.4), new Vector3(0, 0, 0), 1.0f), "wheelRL");
+	childWheelRL->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	childWheelRR = new GameObject(new Transform(new Vector3(-1.2, 0.25, -1.4), new Vector3(0, 0, 0), 1.0f), "wheelRR");
+	childWheelRR->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	go->addChild(childWheelRL);
+	go->addChild(childWheelRR);
+	addGameObject("Player", go);  
 	addGameObject("Player.ChildF", childF); // DEBUG: Check this is running properly
 	addGameObject("Player.ChildR", childR);
+	addGameObject("Player.WheelFL", childWheelFL);
+	addGameObject("Player.WheelFR", childWheelFR);
+	addGameObject("Player.WheelRL", childWheelRL);
+	addGameObject("Player.WheelRR", childWheelRR);
 
 	content->player = go;
 	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));
