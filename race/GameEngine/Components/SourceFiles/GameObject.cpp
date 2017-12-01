@@ -114,6 +114,17 @@ void GameObject::translate(Vector3 vec)
 		i++;
 	}
 };
+void GameObject::rotate(Vector3 vec)
+{
+	this->_transform.rotate(vec);
+	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
+		i != this->_childObjects_p->end();)
+	{
+		Quaternion q;
+		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
+		i++;
+	}
+};
 
 void GameObject::rotate(Vector3 vec, GLfloat angle)
 {
@@ -123,13 +134,6 @@ void GameObject::rotate(Vector3 vec, GLfloat angle)
 	{
 		Quaternion q;
 		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
-		if ((*i)->_name == "up")
-			(*i)->_transform._position = this->_transform._position + this->_transform._up;
-		else if ((*i)->_name == "forward") 
-			(*i)->_transform._position = this->_transform._position + this->_transform._forward;
-		else if ((*i)->_name == "right")
-			(*i)->_transform._position = this->_transform._position + this->_transform._right;
-
 		i++;
 	}
 };

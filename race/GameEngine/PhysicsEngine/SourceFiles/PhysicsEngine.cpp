@@ -164,15 +164,25 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 	if (go->hasComponent<RigidBodyComponent*>()) 
 	{
 		RigidBodyComponent* rbc = go->getComponent<RigidBodyComponent*>();
+		if (go->_name.compare("sphere") == 0) {
+			rbc->setAngularAccel(Vector3(0, 0, PI) * 0.5 * _deltaTime);
+		}
+		if (go->_name.compare("player") == 0) {
+			turnGameObject(go);
+		}
 		if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) {
-			adjustForces(rbc);
+
 			applyAcceleration(rbc);
-			go->translate(Vector3(rbc->getVelocity()) * _deltaTime);
+			adjustForces(rbc);
+
+			go->translate(rbc->getVelocity() * _deltaTime);
+			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
 		}
 		else {
 			rbc->setVelocity(Vector3());
 			rbc->setForce(Vector3());
 		}
+		
 	}
 };
 
@@ -181,8 +191,8 @@ void PhysicsEngine::applyAcceleration(RigidBodyComponent *rc)
 	if (rc->getVelocity().magnitude() < rc->getMaxVelocity()) 
 	{
 		linearAccelerate(rc);
-		angularAccelerate(rc);
 	}
+	angularAccelerate(rc);
 };
 
 void PhysicsEngine::adjustForces(RigidBodyComponent *rc) 
@@ -193,12 +203,16 @@ void PhysicsEngine::adjustForces(RigidBodyComponent *rc)
 
 	rc->setAccelerationVector(newForce / rc->getMass());
 	rc->setForce(newForce);
-}
 
+	Vector3 angularDragVector = -rc->_angularVel.normalize();
+	rc->_angularMoment += (angularDragVector * (rc->_angularVel.magnitude() *
+		rc->_angularVel.magnitude()) * RHO * ANGULARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
 
-void PhysicsEngine::applyTurning(GameObject* go)
-{
-	turnGameObject(go);
+	glm::vec3 inertiaAngVel = rc->_mInertia * glm::vec3(rc->_angularVel.x, rc->_angularVel.y, rc->_angularVel.z);
+	Vector3 angMoments = rc->_angularMoment - rc->_angularVel.crossProduct(Vector3(inertiaAngVel.x, inertiaAngVel.y, inertiaAngVel.z));
+	glm::vec3 something = rc->_mInertiaInverse * glm::vec3(angMoments.x, angMoments.y, angMoments.z);
+	rc->setAngularAccel(rc->getAngularAccel() + Vector3(something.x, something.y, something.z));
+
 };
 
 /**
@@ -225,6 +239,7 @@ void PhysicsEngine::linearAccelerate(RigidBodyComponent* rbc)
 void PhysicsEngine::angularAccelerate(RigidBodyComponent* rbc) 
 {
 	//rbc->setAngularAccel();
+	rbc->_angularVel += rbc->getAngularAccel() * _deltaTime;
 };
 
 /**
@@ -245,25 +260,23 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
-	/*Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
-	GLfloat L = (go->getChild(std::string("forward"))->_transform._position 
-		- (-go->getChild(std::string("forward"))->_transform._position)).magnitude(); // Distance from front of object to rear of object
+	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
+	Vector3 thing = go->getChild(std::string("forward"))->_transform._position - go->_transform._position;
+	thing = thing.crossProduct(go->_transform._right.normalize());
+	GLfloat L = (thing - (-thing)).magnitude();// Distance from front of object to rear of object
 	GLfloat theta = tireDegree;
 	if (L == 0 || theta == 0)
 	{
-		return 0;
+		return Vector3(0, 0, 0);
 	}
 	GLfloat sinTheta = sin(theta);
 	GLfloat denominator = (L / (sinTheta));
-	GLfloat omega = objectVelocity.magnitude() / denominator;
-	return omega;*/
-
-
-	return Vector3();
+	Vector3 omega = objectVelocity.crossProduct(go->_transform._right.normalize()) / denominator;
+	return omega;
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
-	//GLfloat angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree()), 0.5 * (_deltaTime)); // angularVelocity * deltaTime = current angle
+	//Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
+	go->rotate(getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree()), 0.5 * _deltaTime); // angularVelocity * deltaTime = current angle
 };

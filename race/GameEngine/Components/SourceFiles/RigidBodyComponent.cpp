@@ -1,15 +1,19 @@
 #include "RigidBodyComponent.h"
 RigidBodyComponent::RigidBodyComponent()
 {
-    this->_mass = 0;
+    this->_mass = 50;
     this->_bouncyness = 0;
     this->_friction = 0;
     this->_resistance = 0;
-	this->_maxVelocity = 0;
+	this->_maxVelocity = 10;
 	this->_turningDegree = 0;
 	this->_velocity = new Vector3();
 	this->_acceleration = new Vector3();
-	this->_height = this->_length = this->_width = 0.0f;
+	this->_height = this->_length = this->_width = 1.0f;
+	this->_angularVel = Vector3();
+	this->_angularMoment = Vector3();
+	this->_force = Vector3();
+	this->_angularAccel = Vector3();
 	calculatemInteria();
 };
 RigidBodyComponent::RigidBodyComponent(GLfloat _maxAccel, GLfloat _maxVel, GLfloat _weight, GLfloat _bouncyness, GLfloat _friction, GLfloat _resistance, Vector3 dimensions)
@@ -25,6 +29,10 @@ RigidBodyComponent::RigidBodyComponent(GLfloat _maxAccel, GLfloat _maxVel, GLflo
 	this->_length = dimensions.z;
 	this->_velocity = new Vector3();
 	this->_acceleration = new Vector3();
+	this->_angularVel = Vector3();
+	this->_angularMoment = Vector3();
+	this->_force = Vector3();
+	this->_angularAccel = Vector3();
 	calculatemInteria();
 };
 RigidBodyComponent::RigidBodyComponent(const RigidBodyComponent &obj)
@@ -39,6 +47,10 @@ RigidBodyComponent::RigidBodyComponent(const RigidBodyComponent &obj)
 	this->_acceleration = obj._acceleration;
 	this->_height = obj._height; this->_length = obj._length;
 	this->_width = obj._width;
+	this->_angularVel = obj._angularVel;
+	this->_angularMoment = obj._angularMoment;
+	this->_force = obj._force;
+	this->_angularAccel = obj._angularAccel;
 	calculatemInteria();
 };
 void RigidBodyComponent::setMass(GLfloat _mass)

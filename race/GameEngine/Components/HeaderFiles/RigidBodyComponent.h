@@ -37,6 +37,8 @@ public:
 	Vector3 getAngularAccel();
 	GLfloat _width, _height, _length;
 	Vector3 _angularVel;
+	Vector3 _angularMoment;
+	glm::mat3x3 _mInertia, _mInertiaInverse;
 private:
 	GLfloat _mass;
 	GLfloat _bouncyness;
@@ -47,10 +49,9 @@ private:
 	GLfloat _maxVelocity;
 	GLfloat _turningDegree;
 	Vector3 _force;
-	glm::mat3x3 _mInertia, _mInertiaInverse;
+
 	Vector3 _angularAccel;
 	
-	Vector3 _angularMoment;
 	void calculatemInteria();
 };
 

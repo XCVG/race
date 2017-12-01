@@ -38,8 +38,8 @@
 #include "../../Components/HeaderFiles/ComponentHeaders.h"
 
 #define RHO 1.225
-#define LINEARDRAGCOEF 5.0
-#define ANGULARDRAGCOEF 1200.0
+#define LINEARDRAGCOEF 0.5
+#define ANGULARDRAGCOEF 0.05
 #define GRAVITY -9.81
 
 
@@ -108,7 +108,6 @@ class PhysicsEngine : public MessageReceiver
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
 		void adjustForces(RigidBodyComponent * rbc);
-		void applyTurning(GameObject* go);
 		void generalPhysicsCall(GameObject*);
 		void applyAcceleration(RigidBodyComponent * rc);
 		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);

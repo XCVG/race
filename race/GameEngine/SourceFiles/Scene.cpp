@@ -122,7 +122,9 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
 	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f)); 
+	go->addComponent(new RigidBodyComponent());
 	addGameObject("Sphere", go);
+	go->_name = "sphere";
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
@@ -140,6 +142,7 @@ void Scene::setUpSceneOne() {
 	addGameObject("Player.ChildF", forward);
 	addGameObject("Player.childR", right);
 	addGameObject("Player.childU", up);
+	go->_name = "player";
 
 	content->player = go;
 	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));

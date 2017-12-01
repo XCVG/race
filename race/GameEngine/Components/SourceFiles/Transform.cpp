@@ -79,7 +79,7 @@ void Transform::adjustDirections()
 	this->_forward = QVRotate(this->_orientation, Vector3(0, 0, 1)).normalize();
 	this->_right = QVRotate(this->_orientation, Vector3(1, 0, 0)).normalize();
 	this->_up = QVRotate(this->_orientation,Vector3(0, 1, 0)).normalize();
-}
+};
 
 /**
 * <summary>
@@ -100,6 +100,10 @@ void Transform::rotate(Vector3 amount)
 	//glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
 	//this->_rotation += amount;
 	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);
+	Quaternion q;
+	this->_orientation += this->_orientation * q.MakeQFromEulerAngles(amount);
+	this->_orientation.Normalize();
+	this->adjustDirections();
 };
 void Transform::rotateQuat(Vector3 axis, GLfloat amount) 
 {
@@ -139,9 +143,10 @@ void Transform::translateForward(GLfloat num)
 	this->_position += Vector3(_forward) * num;
 };
 
-void Transform::translateRight(GLfloat num) {
+void Transform::translateRight(GLfloat num) 
+{
 	this->_position += Vector3(_right) * num;
-}
+};
 /**
 *  <summary>
 *  Move the game object in a direciton. Each axis should be modified by the delta time.

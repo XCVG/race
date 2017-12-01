@@ -186,7 +186,7 @@ inline Vector3 Vector3::normalize()
 {
 	float num = sqrtf(powf(this->x, 2) + powf(this->y, 2) + powf(this->z, 2));
 	if (num <= TOL) num = 1;
-	return Vector3(this->x /= num, this->y /= num, this->z /= num);
+	return Vector3(this->x / num, this->y / num, this->z / num);
 };
 inline GLfloat Vector3::dotProduct(Vector3 vec) 
 {
@@ -197,8 +197,8 @@ inline Vector3 Vector3::crossProduct(Vector3 vec)
 	// a(x y z | x)
 	// b(x y z | x)
 	return Vector3(
-		(this->x * vec.y) - (vec.x * this->y),
 		(this->y * vec.z) - (vec.y * this->z),
-		(this->z * vec.x) - (vec.z * this->x)
+		(this->z * vec.x) - (vec.z * this->x),
+		(this->x * vec.y) - (vec.x * this->y)
 	);
 };
