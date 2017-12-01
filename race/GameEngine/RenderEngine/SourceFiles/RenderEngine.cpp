@@ -2009,11 +2009,12 @@ private:
 	/// </summary>
 	void drawPostProcessing(RenderableScene *scene)
 	{
-		const float blurFactor = 0.33f;
-		const float blurAmount = 0.6f;
-		const float dofAmount = 1.0f;
-		const float dofFactor = 1.0f;
-		const float fogAmount = 0.0f;
+		//left it like this because we may want to override later
+		const float blurFactor = GlobalPrefs::rBlurFactor;
+		const float blurAmount = GlobalPrefs::rBlurAmount;
+		const float dofAmount = GlobalPrefs::rDofAmount;
+		const float dofFactor = GlobalPrefs::rDofFactor;
+		const float fogAmount = GlobalPrefs::rFogAmount;
 
 		//draw postprocessing
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
