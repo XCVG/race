@@ -2034,9 +2034,9 @@ private:
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
 		glUniform1i(_postProgramDepthTexID, 2);
-
+		 
 		glUniform1f(_postProgramBlurAmountID, blurAmount);
-		glUniform1f(_postProgramDofAmountID, 0);
+		glUniform1f(_postProgramDofAmountID, 1.0f);
 		glUniform1f(_postProgramFogAmountID, 0);
 
 		glBindVertexArray(_framebufferDrawVertexArrayID);
