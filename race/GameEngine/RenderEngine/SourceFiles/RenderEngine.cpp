@@ -247,6 +247,7 @@ private:
 	GLuint _postProgramDepthTexID = 0;
 	GLuint _postProgramBlurAmountID = 0;
 	GLuint _postProgramDofAmountID = 0;
+	GLuint _postProgramDofFactorID = 0;
 	GLuint _postProgramFogAmountID = 0;
 	GLuint _postFramebufferID = 0;
 	GLuint _postFramebufferTexID = 0;
@@ -729,8 +730,9 @@ private:
 		_postProgramDepthTexID = glGetUniformLocation(_postProgramID, "dBuffer");
 		_postProgramBlurAmountID = glGetUniformLocation(_postProgramID, "blurAmount");
 		_postProgramDofAmountID = glGetUniformLocation(_postProgramID, "dofAmount");
+		_postProgramDofFactorID = glGetUniformLocation(_postProgramID, "dofFactor");
 		_postProgramFogAmountID = glGetUniformLocation(_postProgramID, "fogAmount");
-
+		
 		//load smearbuffer copy shader
 		_postCopyProgramID = Shaders::LoadShadersSBCopy();
 		_postCopyProgramFactorID = glGetUniformLocation(_postCopyProgramID, "factor");
@@ -2009,6 +2011,9 @@ private:
 	{
 		const float blurFactor = 0.33f;
 		const float blurAmount = 0.6f;
+		const float dofAmount = 1.0f;
+		const float dofFactor = 1.0f;
+		const float fogAmount = 0.0f;
 
 		//draw postprocessing
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
@@ -2036,9 +2041,10 @@ private:
 		glUniform1i(_postProgramDepthTexID, 2);
 		 
 		glUniform1f(_postProgramBlurAmountID, blurAmount);
-		glUniform1f(_postProgramDofAmountID, 1.0f);
-		glUniform1f(_postProgramFogAmountID, 0);
-
+		glUniform1f(_postProgramDofAmountID, dofAmount);
+		glUniform1f(_postProgramDofFactorID, dofFactor);
+		glUniform1f(_postProgramFogAmountID, fogAmount);
+		 
 		glBindVertexArray(_framebufferDrawVertexArrayID);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 

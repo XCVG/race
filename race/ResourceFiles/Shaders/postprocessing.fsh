@@ -5,13 +5,14 @@ uniform sampler2D dBuffer; //depth buffer
 uniform sampler2D sBuffer; //smear buffer
 uniform float blurAmount;
 uniform float dofAmount;
+uniform float dofFactor;
 uniform float fogAmount;
 
 vec3 blurSample(float dofblur)
 {
 	vec4 col = vec4(0.0);
 
-    //col += texture(fBuffer, uv);
+    col += texture(fBuffer, uv);
     col += texture(fBuffer, uv + (vec2( 0.0,0.4 )) * dofblur);
     col += texture(fBuffer, uv + (vec2( 0.15,0.37 )) * dofblur);
     col += texture(fBuffer, uv + (vec2( 0.29,0.29 )) * dofblur);
@@ -69,14 +70,17 @@ void main()
 	gl_FragColor.a = 1.0;
 	
 	//motion blur
-	gl_FragColor.rgb = mix(fColor, sColor, blurAmount);
+	vec3 mBlurFragColor = mix(fColor, sColor, blurAmount);
 	
 	//depth of field
 	float cDepth = texture(dBuffer, vec2(0.5, 0.5)).r;
 	float depthDiff = abs(depth - cDepth);
 	float biasedDepth = depthDiff * 10.0;
-	vec3 blurColor = blurSample(0.05) / 40.0;
-	gl_FragColor.rgb = mix(fColor, blurColor, biasedDepth*dofAmount);
+	vec3 blurColor = blurSample(biasedDepth * 0.05 * dofFactor) / 41.0;
+	vec3 dofBlurFragColor = mix(fColor, blurColor, dofAmount);
+	
+	//final blend
+	gl_FragColor.rgb = (mBlurFragColor + dofBlurFragColor) / 2.0;
 	
 }
 
