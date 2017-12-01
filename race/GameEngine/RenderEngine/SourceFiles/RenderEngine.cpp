@@ -2059,16 +2059,7 @@ private:
 
 		glBindVertexArray(0);
 
-		 
 		drawPostProcessingCopySmearbuffer(blurFactor, blurAmount); 
-
-		//glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); 
-		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, _postSmearbufferID); 
-		//glBlitFramebuffer(0, 0, _renderWidth, _renderHeight, 0, 0, _renderWidth, _renderHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _postSmearbufferID);
-		//glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-		//glBlitFramebuffer(0, 0, _renderWidth, _renderHeight, 0, 0, 128, 72, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 	}
 

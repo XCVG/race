@@ -76,27 +76,21 @@ void main()
 	
 	//depth of field
 	float cDepth = texture(dBuffer, vec2(0.5, 0.5)).r;
-	float depthDiff = clamp(abs(depth - cDepth), 0, 4.0);
+	//float depthDiff = clamp(abs(depth - cDepth), 0, 4.0);
+	float depthDiff = abs(depth - cDepth);
 	float biasedDepth = depthDiff * 10.0;
-	vec3 blurColor = blurSample(biasedDepth * 0.05 * dofFactor) / 41.0;
+	vec3 blurColor = blurSample(biasedDepth * 0.1 * dofFactor) / 41.0;
 	vec3 dofBlurFragColor = mix(fColor, blurColor, dofAmount);
 	
 	//fog
 	float fogDist = depth * 10.0;
-	//float fogBias = fogDist;
-	//float fogValue = clamp((1.0 / exp(fogDist * fogFactor)) * fogAmount,0.0,1.0);
 	float fogValue = clamp( exp(-fogFactor*fogDist), 0.0, 1.0);
-	//fogValue = 0;
 
 	//blend blur
 	gl_FragColor.rgb = (mBlurFragColor + dofBlurFragColor) / 2.0;
 	
-	//blend fog only (for testing)
-	//gl_FragColor.rgb = mix(fColor, vec3(1.0, 0.0, 0.0), fogValue);
-	float fogH = 1 - fogValue;
-	//gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor.rgb, clamp(fogAmount-(length(flLight)*fogCutFactor),0.0,1.0));
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogValue);
-	//gl_FragColor.rgb = vec3(fogH, fogH, fogH);
+	//blend fog
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogValue * fogAmount);
 
 }
 
