@@ -107,9 +107,9 @@ class PhysicsEngine : public MessageReceiver
     private:
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
-		void adjustForces(RigidBodyComponent * rbc);
 		void generalPhysicsCall(GameObject*);
 		void applyAcceleration(RigidBodyComponent * rc);
+		void adjustForces(RigidBodyComponent * rc);
 		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
 		void turnGameObject(GameObject *go);
 };

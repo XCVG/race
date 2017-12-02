@@ -87,9 +87,7 @@ public:
 	void rotate(Vector3 vec);
 	// TODO: Rotate all child objects about this position
 	void rotate(Vector3 vec, GLfloat angle);
-	void rotateX(GLfloat angle);
-	void rotateY(GLfloat angle);
-	void rotateZ(GLfloat angle);
+	void updateChildPositions(std::vector<GameObject*>::iterator i);
 	bool operator==(GameObject& go);
 private:
 	std::map<std::string, Component *> *_components_p;

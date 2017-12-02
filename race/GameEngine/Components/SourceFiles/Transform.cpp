@@ -96,10 +96,6 @@ Vector3 Transform::rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rot
 };
 void Transform::rotate(Vector3 amount)
 {
-	//adjustDirections();
-	//glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
-	//this->_rotation += amount;
-	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);
 	Quaternion q;
 	this->_orientation += this->_orientation * q.MakeQFromEulerAngles(amount);
 	this->_orientation.Normalize();

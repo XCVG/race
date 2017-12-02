@@ -17,8 +17,9 @@ class Vector3
 { 
 public: 
   Vector3(); 
-  Vector3(float x, float y, float z); 
+  Vector3(GLfloat x, GLfloat y, GLfloat z);
   Vector3(const Vector3 &obj); 
+  ~Vector3();
   GLfloat x; 
   GLfloat y; 
   GLfloat z; 
@@ -33,7 +34,7 @@ public:
   Vector3& operator/=(const Vector3* obj);
   Vector3& operator/=(const Vector3& obj);
   bool operator==(const Vector3& vec) const;
-  Vector3& operator*(const Vector3 vec);
+  Vector3 operator*(const Vector3 vec);
   Vector3 operator*(const float_t& num);
   Vector3 operator/(const float_t& num);
   Vector3 operator+(const Vector3* obj);
@@ -47,6 +48,8 @@ public:
   GLfloat dotProduct(Vector3 vec);
   Vector3 crossProduct(Vector3 vec);
 };
+inline Vector3::~Vector3(){};
+
 inline Vector3::Vector3()
 {
 	this->x = 0;
@@ -59,7 +62,7 @@ inline Vector3::Vector3(GLfloat x, GLfloat y, GLfloat z)
 	this->y = y;
 	this->z = z;
 };
-inline Vector3::Vector3(const Vector3 &obj)
+inline Vector3::Vector3(const Vector3& obj)
 {
 	this->x = obj.x;
 	this->y = obj.y;
@@ -141,7 +144,7 @@ inline bool Vector3::operator==(const Vector3& vec) const
             y == vec.y &&
             z == vec.z;
 };
-inline Vector3& Vector3::operator*(const Vector3 vec)
+inline Vector3 Vector3::operator*(const Vector3 vec)
 {
 	return Vector3(this->x * vec.x, this->y * vec.y, this->z * vec.z);
 };

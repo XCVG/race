@@ -260,7 +260,7 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ()
 {
 	Vector3 u;
 
-	GLfloat r21, r22, r23, r31, r33, r12, r13;
+	GLfloat r13, r21, r22, r23, r31, r32, r33;
 	GLfloat q00, q11, q22, q33;
 	q00 = this->_n * this->_n;
 	q11 = this->_v.x * this->_v.x;
@@ -271,22 +271,22 @@ inline Vector3 Quaternion::MakeEulerAnglesFromQ()
 	r21 = 2 * (this->_v.x * this->_v.y + this->_n * this->_v.z);
 	r23 = 2 * (this->_v.y * this->_v.z - this->_n * this->_v.x);
 	r31 = 2 * (this->_v.x * this->_v.z + this->_n * this->_v.y);
+
+
 	r33 = q00 - q11 - q22 + q33;
 	float tmp = fabs(r23);
 	if (tmp > 0.999999)
 	{
-		r12 = 2 * (this->_v.x*this->_v.y - this->_n*this->_v.z);
-		r13 = 2 * (this->_v.x*this->_v.z + this->_n*this->_v.y);
-		u.y = 0.0f;
+		r13 = 2 * (this->_v.z*this->_v.x - this->_n*this->_v.y);
+		r32 = 2 * (this->_v.z*this->_v.y + this->_n*this->_v.x);
+		u.y = (float)atan2(-r13, -r23*r32);
 		u.x = (float)(-(PI / 2) * r23 / tmp);
-		u.z = (float)atan2(-r12, -r23*r13);
+		u.z = 0.0f;
 		return u;
 	}
 	u.x = asin(-r23);
 	u.y = atan2(r31, r33);
-	//u.y = copysignf(u.y, r31 / r33);
 	u.z = atan2(r21,r22);
-	//u.z = copysignf(u.z, r21 / r22);
 	return u;
 };
 

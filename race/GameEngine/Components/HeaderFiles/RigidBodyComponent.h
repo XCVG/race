@@ -35,6 +35,7 @@ public:
 	GLfloat getTurningDegree();
 	Vector3 getForce();
 	Vector3 getAngularAccel();
+	void calculatemInteria();
 	GLfloat _width, _height, _length;
 	Vector3 _angularVel;
 	Vector3 _angularMoment;
@@ -51,8 +52,6 @@ private:
 	Vector3 _force;
 
 	Vector3 _angularAccel;
-	
-	void calculatemInteria();
 };
 
 inline void RigidBodyComponent::calculatemInteria() 

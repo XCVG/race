@@ -167,14 +167,13 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 		if (go->_name.compare("sphere") == 0) {
 			rbc->setAngularAccel(Vector3(0, 0, PI) * 0.5 * _deltaTime);
 		}
-		if (go->_name.compare("player") == 0) {
+		if (go->_name.compare("player") == 0 && rbc->getTurningDegree() != 0) {
 			turnGameObject(go);
 		}
 		if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) {
 
 			applyAcceleration(rbc);
 			adjustForces(rbc);
-
 			go->translate(rbc->getVelocity() * _deltaTime);
 			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
 		}
@@ -202,6 +201,7 @@ void PhysicsEngine::adjustForces(RigidBodyComponent *rc)
 		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
 
 	rc->setAccelerationVector(newForce / rc->getMass());
+	rc->setAccelerationVector(rc->getAccelerationVector());
 	rc->setForce(newForce);
 
 	Vector3 angularDragVector = -rc->_angularVel.normalize();
@@ -212,7 +212,6 @@ void PhysicsEngine::adjustForces(RigidBodyComponent *rc)
 	Vector3 angMoments = rc->_angularMoment - rc->_angularVel.crossProduct(Vector3(inertiaAngVel.x, inertiaAngVel.y, inertiaAngVel.z));
 	glm::vec3 something = rc->_mInertiaInverse * glm::vec3(angMoments.x, angMoments.y, angMoments.z);
 	rc->setAngularAccel(rc->getAngularAccel() + Vector3(something.x, something.y, something.z));
-
 };
 
 /**
@@ -260,7 +259,7 @@ void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
-	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
+	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity();
 	Vector3 thing = go->getChild(std::string("forward"))->_transform._position - go->_transform._position;
 	thing = thing.crossProduct(go->_transform._right.normalize());
 	GLfloat L = (thing - (-thing)).magnitude();// Distance from front of object to rear of object
@@ -272,6 +271,7 @@ Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 	GLfloat sinTheta = sin(theta);
 	GLfloat denominator = (L / (sinTheta));
 	Vector3 omega = objectVelocity.crossProduct(go->_transform._right.normalize()) / denominator;
+
 	return omega;
 };
 
