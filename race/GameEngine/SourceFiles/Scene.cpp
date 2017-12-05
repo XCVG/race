@@ -151,8 +151,6 @@ void Scene::setUpSceneOne() {
 	go->addChild(right);
 	go->_name = "player";
 	addGameObject("Player", go);  
-	addGameObject("Player.ChildF", childF); // DEBUG: Check this is running properly
-	addGameObject("Player.ChildR", childR);
 	addGameObject("Player.WheelFL", childWheelFL);
 	addGameObject("Player.WheelFR", childWheelFR);
 	addGameObject("Player.WheelRL", childWheelRL);
