@@ -146,8 +146,16 @@ void Scene::setUpSceneOne() {
 	msg->setContent(content);
 	MessagingSystem::instance().postMessage(msg);
 
-	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
+	/*go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("raceTrack", "test_texture2", "", 0));
+	addGameObject("Road", go);*/
+	
+	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 1.0f));
+	go->addComponent(new RenderComponent("track1a", "grass", "", 0));
+	addGameObject("Ground", go);
+
+	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 1.0f));
+	go->addComponent(new RenderComponent("track1b", "asphault", "", 0));
 	addGameObject("Road", go);
 
 	go = new GameObject();
