@@ -2,6 +2,7 @@
 Transform::Transform()
 {
     this->_position = new Vector3();
+	this->_rotation = new Vector3();
 	this->_orientation.MakeQFromEulerAngles(0, 0, 0);
     this->_scale = 1;
 	this->_forward = Vector3(0, 0, 1);
@@ -12,6 +13,7 @@ Transform::Transform()
 Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
     this->_position = _position;
+	this->_rotation = _rotation;
 	this->_orientation.MakeQFromEulerAngles(_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
@@ -22,6 +24,7 @@ Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
     this->_position = *_position;
+	this->_rotation = *_rotation;
 	this->_orientation.MakeQFromEulerAngles(*_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
@@ -33,6 +36,7 @@ Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 Transform::Transform(const Transform &obj)
 {
     this->_position = obj._position;
+	this->_rotation = obj._rotation;
 	this->_orientation = obj._orientation;
     this->_scale = obj._scale;
 	this->_forward = obj._forward;
@@ -72,10 +76,10 @@ Vector3 Transform::getForward()
 
 void Transform::adjustDirections() 
 {
-	this->_forward = this->_orientation.QVRotate(Vector3(0, 0, 1));
-	this->_right = this->_orientation.QVRotate(Vector3(1, 0, 0));
-	this->_up = this->_orientation.QVRotate(Vector3(0, 1, 0));
-}
+	this->_forward = QVRotate(this->_orientation, Vector3(0, 0, 1)).normalize();
+	this->_right = QVRotate(this->_orientation, Vector3(1, 0, 0)).normalize();
+	this->_up = QVRotate(this->_orientation,Vector3(0, 1, 0)).normalize();
+};
 
 /**
 * <summary>
@@ -92,10 +96,10 @@ Vector3 Transform::rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rot
 };
 void Transform::rotate(Vector3 amount)
 {
-	//adjustDirections();
-	//glm::mat4x4 matrix = glm::eulerAngleXYZ(amount.x, amount.y, amount.z);
-	//this->_rotation += amount;
-	//SDL_Log("X:%f, Y:%f, Z:%f", _rotation.x, _rotation.y, _rotation.z);
+	Quaternion q;
+	this->_orientation += this->_orientation * q.MakeQFromEulerAngles(amount);
+	this->_orientation.Normalize();
+	this->adjustDirections();
 };
 void Transform::rotateQuat(Vector3 axis, GLfloat amount) 
 {
@@ -132,12 +136,13 @@ void Transform::translate(Vector3 translation)
 
 void Transform::translateForward(GLfloat num)
 {
-	this->_position += Vector3(_forward) * num;
+	this->_position += _forward * num;
 };
 
-void Transform::translateRight(GLfloat num) {
-	this->_position += Vector3(_right) * num;
-}
+void Transform::translateRight(GLfloat num) 
+{
+	this->_position += _right * num;
+};
 /**
 *  <summary>
 *  Move the game object in a direciton. Each axis should be modified by the delta time.

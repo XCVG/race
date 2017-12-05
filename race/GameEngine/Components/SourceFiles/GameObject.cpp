@@ -98,51 +98,48 @@ std::vector<GameObject *> GameObject::getChildObjectList()
 {
 	return *this->_childObjects_p;
 };
+void GameObject::translate(Vector3 vec)
+{
+	this->_transform.translate(vec);
+	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
+		i != this->_childObjects_p->end();)
+	{
+		this->updateChildPositions(i);
+		i++;
+	}
+};
+void GameObject::rotate(Vector3 vec)
+{
+	this->_transform.rotate(vec);
+	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
+		i != this->_childObjects_p->end();)
+	{
+		Quaternion q;
+		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
+		this->updateChildPositions(i);
+		i++;
+	}
+};
+
 void GameObject::rotate(Vector3 vec, GLfloat angle)
 {
 	this->_transform.rotateQuat(vec, angle);
 	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
 		i != this->_childObjects_p->end();)
 	{
-		(*i)->_transform._orientation = this->_transform._orientation;
-		if ((*i)->_name == "up")
-			(*i)->_transform._position = this->_transform._position + this->_transform._up;
-		else if ((*i)->_name == "forward") 
-			(*i)->_transform._position = this->_transform._position + this->_transform._forward;
-		else if ((*i)->_name == "right")
-			(*i)->_transform._position = this->_transform._position + this->_transform._right;
-		
+		Quaternion q;
+		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
+		this->updateChildPositions(i);
 		i++;
 	}
 };
-void GameObject::rotateX(GLfloat angle) 
-{
-	this->_transform.rotateX(angle);
-	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
-		i != this->_childObjects_p->end();)
-	{
-		(*i)->_transform.rotateX(angle);
-		i++;
-	}
 
-};
-void GameObject::rotateY(GLfloat angle)
+void GameObject::updateChildPositions(std::vector<GameObject *>::iterator i)
 {
-	this->_transform.rotateY(angle);
-	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
-		i != this->_childObjects_p->end();)
-	{
-		(*i)->_transform.rotateY(angle);
-		i++;
-	}
-};
-void GameObject::rotateZ(GLfloat angle)
-{
-	this->_transform.rotateZ(angle);
-	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
-		i != this->_childObjects_p->end();)
-	{
-		(*i)->_transform.rotateZ(angle);
-		i++;
-	}
-};
+	if ((*i)->_name == "up")
+		(*i)->_transform._position = this->_transform._position + this->_transform._up;
+	else if ((*i)->_name == "forward")
+		(*i)->_transform._position = this->_transform._position + this->_transform._forward;
+	else if ((*i)->_name == "right")
+		(*i)->_transform._position = this->_transform._position + this->_transform._right;
+}

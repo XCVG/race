@@ -96,7 +96,14 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		if (this->cameraIndependant)
 		{
 			//rotate(_camera_p, Vector3(content->lookY, content->lookX, 0) * 2 * _deltaTime);
-			_camera_p->_transform.rotate(Vector3(-Y, X, 0) * 2 * _deltaTime);
+			//_camera_p->_transform.rotate(Vector3(-Y, X, 0) * 2 * _deltaTime);
+			//_camera_p->_transform.rotateQuat(Vector3(-Y, -X, 0), _deltaTime);
+			if (X != 0 || Y != 0) {
+				Quaternion framePitch, frameYaw;
+				framePitch.MakeQFromEulerAngles(Vector3(Y, X, 0) * _deltaTime);
+				_camera_p->_transform._orientation = _camera_p->_transform._orientation * framePitch;
+				_camera_p->_transform._orientation.Normalize();
+			}
 		}
 		else
 		{
@@ -122,7 +129,8 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		else
 		{
 			//_player_p->_transform.rotateY(-X * _deltaTime);
-			_turningDegree = X * (PI / 4.0f);
+			_turningDegree = -X * (PI / 4.0f);
+			//_turningDegree = PI / 4.0f;
 		}
 	}
 	break;

@@ -17,8 +17,9 @@ class Vector3
 { 
 public: 
   Vector3(); 
-  Vector3(float x, float y, float z); 
+  Vector3(GLfloat x, GLfloat y, GLfloat z);
   Vector3(const Vector3 &obj); 
+  ~Vector3();
   GLfloat x; 
   GLfloat y; 
   GLfloat z; 
@@ -33,7 +34,6 @@ public:
   Vector3& operator/=(const Vector3* obj);
   Vector3& operator/=(const Vector3& obj);
   bool operator==(const Vector3& vec) const;
-//   Vector3& operator*(const Vector3 vec);
   Vector3 operator*(const float_t& num);
   Vector3 operator/(const float_t& num);
   Vector3 operator+(const Vector3* obj);
@@ -42,11 +42,13 @@ public:
   Vector3 operator-(const Vector3& obj);
   Vector3 operator-();
   GLfloat magnitude();
-  Vector3 matrixMulti(glm::mat4x4 matrix);
+  Vector3 matrixMulti(glm::mat3x3 matrix);
   Vector3 normalize();
   GLfloat dotProduct(Vector3 vec);
   Vector3 crossProduct(Vector3 vec);
 };
+inline Vector3::~Vector3(){};
+
 inline Vector3::Vector3()
 {
 	this->x = 0;
@@ -59,7 +61,7 @@ inline Vector3::Vector3(GLfloat x, GLfloat y, GLfloat z)
 	this->y = y;
 	this->z = z;
 };
-inline Vector3::Vector3(const Vector3 &obj)
+inline Vector3::Vector3(const Vector3& obj)
 {
 	this->x = obj.x;
 	this->y = obj.y;
@@ -141,10 +143,6 @@ inline bool Vector3::operator==(const Vector3& vec) const
             y == vec.y &&
             z == vec.z;
 };
-// inline Vector3& Vector3::operator*(const Vector3 vec)
-// {
-// 	return Vector3(this->x * vec.x, this->y * vec.y, this->z * vec.z);
-// };
 inline Vector3 Vector3::operator*(const float_t& num)
 {
 	return Vector3(this->x * num, this->y * num, this->z * num);
@@ -177,16 +175,16 @@ inline GLfloat Vector3::magnitude()
 {
 	return (GLfloat)sqrtf(powf(this->x, 2) + powf(this->y, 2) + powf(this->z, 2));
 };
-inline Vector3 Vector3::matrixMulti(glm::mat4x4 matrix) 
+inline Vector3 Vector3::matrixMulti(glm::mat3x3 matrix) 
 {
-	glm::vec4 temp = glm::vec4(this->x, this->y, this->z, 1) * matrix;
+	glm::vec3 temp = glm::vec3(this->x, this->y, this->z) * matrix;
 	return Vector3(temp.x, temp.y, temp.z);
 };
 inline Vector3 Vector3::normalize() 
 {
 	float num = sqrtf(powf(this->x, 2) + powf(this->y, 2) + powf(this->z, 2));
 	if (num <= TOL) num = 1;
-	return Vector3(this->x /= num, this->y /= num, this->z /= num);
+	return Vector3(this->x / num, this->y / num, this->z / num);
 };
 inline GLfloat Vector3::dotProduct(Vector3 vec) 
 {
@@ -197,8 +195,8 @@ inline Vector3 Vector3::crossProduct(Vector3 vec)
 	// a(x y z | x)
 	// b(x y z | x)
 	return Vector3(
-		(this->x * vec.y) - (vec.x * this->y),
 		(this->y * vec.z) - (vec.y * this->z),
-		(this->z * vec.x) - (vec.z * this->x)
+		(this->z * vec.x) - (vec.z * this->x),
+		(this->x * vec.y) - (vec.x * this->y)
 	);
 };
