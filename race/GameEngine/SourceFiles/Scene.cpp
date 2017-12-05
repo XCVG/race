@@ -1,5 +1,4 @@
 #include "../HeaderFiles/Scene.h"
-#define PI 3.14159265
 
 Scene::Scene()
 {
@@ -60,7 +59,7 @@ RenderableScene* Scene::getRenderInformation()
 				rl.angle = lc->_angle;
 				rl.range = lc->_range;
 				rl.position = Vector3ToGLMVector(it->second->_transform.getPosition());
-				rl.rotation = Vector3ToGLMVector(it->second->_transform._rotation);
+				rl.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
 				rl.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->lights.push_back(rl);
 			}
@@ -72,8 +71,9 @@ RenderableScene* Scene::getRenderInformation()
 				ro.normalName = rc->getNormalName();
 				ro.smoothness = rc->getSmoothness();
 				ro.modelName = rc->getModelName();
-				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());			
-				ro.rotation = Vector3ToGLMVector(it->second->_transform._rotation);
+				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());
+				ro.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
+
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
 			}
@@ -101,21 +101,31 @@ void Scene::setUpSceneOne() {
 	InputInitializeContent* content = new InputInitializeContent(); 
 	content->camera = go;
 
-	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, PI / 4, 0), 1.0f));
+	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("cube", "crate", "", 0));
+	GameObject *forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
+	GameObject *right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
+	GameObject *up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
+	forward->addComponent(new RenderComponent("cone", "test_texture", "", 0.0f));
+	right->addComponent(new RenderComponent("cone", "test_texture2", "", 0.0f));
+	up->addComponent(new RenderComponent("cone", "rainbow", "", 0.0f));
+	go->addChild(forward);
+	go->addChild(up);
+	go->addChild(right);
 	addGameObject("Cube", go);
+	addGameObject("Cube.ChildF", forward);
+	addGameObject("Cube.childR", right);
+	addGameObject("Cube.childU", up);
 
 	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
 	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f)); 
+	go->addComponent(new RigidBodyComponent());
 	addGameObject("Sphere", go);
+	go->_name = "sphere";
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("car2_body", "car2_base", "", 0.75f));
-	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f));
-	GameObject *childF = new GameObject(new Transform(new Vector3(0, 2.5, 10), new Vector3(0, 0, 0), 2.0f), "front");
-	GameObject *childR = new GameObject(new Transform(new Vector3(0, 2.5, -10), new Vector3(0, 0, 0), 2.0f), "rear");
-	go->addChild(childF);
-	go->addChild(childR); 
+	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f, Vector3(1,1,2)));
 	GameObject *childWheelFL, *childWheelFR, *childWheelRL, *childWheelRR;
 	childWheelFL = new GameObject(new Transform(new Vector3(1.2, 0.25, 2.4), new Vector3(0, 0, 0), 1.0f), "wheelFL");
 	childWheelFL->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
@@ -129,13 +139,25 @@ void Scene::setUpSceneOne() {
 	childWheelRR->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
 	go->addChild(childWheelRL);
 	go->addChild(childWheelRR);
+	// Forward directions for object
+	forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
+	right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
+	up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
+	forward->addComponent(new RenderComponent("cone", "test_texture", "", 0.0f));
+	right->addComponent(new RenderComponent("cone", "test_texture2", "", 0.0f));
+	up->addComponent(new RenderComponent("cone", "rainbow", "", 0.0f));
+	go->addChild(forward);
+	go->addChild(up);
+	go->addChild(right);
+	go->_name = "player";
 	addGameObject("Player", go);  
-	addGameObject("Player.ChildF", childF); // DEBUG: Check this is running properly
-	addGameObject("Player.ChildR", childR);
 	addGameObject("Player.WheelFL", childWheelFL);
 	addGameObject("Player.WheelFR", childWheelFR);
 	addGameObject("Player.WheelRL", childWheelRL);
 	addGameObject("Player.WheelRR", childWheelRR);
+	addGameObject("Player.ChildF", forward);
+	addGameObject("Player.childR", right);
+	addGameObject("Player.childU", up);
 
 	content->player = go;
 	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));

@@ -1,5 +1,4 @@
 #include "InputEngine.h"
-#define PI 3.14159265
 
 InputEngine::InputEngine() {
 	subscribe(MESSAGE_TYPE::InputInitializeCallType);
@@ -40,8 +39,7 @@ void InputEngine::setUpInput()
 				_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
 				_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
 				GLfloat angleY = (GLfloat)atan2(_playerToCamera.z, _playerToCamera.x);
-				Quaternion q;
-				_camera_p->_transform._orientation = q.MakeQFromEulerAngles(0, angleY - PI / 2.0f, 0);
+				_camera_p->_transform._orientation.MakeQFromEulerAngles(0, angleY - PI / 2.0f, 0);
 				_messageQueue.pop();
 				break;
 			}
@@ -98,7 +96,14 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		if (this->cameraIndependant)
 		{
 			//rotate(_camera_p, Vector3(content->lookY, content->lookX, 0) * 2 * _deltaTime);
-			_camera_p->_transform.rotate(Vector3(-Y, X, 0) * 2 * _deltaTime);
+			//_camera_p->_transform.rotate(Vector3(-Y, X, 0) * 2 * _deltaTime);
+			//_camera_p->_transform.rotateQuat(Vector3(-Y, -X, 0), _deltaTime);
+			if (X != 0 || Y != 0) {
+				Quaternion framePitch, frameYaw;
+				framePitch.MakeQFromEulerAngles(Vector3(Y, X, 0) * _deltaTime);
+				_camera_p->_transform._orientation = _camera_p->_transform._orientation * framePitch;
+				_camera_p->_transform._orientation.Normalize();
+			}
 		}
 		else
 		{
@@ -107,9 +112,7 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 				_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
 				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
 				//GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
-				if (angleY < 0)
-					angleY = PI - (angleY);
-				Quaternion q;
+				//angleY = PI - (angleY);
 				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 			}
 			
@@ -126,7 +129,8 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		else
 		{
 			//_player_p->_transform.rotateY(-X * _deltaTime);
-			_turningDegree = X * (PI / 4.0f);
+			_turningDegree = -X * (PI / 4.0f);
+			//_turningDegree = PI / 4.0f;
 		}
 	}
 	break;

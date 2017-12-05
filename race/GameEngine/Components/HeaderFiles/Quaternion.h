@@ -12,8 +12,10 @@
 #include <gtx\euler_angles.hpp>
 #include <SDL.h> 
 #endif
-#define PI 3.14159265
+#define PI 3.14159265f
+#define ATANLIMIT 0.0001f
 #include "Vector3.h"
+
 class Quaternion
 {
 public:
@@ -34,16 +36,16 @@ public:
 	Quaternion operator-(Quaternion q1);
 	Quaternion operator*(Quaternion q);
 	Quaternion operator*(GLfloat s);
-	Quaternion operator*(Vector3 v);
 	Quaternion operator/(GLfloat s);
-
 	GLfloat QGetAngle();
 	Vector3 QGetAxis();
-	Quaternion QRotate(Quaternion q1, Quaternion q2);
 	Quaternion& MakeQFromEulerAngles(float x, float y, float z);
+	Quaternion & MakeQFromEulerAngles(Vector3 vec);
 	Vector3 MakeEulerAnglesFromQ();
 
 	Quaternion& CreateFromAxisAngle(Vector3 vec, GLfloat angle);
+
+	Quaternion & Normalize();
 
 private:
 	GLfloat _n;
@@ -52,7 +54,7 @@ private:
 
 inline Quaternion::Quaternion()
 {
-	_n = 0;
+	_n = 1;
 	_v = Vector3(0, 0, 0);
 };
 
@@ -145,12 +147,21 @@ inline Quaternion Quaternion::operator*(GLfloat s)
 	return Quaternion(this->_n * s, this->_v.x * s, this->_v.y * s, this->_v.z * s);
 };
 
-inline Quaternion Quaternion::operator*(Vector3 v)
+inline Quaternion operator*(Quaternion q, Vector3 v)
 {
-	return Quaternion(-(this->_v.x * v.x + this->_v.y * v.y + this->_v.z * v.z),
-		(this->_n * v.x + this->_v.z * v.y - this->_v.y * v.z),
-		(this->_n * v.y + this->_v.x * v.z - this->_v.z * v.x),
-		(this->_n * v.z + this->_v.y * v.x - this->_v.x * v.y));
+	Vector3 vec = q.getVector();
+	return Quaternion(-(vec.x * v.x + vec.y * v.y + vec.z * v.z),
+		(q.getScalar() * v.x + vec.y * v.z - vec.z * v.y),
+		(q.getScalar() * v.y + vec.z * v.x - vec.x * v.z),
+		(q.getScalar() * v.z + vec.x * v.y - vec.y * v.x));
+};
+inline Quaternion operator*(Vector3 v, Quaternion q)
+{
+	Vector3 vec = q.getVector();
+	return Quaternion(-(vec.x * v.x + vec.y * v.y + vec.z * v.z),
+		(q.getScalar() * v.x + vec.z * v.y - vec.y * v.z),
+		(q.getScalar() * v.y + vec.x * v.z - vec.z * v.x),
+		(q.getScalar() * v.z + vec.y * v.x - vec.x * v.y));
 };
 
 inline Quaternion Quaternion::operator/(GLfloat s)
@@ -176,7 +187,7 @@ inline Vector3 Quaternion::QGetAxis() {
 	}
 };
 
-inline Quaternion Quaternion::QRotate(Quaternion q1, Quaternion q2) 
+inline Quaternion QRotate(Quaternion q1, Quaternion q2) 
 {
 	return q1 * q2 * (~q1);
 };
@@ -184,15 +195,16 @@ inline Quaternion Quaternion::QRotate(Quaternion q1, Quaternion q2)
 inline Vector3 QVRotate(Quaternion q, Vector3 v) 
 {
 	Quaternion t;
-	t = q * v * (~q);
+	t = q * v * ~(q);
 	return t.getVector();
 };
 
 inline Quaternion& Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 {
-	double roll = x;
-	double pitch = y;
-	double yaw = z;
+	
+	double pitch = x; // pitch = y
+	double yaw = y; // yaw = z
+	double roll = z; // roll = x
 
 	double cyaw, cpitch, croll, syaw, spitch, sroll;
 	double cyawcpitch, syawspitch, cyawspitch, syawcpitch;
@@ -210,29 +222,71 @@ inline Quaternion& Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 	syawcpitch = syaw * cpitch;
 
 	this->_n = (GLfloat)(cyawcpitch * croll + syawspitch * sroll);
-	this->_v.x = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
-	this->_v.y = (GLfloat)(cyawspitch * croll + syawcpitch * sroll);
-	this->_v.z = (GLfloat)(syawspitch * croll - cyawspitch * sroll);
-	return *this;
+	this->_v.x = (GLfloat)(syawcpitch * sroll + cyawspitch * croll);
+	this->_v.y = (GLfloat)(syawcpitch * croll - cyawspitch * sroll);
+	this->_v.z = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
+	return this->Normalize();
+};
+
+inline Quaternion& Quaternion::MakeQFromEulerAngles(Vector3 vec)
+{
+	double yaw = vec.y; // yaw = z
+	double pitch = vec.x; // pitch = y
+	double roll = vec.z; // roll = x
+
+	double cyaw, cpitch, croll, syaw, spitch, sroll;
+	double cyawcpitch, syawspitch, cyawspitch, syawcpitch;
+
+	cyaw = cos(0.5f * yaw);
+	cpitch = cos(0.5f * pitch);
+	croll = cos(0.5f * roll);
+	syaw = sin(0.5f * yaw);
+	spitch = sin(0.5f * pitch);
+	sroll = sin(0.5f * roll);
+
+	cyawcpitch = cyaw * cpitch;
+	syawspitch = syaw * spitch;
+	cyawspitch = cyaw * spitch;
+	syawcpitch = syaw * cpitch;
+
+	this->_n = (GLfloat)(cyawcpitch * croll + syawspitch * sroll);
+	this->_v.x = (GLfloat)(syawcpitch * sroll + cyawspitch * croll);
+	this->_v.y = (GLfloat)(syawcpitch * croll - cyawspitch * sroll);
+	this->_v.z = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
+	return this->Normalize();
 };
 
 inline Vector3 Quaternion::MakeEulerAnglesFromQ() 
 {
 	Vector3 u;
 
-	GLfloat sinr = 2.0f * (this->_n * this->_v.x + this->_v.y * this->_v.z);
-	GLfloat cosr = 1.0f - (2.0f * (this->_v.x * this->_v.x + this->_v.y * this->_v.y));
-	u.x = (GLfloat)atan2(sinr, cosr);
+	GLfloat r13, r21, r22, r23, r31, r32, r33;
+	GLfloat q00, q11, q22, q33;
+	q00 = this->_n * this->_n;
+	q11 = this->_v.x * this->_v.x;
+	q22 = this->_v.y * this->_v.y;
+	q33 = this->_v.z * this->_v.z;
 
-	GLfloat sinp = 2.0f * (this->_n * this->_v.y - this->_v.z * this->_v.x);
-	if (fabs(sinp) >= 1)
-		u.y = (GLfloat)copysign(PI / 2, sinp);
-	else
-		u.y = (GLfloat)asin(sinp);
+	r22 = q00 - q11 + q22 - q33;
+	r21 = 2 * (this->_v.x * this->_v.y + this->_n * this->_v.z);
+	r23 = 2 * (this->_v.y * this->_v.z - this->_n * this->_v.x);
+	r31 = 2 * (this->_v.x * this->_v.z + this->_n * this->_v.y);
 
-	GLfloat siny = 2.0f * (this->_n * this->_v.z + this->_v.x * this->_v.y);
-	GLfloat cosy = 1.0f - (2.0f * (this->_v.y * this->_v.y + this->_v.z * this->_v.z));
-	u.z = (GLfloat)atan2(siny, cosy);
+
+	r33 = q00 - q11 - q22 + q33;
+	float tmp = fabs(r23);
+	if (tmp > 0.999999)
+	{
+		r13 = 2 * (this->_v.z*this->_v.x - this->_n*this->_v.y);
+		r32 = 2 * (this->_v.z*this->_v.y + this->_n*this->_v.x);
+		u.y = (float)atan2(-r13, -r23*r32);
+		u.x = (float)(-(PI / 2) * r23 / tmp);
+		u.z = 0.0f;
+		return u;
+	}
+	u.x = asin(-r23);
+	u.y = atan2(r31, r33);
+	u.z = atan2(r21,r22);
 	return u;
 };
 
@@ -243,5 +297,15 @@ inline Quaternion& Quaternion::CreateFromAxisAngle(Vector3 vec, GLfloat angle)
 	this->_v.y = vec.y * s;
 	this->_v.z = vec.z * s;
 	this->_n = cosf(angle / 2.0f);
+	return this->Normalize();
+}
+
+inline Quaternion& Quaternion::Normalize()
+{
+	GLfloat mag = this->Magnitude();
+	this->_n /= mag;
+	this->_v.x /= mag;
+	this->_v.y /= mag;
+	this->_v.z /= mag;
 	return *this;
 }
