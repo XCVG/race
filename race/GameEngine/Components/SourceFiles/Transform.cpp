@@ -136,12 +136,12 @@ void Transform::translate(Vector3 translation)
 
 void Transform::translateForward(GLfloat num)
 {
-	this->_position += Vector3(_forward) * num;
+	this->_position += _forward * num;
 };
 
 void Transform::translateRight(GLfloat num) 
 {
-	this->_position += Vector3(_right) * num;
+	this->_position += _right * num;
 };
 /**
 *  <summary>

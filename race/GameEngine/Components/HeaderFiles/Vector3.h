@@ -34,7 +34,6 @@ public:
   Vector3& operator/=(const Vector3* obj);
   Vector3& operator/=(const Vector3& obj);
   bool operator==(const Vector3& vec) const;
-  Vector3 operator*(const Vector3 vec);
   Vector3 operator*(const float_t& num);
   Vector3 operator/(const float_t& num);
   Vector3 operator+(const Vector3* obj);
@@ -43,7 +42,7 @@ public:
   Vector3 operator-(const Vector3& obj);
   Vector3 operator-();
   GLfloat magnitude();
-  Vector3 matrixMulti(glm::mat4x4 matrix);
+  Vector3 matrixMulti(glm::mat3x3 matrix);
   Vector3 normalize();
   GLfloat dotProduct(Vector3 vec);
   Vector3 crossProduct(Vector3 vec);
@@ -144,10 +143,6 @@ inline bool Vector3::operator==(const Vector3& vec) const
             y == vec.y &&
             z == vec.z;
 };
-inline Vector3 Vector3::operator*(const Vector3 vec)
-{
-	return Vector3(this->x * vec.x, this->y * vec.y, this->z * vec.z);
-};
 inline Vector3 Vector3::operator*(const float_t& num)
 {
 	return Vector3(this->x * num, this->y * num, this->z * num);
@@ -180,9 +175,9 @@ inline GLfloat Vector3::magnitude()
 {
 	return (GLfloat)sqrtf(powf(this->x, 2) + powf(this->y, 2) + powf(this->z, 2));
 };
-inline Vector3 Vector3::matrixMulti(glm::mat4x4 matrix) 
+inline Vector3 Vector3::matrixMulti(glm::mat3x3 matrix) 
 {
-	glm::vec4 temp = glm::vec4(this->x, this->y, this->z, 1) * matrix;
+	glm::vec3 temp = glm::vec3(this->x, this->y, this->z) * matrix;
 	return Vector3(temp.x, temp.y, temp.z);
 };
 inline Vector3 Vector3::normalize() 

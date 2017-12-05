@@ -144,11 +144,11 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		Vector3 F_Long;
 		if (amount != 0)
 		{
-			F_Long += go->_transform._forward.normalize() * (amount * 500);
+			F_Long = go->_transform._forward * (amount * 500);
 		}
 		if (amount2 != 0)
 		{
-			F_Long += -go->_transform._forward.normalize() * (amount2 * 500);
+			F_Long = -go->_transform._forward * (amount2 * 500);
 		}
 		rbc->setForce(F_Long);
 		rbc->setTurningDegree(content->turningDegree); // Turning input from user
@@ -167,42 +167,36 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 		if (go->_name.compare("sphere") == 0) {
 			rbc->setAngularAccel(Vector3(0, 0, PI) * 0.5 * _deltaTime);
 		}
-		if (go->_name.compare("player") == 0 && rbc->getTurningDegree() != 0) {
-			turnGameObject(go);
-		}
-		if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) {
-
-			applyAcceleration(rbc);
-			adjustForces(rbc);
+			
+		if (go->_name.compare("player") == 0 && rbc->getVelocity().magnitude() >= 0)
+		{
+			adjustForces(go, rbc);
+			applyAcceleration(go, rbc);
 			go->translate(rbc->getVelocity() * _deltaTime);
 			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
+			turnGameObject(go);
 		}
-		else {
-			rbc->setVelocity(Vector3());
-			rbc->setForce(Vector3());
-		}
-		
 	}
 };
 
-void PhysicsEngine::applyAcceleration(RigidBodyComponent *rc) 
+void PhysicsEngine::applyAcceleration(GameObject *go, RigidBodyComponent *rc) 
 {
 	if (rc->getVelocity().magnitude() < rc->getMaxVelocity()) 
 	{
-		linearAccelerate(rc);
+		linearAccelerate(go,rc);
+		//SDL_Log("SPEED: %f", rc->getVelocity().magnitude());
 	}
 	angularAccelerate(rc);
 };
 
-void PhysicsEngine::adjustForces(RigidBodyComponent *rc) 
+void PhysicsEngine::adjustForces(GameObject *go, RigidBodyComponent *rc) 
 {
 	Vector3 dragVector = -rc->getVelocity().normalize();
 	Vector3 newForce = rc->getForce() + (dragVector * (rc->getVelocity().magnitude() *
 		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
+	//newForce = QVRotate(go->_transform._orientation, newForce);
 
 	rc->setAccelerationVector(newForce / rc->getMass());
-	rc->setAccelerationVector(rc->getAccelerationVector());
-	rc->setForce(newForce);
 
 	Vector3 angularDragVector = -rc->_angularVel.normalize();
 	rc->_angularMoment += (angularDragVector * (rc->_angularVel.magnitude() *
@@ -229,9 +223,9 @@ void PhysicsEngine::flagLoop()
  *  Accelerate the game object. The amount should be modified by the delta time.
  *  </summary>
  */
-void PhysicsEngine::linearAccelerate(RigidBodyComponent* rbc)
+void PhysicsEngine::linearAccelerate(GameObject* go, RigidBodyComponent* rbc)
 {
-	rbc->setVelocity(rbc->getVelocity() + rbc->getAccelerationVector() * _deltaTime);
+	rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() + rbc->getAccelerationVector() * _deltaTime);
 };
 
 
@@ -252,16 +246,10 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 	//go->getComponent<RigidBodyComponent*>()->setSpeed(go->getComponent<RigidBodyComponent*>()->getAccNumber() * _deltaTime);
 };
 
-void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
-{
-	go->getComponent<RigidBodyComponent*>()->getVelocity() -= Vector3(x, y, z) * _deltaTime;
-};
-
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
 	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity();
 	Vector3 thing = go->getChild(std::string("forward"))->_transform._position - go->_transform._position;
-	thing = thing.crossProduct(go->_transform._right.normalize());
 	GLfloat L = (thing - (-thing)).magnitude();// Distance from front of object to rear of object
 	GLfloat theta = tireDegree;
 	if (L == 0 || theta == 0)
@@ -270,7 +258,7 @@ Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 	}
 	GLfloat sinTheta = sin(theta);
 	GLfloat denominator = (L / (sinTheta));
-	Vector3 omega = objectVelocity.crossProduct(go->_transform._right.normalize()) / denominator;
+	Vector3 omega = go->_transform._forward.crossProduct(go->_transform._right.normalize()) / denominator;
 
 	return omega;
 };
@@ -278,5 +266,5 @@ Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
 	//Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree()), 0.5 * _deltaTime); // angularVelocity * deltaTime = current angle
+	go->rotate(getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree()), 2.0 * _deltaTime); // angularVelocity * deltaTime = current angle
 };

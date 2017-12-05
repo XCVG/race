@@ -98,18 +98,17 @@ class PhysicsEngine : public MessageReceiver
 			void flagLoop();
 			// TODO: Physics function calls
 	#pragma region Physics Calculation Methods
-			void linearAccelerate(RigidBodyComponent * rbc);
+			void linearAccelerate(GameObject * obj, RigidBodyComponent * rbc);
 			void angularAccelerate(RigidBodyComponent * rbc);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
-			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 	#pragma endregion
 
     private:
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
 		void generalPhysicsCall(GameObject*);
-		void applyAcceleration(RigidBodyComponent * rc);
-		void adjustForces(RigidBodyComponent * rc);
+		void applyAcceleration(GameObject * go, RigidBodyComponent * rc);
+		void adjustForces(GameObject * go, RigidBodyComponent * rc);
 		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
 		void turnGameObject(GameObject *go);
 };
