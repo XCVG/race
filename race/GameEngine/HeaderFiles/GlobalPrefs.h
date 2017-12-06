@@ -17,5 +17,11 @@ public:
 	static float rShadowMapSide;
 	static float rShadowMapNear;
 	static float rShadowMapFar;
+	static float rBlurFactor;
+	static float rBlurAmount;
+	static float rDofAmount;
+	static float rDofFactor;
+	static float rFogAmount;
+	static float rFogFactor;
 };
 

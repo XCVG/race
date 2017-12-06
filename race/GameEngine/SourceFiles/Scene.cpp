@@ -123,9 +123,23 @@ void Scene::setUpSceneOne() {
 	addGameObject("Sphere", go);
 	go->_name = "sphere";
 
-	go = new GameObject(new Transform(new Vector3(0, 0.25f, 0), new Vector3(0, 0, 0), 0.5f));
-	go->addComponent(new RenderComponent("carModel", "test_texture3", "", 0.75f));
-	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 2000.0f, 0.0f, 0.0f, 0.0f, Vector3(1.0f, 1.0f, 2.0f)));
+	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
+	go->addComponent(new RenderComponent("car2_body", "car2_base", "", 0.75f));
+	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f, Vector3(1,1,2)));
+	GameObject *childWheelFL, *childWheelFR, *childWheelRL, *childWheelRR;
+	childWheelFL = new GameObject(new Transform(new Vector3(1.2, 0.25, 2.4), new Vector3(0, 0, 0), 1.0f), "wheelFL");
+	childWheelFL->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	childWheelFR = new GameObject(new Transform(new Vector3(-1.2, 0.25, 2.4), new Vector3(0, 0, 0), 1.0f), "wheelFR");
+	childWheelFR->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	go->addChild(childWheelFL);
+	go->addChild(childWheelFR);
+	childWheelRL = new GameObject(new Transform(new Vector3(1.2, 0.25, -1.4), new Vector3(0, 0, 0), 1.0f), "wheelRL");
+	childWheelRL->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	childWheelRR = new GameObject(new Transform(new Vector3(-1.2, 0.25, -1.4), new Vector3(0, 0, 0), 1.0f), "wheelRR");
+	childWheelRR->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
+	go->addChild(childWheelRL);
+	go->addChild(childWheelRR);
+	// Forward directions for object
 	forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
 	right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
 	up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
@@ -135,11 +149,15 @@ void Scene::setUpSceneOne() {
 	go->addChild(forward);
 	go->addChild(up);
 	go->addChild(right);
-	addGameObject("Player", go);
+	go->_name = "player";
+	addGameObject("Player", go);  
+	addGameObject("Player.WheelFL", childWheelFL);
+	addGameObject("Player.WheelFR", childWheelFR);
+	addGameObject("Player.WheelRL", childWheelRL);
+	addGameObject("Player.WheelRR", childWheelRR);
 	addGameObject("Player.ChildF", forward);
 	addGameObject("Player.childR", right);
 	addGameObject("Player.childU", up);
-	go->_name = "player";
 
 	content->player = go;
 	std::shared_ptr<Message> msg = std::make_shared<Message>(Message(MESSAGE_TYPE::InputInitializeCallType, false));

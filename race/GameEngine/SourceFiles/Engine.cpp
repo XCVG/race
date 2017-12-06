@@ -72,6 +72,8 @@ std::thread* Engine::start() {
 	rsd.models.push_back("sphere");
 	rsd.models.push_back("road_floor");
 	rsd.models.push_back("carModel");
+	rsd.models.push_back("car2_body");
+	rsd.models.push_back("car2_wheel");
 	rsd.models.push_back("cone");
 	rsd.models.push_back("track1a");
 	rsd.models.push_back("track1b");
@@ -80,6 +82,8 @@ std::thread* Engine::start() {
 	rsd.textures.push_back("test_texture");
 	rsd.textures.push_back("test_texture2");
 	rsd.textures.push_back("test_texture3");
+	rsd.textures.push_back("car2_base");
+	rsd.textures.push_back("car2_wheel");
 	rsd.textures.push_back("grass");
 	rsd.textures.push_back("asphault");
 	rlmc->data = rsd;
