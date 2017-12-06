@@ -71,9 +71,7 @@ void main()
 	//output is always opaque
 	gl_FragColor.a = 1.0;
 	
-	//motion blur
-	vec3 mBlurFragColor = mix(fColor, sColor, blurAmount);
-	
+
 	//depth of field
 	float cDepth = texture(dBuffer, vec2(0.5, 0.5)).r;
 	//float depthDiff = clamp(abs(depth - cDepth), 0, 4.0);
@@ -86,8 +84,8 @@ void main()
 	float fogDist = depth * 10.0;
 	float fogValue = clamp( exp(-fogFactor*fogDist), 0.0, 1.0);
 
-	//blend blur
-	gl_FragColor.rgb = (mBlurFragColor + dofBlurFragColor) / 2.0;
+	//blend DoF-blurred scene with smearbuffer for motion blur
+	gl_FragColor.rgb = mix(dofBlurFragColor, sColor, blurAmount);
 	
 	//blend fog
 	gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogValue * fogAmount);
