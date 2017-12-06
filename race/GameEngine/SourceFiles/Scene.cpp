@@ -101,28 +101,6 @@ void Scene::setUpSceneOne() {
 	InputInitializeContent* content = new InputInitializeContent(); 
 	content->camera = go;
 
-	go = new GameObject(new Transform(new Vector3(0, 2, 2), new Vector3(0, 0, 0), 1.0f));
-	go->addComponent(new RenderComponent("cube", "crate", "", 0));
-	GameObject *forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
-	GameObject *right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
-	GameObject *up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
-	forward->addComponent(new RenderComponent("cone", "test_texture", "", 0.0f));
-	right->addComponent(new RenderComponent("cone", "test_texture2", "", 0.0f));
-	up->addComponent(new RenderComponent("cone", "rainbow", "", 0.0f));
-	go->addChild(forward);
-	go->addChild(up);
-	go->addChild(right);
-	addGameObject("Cube", go);
-	addGameObject("Cube.ChildF", forward);
-	addGameObject("Cube.childR", right);
-	addGameObject("Cube.childU", up);
-
-	go = new GameObject(new Transform(new Vector3(5, 2.5, 0), new Vector3(0, 0, 0), 2.0f));
-	go->addComponent(new RenderComponent("sphere", "rainbow", "", 1.0f)); 
-	go->addComponent(new RigidBodyComponent());
-	addGameObject("Sphere", go);
-	go->_name = "sphere";
-
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
 	go->addComponent(new RenderComponent("car2_body", "car2_base", "", 0.75f));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f, Vector3(1,1,2)));
@@ -140,9 +118,9 @@ void Scene::setUpSceneOne() {
 	go->addChild(childWheelRL);
 	go->addChild(childWheelRR);
 	// Forward directions for object
-	forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
-	right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
-	up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
+	GameObject *forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
+	GameObject *right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
+	GameObject *up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
 	forward->addComponent(new RenderComponent("cone", "test_texture", "", 0.0f));
 	right->addComponent(new RenderComponent("cone", "test_texture2", "", 0.0f));
 	up->addComponent(new RenderComponent("cone", "rainbow", "", 0.0f));
