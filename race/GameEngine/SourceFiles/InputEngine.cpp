@@ -138,8 +138,8 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			//_turningDegree = PI / 4.0f;
 
 			/* Turn the camera behind the player. */
-			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, X * _deltaTime * 0.3545, 0.0f));
-			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x) * CAMERA_ROTATION_SPEED;
+			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, X * _deltaTime * 0.354, 0.0f));
+			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
 			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 		}
 	}

@@ -41,7 +41,5 @@ private:
 	Vector3 _playerToCamera;
 	GLfloat _deltaTime;
 	GLfloat _turningDegree = 0;
-	const float CAMERA_ORBITING_SPEED = 1.0;
-	const float CAMERA_ROTATION_SPEED = 1.0;
 	
 };
