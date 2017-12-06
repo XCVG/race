@@ -109,11 +109,15 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		{
 			if (X != 0 || Y != 0)
 			{
-				_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
-				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
-				//GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
-				//angleY = PI - (angleY);
-				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+				/* Commenting this code out so that the player can't turn the camera.
+					If you need to uncomment this, leave the double-commented lines commented.
+				*/
+
+				//_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
+				//GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+				////GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
+				////angleY = PI - (angleY);
+				//_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 			}
 			
 		}
@@ -128,9 +132,15 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		}
 		else
 		{
+			/* Turn the player car. */
 			//_player_p->_transform.rotateY(-X * _deltaTime);
 			_turningDegree = -X * (PI / 4.0f);
 			//_turningDegree = PI / 4.0f;
+
+			/* Turn the camera behind the player. */
+			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, X * _deltaTime * 0.3545, 0.0f));
+			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x) * CAMERA_ROTATION_SPEED;
+			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 		}
 	}
 	break;
@@ -187,7 +197,11 @@ void InputEngine::checkInput(GLfloat deltaTime)
         checkAxis(SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_LEFTY, INPUT_TYPES::MOVE_AXIS);
         checkAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, INPUT_TYPES::TRIGGERS);
     }
-	if (!cameraIndependant) {
-		_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
+	/* If the camera is not free, follow the player's position. */
+	if (!cameraIndependant)
+	{
+		/* This USED to make the camera follow the car.
+			This is now handled in the handling for MOVE_AXIS. */
+		//_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
 	}
 }
