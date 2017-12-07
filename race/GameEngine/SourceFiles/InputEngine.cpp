@@ -150,7 +150,17 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			//_turningDegree = PI / 4.0f;
 
 			/* Turn the camera to follow the player's turning. */
-			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, X * _deltaTime * 0.354, 0.0f));
+			/* Rate of camera turning to match car turn speed. */
+			float turnMult = 0.354;
+
+			/* If the player is drifting, turn the camera faster to match the player's turn speed. */
+			if (_isDrifting)
+			{
+				//turnMult *= 1.411;
+				turnMult *= 1.411;
+			}
+
+			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, X * _deltaTime * turnMult, 0.0f));
 			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
 			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 		}
@@ -183,8 +193,16 @@ void InputEngine::checkAxis(SDL_GameControllerAxis x, SDL_GameControllerAxis y, 
 	if ((degreeY < CONTROLLER_DEADZONE && degreeY > -CONTROLLER_DEADZONE) && !(degreeY > CONTROLLER_DEADZONE || degreeY < -CONTROLLER_DEADZONE))
 		degreeY = 0;
 
-	axisEventHandler((float)degreeX / imax, (float)degreeY / imax, type);
+	float xAmount = (float)degreeX / imax;
+	float yAmount = (float)degreeY / imax;
+
+	axisEventHandler(xAmount, yAmount, type);
 	
+	/* Update whether the player is drifting. */
+	if (type == INPUT_TYPES::TRIGGERS)
+	{
+		_isDrifting = (xAmount > 0 && yAmount > 0);
+	}
 }
 
 void InputEngine::checkInput(GLfloat deltaTime)
@@ -209,11 +227,4 @@ void InputEngine::checkInput(GLfloat deltaTime)
         checkAxis(SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_LEFTY, INPUT_TYPES::MOVE_AXIS);
         checkAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, INPUT_TYPES::TRIGGERS);
     }
-	/* If the camera is not free, follow the player's position. */
-	if (!cameraIndependant)
-	{
-		/* This USED to make the camera follow the car.
-			This is now handled in the handling for MOVE_AXIS. */
-		//_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
-	}
 }

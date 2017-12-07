@@ -41,5 +41,5 @@ private:
 	Vector3 _playerToCamera;
 	GLfloat _deltaTime;
 	GLfloat _turningDegree = 0;
-	
+	bool _isDrifting = false;
 };

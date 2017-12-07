@@ -136,22 +136,34 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 	}
 	case MESSAGE_TYPE::PhysicsAccelerateCallType: 
 	{
+		/* Get player input data. */
 		PhysicsAccelerateContent* content = static_cast<PhysicsAccelerateContent*>(myMessage->getContent());
 		GameObject* go = content->object;
-		GLfloat amount = content->amountFast;
-		GLfloat amount2 = content->amountSlow;
+		GLfloat forward = content->amountFast;
+		GLfloat reverse = content->amountSlow;
 		RigidBodyComponent *rbc = go->getComponent<RigidBodyComponent*>();
 		Vector3 F_Long;
-		if (amount != 0)
+
+		/* If drifting, DRIIIIIFFFFFFTTTT!. */
+		if (forward != 0 && reverse != 0)
 		{
-			F_Long = go->_transform._forward * (amount * 500);
+			rbc->setTurningDegree(content->turningDegree * 2.0); // Turning input from user
 		}
-		if (amount2 != 0)
+		/* If not drifting, steer normally. */
+		else
 		{
-			F_Long = -go->_transform._forward * (amount2 * 500);
+			if (forward != 0)
+			{
+				F_Long = go->_transform._forward * (forward * 500);
+			}
+			if (reverse != 0)
+			{
+				F_Long = -go->_transform._forward * (reverse * 500);
+			}
+			rbc->setForce(F_Long);
+			rbc->setTurningDegree(content->turningDegree); // Turning input from user
 		}
-		rbc->setForce(F_Long);
-		rbc->setTurningDegree(content->turningDegree); // Turning input from user
+
 		break;
 	}
 	default:
