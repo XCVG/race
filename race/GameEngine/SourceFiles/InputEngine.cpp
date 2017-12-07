@@ -68,6 +68,18 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 			MessagingSystem::instance().postMessage(inputMessage);
 			break;
 		}
+		case SDL_CONTROLLER_BUTTON_X :
+		{
+			/* Flip the camera rotation to toggle looking forwards/back. */
+			if (!cameraIndependant)
+			{
+				_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, PI, 0.0f));
+				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+			}
+
+			break;
+		}
 		case SDL_CONTROLLER_BUTTON_BACK: 
 		{
 			cameraIndependant = !cameraIndependant;
@@ -137,7 +149,7 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			_turningDegree = -X * (PI / 4.0f);
 			//_turningDegree = PI / 4.0f;
 
-			/* Turn the camera behind the player. */
+			/* Turn the camera to follow the player's turning. */
 			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, X * _deltaTime * 0.354, 0.0f));
 			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
 			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
