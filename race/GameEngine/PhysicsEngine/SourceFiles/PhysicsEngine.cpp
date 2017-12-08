@@ -174,7 +174,9 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 			applyAcceleration(go, rbc);
 			go->translate(rbc->getVelocity() * _deltaTime);
 			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
-			turnGameObject(go);
+			if (rbc->getTurningDegree() > 0 || rbc->getTurningDegree() < 0) {
+				turnGameObject(go);
+			}
 		}
 	}
 };

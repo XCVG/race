@@ -104,8 +104,14 @@ void GameObject::translate(Vector3 vec)
 	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
 		i != this->_childObjects_p->end();)
 	{
-		this->updateChildPositions(i);
-		(*i)->translate(vec);
+		if ((*i)->_name == "up" || (*i)->_name == "forward" || (*i)->_name == "right") 
+		{
+			this->updateDirectionPositions(i);
+		}
+		else 
+		{
+			this->updateChildPositions(i);
+		}
 		i++;
 	}
 };
@@ -117,7 +123,6 @@ void GameObject::rotate(Vector3 vec)
 	{
 		Quaternion q;
 		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
-		this->updateChildPositions(i);
 		i++;
 	}
 };
@@ -130,13 +135,11 @@ void GameObject::rotate(Vector3 vec, GLfloat angle)
 	{
 		Quaternion q;
 		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
-		// TODO: Update position from the rotation
-		//(*i)->_transform.rotateAround((*i)->_transform._position - this->_transform._position, (*i)->_transform._position, -vec);
 		i++;
 	}
 };
 
-void GameObject::updateChildPositions(std::vector<GameObject *>::iterator i)
+void GameObject::updateDirectionPositions(std::vector<GameObject *>::iterator i)
 {
 	if ((*i)->_name == "up")
 		(*i)->_transform._position = this->_transform._position + this->_transform._up;
@@ -144,9 +147,10 @@ void GameObject::updateChildPositions(std::vector<GameObject *>::iterator i)
 		(*i)->_transform._position = this->_transform._position + this->_transform._forward;
 	else if ((*i)->_name == "right")
 		(*i)->_transform._position = this->_transform._position + this->_transform._right;
-	else
-	{
-		Vector3 childToParent = (*i)->_transform._position - this->_transform._position;
-		(*i)->_transform._position = QVRotate((*i)->_transform._orientation, childToParent) + this->_transform._position;
-	}
+}
+
+void GameObject::updateChildPositions(std::vector<GameObject*>::iterator i) 
+{																						// May also need a relative positions for the child
+	Vector3 childToParent = (*i)->_transform._position - this->_transform._position;	// This is also the reason I store the playertocamera vector so we can update when needed
+	(*i)->_transform._position = QVRotate(this->_transform._orientation, childToParent) + this->_transform._position; // This should only be called ONCE
 }
