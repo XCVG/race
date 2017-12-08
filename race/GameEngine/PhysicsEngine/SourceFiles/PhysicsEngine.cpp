@@ -148,9 +148,28 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		bool wasDrifting = content->_wasDrifting;
 
 		/* If drifting, DRIIIIIFFFFFFTTTT!. */
-		if (isDrifting)
+		if (isDrifting || wasDrifting)
 		{
-			rbc->setTurningDegree(content->turningDegree * 2.0); // Turning input from user
+			/* If we're entering a drift... */
+			if (!wasDrifting && isDrifting)
+			{
+
+			}
+
+			/* f we're in the middle of a drift... */
+			if (wasDrifting && isDrifting)
+			{
+
+			}
+
+			/* If we're exiting a drift... */
+			if (wasDrifting && !isDrifting)
+			{
+
+			}
+
+			/* Turn faster than a normal turn. */
+			go->_transform.rotate(Vector3(0, turningDegree * _deltaTime * 0.4f, 0));
 		}
 		/* If not drifting, steer normally. */
 		else
