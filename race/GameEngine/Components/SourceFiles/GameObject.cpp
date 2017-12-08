@@ -151,6 +151,7 @@ void GameObject::updateDirectionPositions(std::vector<GameObject *>::iterator i)
 
 void GameObject::updateChildPositions(std::vector<GameObject*>::iterator i) 
 {																						// May also need a relative positions for the child
-	Vector3 childToParent = (*i)->_transform._position - this->_transform._position;	// This is also the reason I store the playertocamera vector so we can update when needed
+	Vector3 childToParent = (*i)->_transform._initialPosition - this->_transform._position;	// This is also the reason I store the playertocamera vector so we can update when needed
+		// TODO: forward direction of wheels not rotating?
 	(*i)->_transform._position = QVRotate(this->_transform._orientation, childToParent) + this->_transform._position; // This should only be called ONCE
 }

@@ -31,21 +31,27 @@ public:
 	void translateRight(GLfloat num);
 #pragma endregion
     void setPosition(Vector3 _position);
+	void setInitialPosition(Vector3 _parentPosition);
 	void setRotation(Vector3 _rotation);
     void setScale(GLfloat _scale);
+	void setDistanceToParent(Vector3 _distanceToParent);
     Vector3 getPosition();
+	Vector3 getInitialPosition();
 	Vector3 getRotation();
 	GLfloat getScale();
 	Vector3 getForward();
+	Vector3 getDistanceToParent();
 	void adjustDirections();
 	////////////////////////////////
     Vector3 _position;
+	Vector3 _initialPosition;
     Vector3 _rotation;
     GLfloat _scale;
 	Vector3 _forward;
 	Vector3 _right;
 	Vector3 _up;
 	Quaternion _orientation;
+	Vector3 _distanceToParent;
 private:
 };
 inline bool Transform::operator==(const Transform& t)

@@ -1,52 +1,61 @@
-#include "Transform.h"
+	#include "Transform.h"
 Transform::Transform()
 {
-    this->_position = new Vector3();
+    this->_position = this->_initialPosition = new Vector3();
 	this->_rotation = new Vector3();
 	this->_orientation.MakeQFromEulerAngles(0, 0, 0);
     this->_scale = 1;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
 	this->_up = Vector3(0, 1, 0);
+	this->_distanceToParent = Vector3();
 	adjustDirections();
 };
 Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
-    this->_position = _position;
+    this->_position = this->_initialPosition = _position;
 	this->_rotation = _rotation;
 	this->_orientation.MakeQFromEulerAngles(_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
 	this->_up = Vector3(0, 1, 0);
+	this->_distanceToParent = Vector3();
 	adjustDirections();
 };
 Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
-    this->_position = *_position;
+	this->_position = this->_initialPosition = _position;
 	this->_rotation = *_rotation;
 	this->_orientation.MakeQFromEulerAngles(*_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
 	this->_up = Vector3(0, 1, 0);
+	this->_distanceToParent = Vector3();
 	adjustDirections();
 
 };
 Transform::Transform(const Transform &obj)
 {
-    this->_position = obj._position;
+	this->_position = obj._position;
+	this->_initialPosition = obj._initialPosition;
 	this->_rotation = obj._rotation;
 	this->_orientation = obj._orientation;
     this->_scale = obj._scale;
 	this->_forward = obj._forward;
 	this->_right = obj._right;
 	this->_up = obj._up;
+	this->_distanceToParent = obj._distanceToParent;
 	adjustDirections();
 };
 void Transform::setPosition(Vector3 _position)
 {
     this->_position = _position;
+};
+void Transform::setInitialPosition(Vector3 _initialPosition)
+{
+	this->_initialPosition = _initialPosition;
 };
 void Transform::setRotation(Vector3 _rotation)
 {
@@ -57,9 +66,17 @@ void Transform::setScale(GLfloat _scale)
 {
     this->_scale = _scale;
 };
+void Transform::setDistanceToParent(Vector3 _distanceToParent)
+{
+	this->_distanceToParent = _distanceToParent;
+};
 Vector3 Transform::getPosition()
 {
     return this->_position;
+};
+Vector3 Transform::getInitialPosition()
+{
+	return this->_initialPosition;
 };
 Vector3 Transform::getRotation()
 {
@@ -73,7 +90,10 @@ Vector3 Transform::getForward()
 {
 	return this->_forward;
 };
-
+Vector3 Transform::getDistanceToParent()
+{
+	return this->_distanceToParent;
+};
 void Transform::adjustDirections() 
 {
 	this->_forward = QVRotate(this->_orientation, Vector3(0, 0, 1)).normalize();
