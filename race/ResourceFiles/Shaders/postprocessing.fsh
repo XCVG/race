@@ -10,143 +10,110 @@ uniform float fogAmount;
 uniform float fogFactor;
 uniform vec3 fogColor;
 
-vec3 blurSampleGaussian(float dofblur)
+vec3 blurSampleGaussian(float dofblur, sampler2D buffer)
 {
-	dofblur *= 0.25;
+	dofblur = clamp(dofblur * 0.25, 0.0, 0.003);
 
 	vec4 col = vec4(0.0);
+	
+	//row 0	
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.000072;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.000323;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.000944;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.001794;
+	col += texture(buffer, vec2(uv.x, uv.y + 4.0 * dofblur)) * 0.002222;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.001794;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.000944;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.000323;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y + 4.0 * dofblur)) * 0.000072;
 	
 	//row 1
-	col += texture(fBuffer, vec2(uv.x - 1.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.001;
-	col += texture(fBuffer, vec2(uv.x, uv.y + 3.0 * dofblur)) * 0.001;
-	col += texture(fBuffer, vec2(uv.x + 1.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.001;
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.000323;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.00145;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x, uv.y + 3.0 * dofblur)) * 0.00997;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.00145;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y + 3.0 * dofblur)) * 0.000323;
 	
 	//row 2
-	col += texture(fBuffer, vec2(uv.x - 2.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.002;
-	col += texture(fBuffer, vec2(uv.x - 1.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x, uv.y + 2.0 * dofblur)) * 0.020;
-	col += texture(fBuffer, vec2(uv.x + 1.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x + 2.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.002;
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.000944;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.012358;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x, uv.y + 2.0 * dofblur)) * 0.029106;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.012358;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y + 2.0 * dofblur)) * 0.000944;
 	
 	//row 3
-	col += texture(fBuffer, vec2(uv.x - 3.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.001;
-	col += texture(fBuffer, vec2(uv.x - 2.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x - 1.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.068;
-	col += texture(fBuffer, vec2(uv.x, uv.y + 1.0 * dofblur)) * 0.109;
-	col += texture(fBuffer, vec2(uv.x + 1.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.068;
-	col += texture(fBuffer, vec2(uv.x + 2.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x + 3.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.001;
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.001794;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.044672;
+	col += texture(buffer, vec2(uv.x, uv.y + 1.0 * dofblur)) * 0.055338;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.044672;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y + 1.0 * dofblur)) * 0.001794;
 	
 	//row 4
-	col += texture(fBuffer, vec2(uv.x - 3.0 * dofblur, uv.y)) * 0.001;
-	col += texture(fBuffer, vec2(uv.x - 2.0 * dofblur, uv.y)) * 0.020;
-	col += texture(fBuffer, vec2(uv.x - 1.0 * dofblur, uv.y)) * 0.109;
-	col += texture(fBuffer, vec2(uv.x, uv.y)) * 0.172;
-	col += texture(fBuffer, vec2(uv.x + 1.0 * dofblur, uv.y)) * 0.109;
-	col += texture(fBuffer, vec2(uv.x + 2.0 * dofblur, uv.y)) * 0.020;
-	col += texture(fBuffer, vec2(uv.x + 3.0 * dofblur, uv.y)) * 0.001;
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y)) * 0.002222;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y)) * 0.00997;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y)) * 0.029106;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y)) * 0.055338;
+	col += texture(buffer, vec2(uv.x, uv.y)) * 0.068552;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y)) * 0.055338;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y)) * 0.029106;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y)) * 0.00997;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y)) * 0.002222;
 	
 	//row 5
-	col += texture(fBuffer, vec2(uv.x - 3.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.001;
-	col += texture(fBuffer, vec2(uv.x - 2.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x - 1.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.068;
-	col += texture(fBuffer, vec2(uv.x, uv.y - 1.0 * dofblur)) * 0.109;
-	col += texture(fBuffer, vec2(uv.x + 1.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.068;
-	col += texture(fBuffer, vec2(uv.x + 2.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x + 3.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.001;
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.001794;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.044672;
+	col += texture(buffer, vec2(uv.x, uv.y - 1.0 * dofblur)) * 0.055338;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.044672;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y - 1.0 * dofblur)) * 0.001794;
 	
 	//row 6
-	col += texture(fBuffer, vec2(uv.x - 2.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.002;
-	col += texture(fBuffer, vec2(uv.x - 1.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x, uv.y - 2.0 * dofblur)) * 0.020;
-	col += texture(fBuffer, vec2(uv.x + 1.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.012;
-	col += texture(fBuffer, vec2(uv.x + 2.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.002;
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.000944;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.012358;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x, uv.y - 2.0 * dofblur)) * 0.029106;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.023496;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.012358;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y - 2.0 * dofblur)) * 0.000944;
 	
 	//row 7
-	col += texture(fBuffer, vec2(uv.x - 1.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.001;
-	col += texture(fBuffer, vec2(uv.x, uv.y - 3.0 * dofblur)) * 0.001;
-	col += texture(fBuffer, vec2(uv.x + 1.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.001;
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.000323;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.00145;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x, uv.y + 3.0 * dofblur)) * 0.00997;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.008048;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.004233;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.00145;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y - 3.0 * dofblur)) * 0.000323;
 	
-	return col.rgb;
-}
-
-vec3 blurSample2(float dofblur)
-{
-	float hstep = 0.1;
-	float vstep = 0.1;
-
-	vec4 col = vec4(0.0);
-
-	col += texture(fBuffer, vec2(uv.x - 3.0*dofblur*hstep, uv.y)) * 0.0940540541;
-	col += texture(fBuffer, vec2(uv.x - 2.0*dofblur*hstep, uv.y - 2.0*dofblur*vstep)) * 0.1216216216;
-	col += texture(fBuffer, vec2(uv.x - 1.0*dofblur*hstep, uv.y - 1.0*dofblur*vstep)) * 0.2945945946;
-	
-	col += texture(fBuffer, vec2(uv.x + 3.0*dofblur*hstep, uv.y)) * 0.0940540541;
-	col += texture(fBuffer, vec2(uv.x + 2.0*dofblur*hstep, uv.y - 2.0*dofblur*vstep)) * 0.1216216216;
-	col += texture(fBuffer, vec2(uv.x + 1.0*dofblur*hstep, uv.y - 1.0*dofblur*vstep)) * 0.2945945946;
-
-	//col += texture(fBuffer, vec2(uv.x, uv.y)) * 0.2270270270;
-	col += texture(fBuffer, vec2(uv.x, uv.y)) * (1.0 - dofblur);
-	
-	col += texture(fBuffer, vec2(uv.x + 1.0*dofblur*hstep, uv.y + 1.0*dofblur*vstep)) * 0.2945945946;
-	col += texture(fBuffer, vec2(uv.x + 2.0*dofblur*hstep, uv.y + 2.0*dofblur*vstep)) * 0.1216216216;
-	col += texture(fBuffer, vec2(uv.x, uv.y + 3.0*dofblur*vstep)) * 0.0940540541;
-
-	col += texture(fBuffer, vec2(uv.x - 1.0*dofblur*hstep, uv.y + 1.0*dofblur*vstep)) * 0.2945945946;
-	col += texture(fBuffer, vec2(uv.x - 2.0*dofblur*hstep, uv.y + 2.0*dofblur*vstep)) * 0.1216216216;
-	col += texture(fBuffer, vec2(uv.x, uv.y - 3.0*dofblur*vstep)) * 0.0940540541;	
-
-	return col.rgb;
-}
-
-vec3 blurSample(float dofblur)
-{
-	vec4 col = vec4(0.0);
-
-    col += texture(fBuffer, uv);
-    col += texture(fBuffer, uv + (vec2( 0.0,0.4 )) * dofblur);
-    col += texture(fBuffer, uv + (vec2( 0.15,0.37 )) * dofblur);
-    col += texture(fBuffer, uv + (vec2( 0.29,0.29 )) * dofblur);
-    col += texture(fBuffer, uv + (vec2( -0.37,0.15 )) * dofblur);    
-    col += texture(fBuffer, uv + (vec2( 0.4,0.0 )) * dofblur);   
-    col += texture(fBuffer, uv + (vec2( 0.37,-0.15 )) * dofblur);    
-    col += texture(fBuffer, uv + (vec2( 0.29,-0.29 )) * dofblur);    
-    col += texture(fBuffer, uv + (vec2( -0.15,-0.37 )) * dofblur);
-    col += texture(fBuffer, uv + (vec2( 0.0,-0.4 )) * dofblur);  
-    col += texture(fBuffer, uv + (vec2( -0.15,0.37 )) * dofblur);
-    col += texture(fBuffer, uv + (vec2( -0.29,0.29 )) * dofblur);
-    col += texture(fBuffer, uv + (vec2( 0.37,0.15 )) * dofblur); 
-    col += texture(fBuffer, uv + (vec2( -0.4,0.0 )) * dofblur);  
-    col += texture(fBuffer, uv + (vec2( -0.37,-0.15 )) * dofblur);   
-    col += texture(fBuffer, uv + (vec2( -0.29,-0.29 )) * dofblur);   
-    col += texture(fBuffer, uv + (vec2( 0.15,-0.37 )) * dofblur);
-    
-    col += texture(fBuffer, uv + (vec2( 0.15,0.37 )) * dofblur*0.9);
-    col += texture(fBuffer, uv + (vec2( -0.37,0.15 )) * dofblur*0.9);        
-    col += texture(fBuffer, uv + (vec2( 0.37,-0.15 )) * dofblur*0.9);        
-    col += texture(fBuffer, uv + (vec2( -0.15,-0.37 )) * dofblur*0.9);
-    col += texture(fBuffer, uv + (vec2( -0.15,0.37 )) * dofblur*0.9);
-    col += texture(fBuffer, uv + (vec2( 0.37,0.15 )) * dofblur*0.9);     
-    col += texture(fBuffer, uv + (vec2( -0.37,-0.15 )) * dofblur*0.9);   
-    col += texture(fBuffer, uv + (vec2( 0.15,-0.37 )) * dofblur*0.9);    
-    
-    col += texture(fBuffer, uv + (vec2( 0.29,0.29 )) * dofblur*0.7);
-    col += texture(fBuffer, uv + (vec2( 0.4,0.0 )) * dofblur*0.7);   
-    col += texture(fBuffer, uv + (vec2( 0.29,-0.29 )) * dofblur*0.7);    
-    col += texture(fBuffer, uv + (vec2( 0.0,-0.4 )) * dofblur*0.7);  
-    col += texture(fBuffer, uv + (vec2( -0.29,0.29 )) * dofblur*0.7);
-    col += texture(fBuffer, uv + (vec2( -0.4,0.0 )) * dofblur*0.7);  
-    col += texture(fBuffer, uv + (vec2( -0.29,-0.29 )) * dofblur*0.7);   
-    col += texture(fBuffer, uv + (vec2( 0.0,0.4 )) * dofblur*0.7);
-             
-    col += texture(fBuffer, uv + (vec2( 0.29,0.29 )) * dofblur*0.4);
-    col += texture(fBuffer, uv + (vec2( 0.4,0.0 )) * dofblur*0.4);   
-    col += texture(fBuffer, uv + (vec2( 0.29,-0.29 )) * dofblur*0.4);    
-    col += texture(fBuffer, uv + (vec2( 0.0,-0.4 )) * dofblur*0.4);  
-    col += texture(fBuffer, uv + (vec2( -0.29,0.29 )) * dofblur*0.4);
-    col += texture(fBuffer, uv + (vec2( -0.4,0.0 )) * dofblur*0.4);  
-    col += texture(fBuffer, uv + (vec2( -0.29,-0.29 )) * dofblur*0.4);   
-    col += texture(fBuffer, uv + (vec2( 0.0,0.4 )) * dofblur*0.4);
+	//row 8
+	col += texture(buffer, vec2(uv.x - 4.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.000072;
+	col += texture(buffer, vec2(uv.x - 3.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.000323;
+	col += texture(buffer, vec2(uv.x - 2.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.000944;
+	col += texture(buffer, vec2(uv.x - 1.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.001794;
+	col += texture(buffer, vec2(uv.x, uv.y - 4.0 * dofblur)) * 0.002222;
+	col += texture(buffer, vec2(uv.x + 1.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.001794;
+	col += texture(buffer, vec2(uv.x + 2.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.000944;
+	col += texture(buffer, vec2(uv.x + 3.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.000323;
+	col += texture(buffer, vec2(uv.x + 4.0 * dofblur, uv.y - 4.0 * dofblur)) * 0.000072;
 	
 	return col.rgb;
 }
@@ -168,18 +135,20 @@ void main()
 	float biasedDepth = depthDiff * 10.0;
 	//float biasedDepth = pow(depthDiff, 2.0) * 10.0;
 	//vec3 blurColor = blurSample(biasedDepth * 0.1 * dofFactor) / 41.0;
-	vec3 blurColor = blurSampleGaussian(biasedDepth * 0.1 * dofFactor);
-	vec3 dofBlurFragColor = mix(fColor, blurColor, dofAmount);
+	vec3 blurColor = blurSampleGaussian(biasedDepth * 0.1 * dofFactor, fBuffer);
 	
 	//fog
 	float fogDist = depth * 10.0;
 	float fogValue = clamp( exp(-fogFactor*fogDist), 0.0, 1.0);
 
 	//blend DoF-blurred scene with smearbuffer for motion blur
-	gl_FragColor.rgb = mix(dofBlurFragColor, sColor, blurAmount);
+	gl_FragColor.rgb = mix(fColor, sColor, blurAmount);
+	gl_FragColor.rgb = mix(gl_FragColor.rgb, blurColor, dofAmount);
 	
 	//blend fog
-	gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogValue * fogAmount);
+	//gl_FragColor.rgb = mix(gl_FragColor.rgb, fogColor, fogValue * fogAmount);
+	
+	//gl_FragColor.rgb = dofBlurFragColor;
 
 }
 
