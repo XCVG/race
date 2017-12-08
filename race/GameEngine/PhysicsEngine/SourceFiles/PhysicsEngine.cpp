@@ -143,9 +143,12 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		GLfloat reverse = content->amountSlow;
 		RigidBodyComponent *rbc = go->getComponent<RigidBodyComponent*>();
 		Vector3 F_Long;
+		GLfloat turningDegree = content->turningDegree;
+		bool isDrifting = content->_isDrifting;
+		bool wasDrifting = content->_wasDrifting;
 
 		/* If drifting, DRIIIIIFFFFFFTTTT!. */
-		if (forward != 0 && reverse != 0)
+		if (isDrifting)
 		{
 			rbc->setTurningDegree(content->turningDegree * 2.0); // Turning input from user
 		}
@@ -161,7 +164,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 				F_Long = -go->_transform._forward * (reverse * 500);
 			}
 			rbc->setForce(F_Long);
-			rbc->setTurningDegree(content->turningDegree); // Turning input from user
+			rbc->setTurningDegree(turningDegree); // Turning input from user
 		}
 
 		break;

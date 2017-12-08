@@ -42,4 +42,5 @@ private:
 	GLfloat _deltaTime;
 	GLfloat _turningDegree = 0;
 	bool _isDrifting = false;
+	bool _wasDrifting = false;
 };

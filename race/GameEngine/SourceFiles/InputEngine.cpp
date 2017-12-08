@@ -148,30 +148,33 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			//_player_p->_transform.rotateY(-X * _deltaTime);
 			_turningDegree = -X * (PI / 4.0f);
 			//_turningDegree = PI / 4.0f;
-
-			/* Turn the camera to follow the player's turning. */
-			/* Rate of camera turning to match car turn speed. */
-			float turnMult = 0.354;
-
-			/* If the player is drifting, turn the camera faster to match the player's turn speed. */
-			if (_isDrifting)
-			{
-				//turnMult *= 1.411;
-				turnMult *= 1.411;
-			}
-
-			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, X * _deltaTime * turnMult, 0.0f));
-			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
-			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 		}
 	}
 	break;
 	case INPUT_TYPES::TRIGGERS:
 	{
+		/* Update whether the player is drifting. */
+		_wasDrifting = _isDrifting;
+		_isDrifting = (X > 0 && Y > 0 && _turningDegree != 0);
+
+		/* Update camera turning. */
+		float localX = _turningDegree / -(PI / 4.0f);
+		float cameraTurnMult = 0.354;
+		if (_isDrifting)
+		{
+			cameraTurnMult *= 1.411;
+		}
+		_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, localX * _deltaTime * cameraTurnMult, 0.0f));
+		GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+		_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+
+		/* Send physics message */
 		PhysicsAccelerateContent *content = new PhysicsAccelerateContent();
 		content->amountFast = Y;
 		content->amountSlow = X;
 		content->turningDegree = _turningDegree;
+		content->_isDrifting = _isDrifting;
+		content->_wasDrifting = _wasDrifting;
 		content->object = _player_p;
 		std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsAccelerateCallType, false));
 		inputMessage->setContent(content);
@@ -197,12 +200,6 @@ void InputEngine::checkAxis(SDL_GameControllerAxis x, SDL_GameControllerAxis y, 
 	float yAmount = (float)degreeY / imax;
 
 	axisEventHandler(xAmount, yAmount, type);
-	
-	/* Update whether the player is drifting. */
-	if (type == INPUT_TYPES::TRIGGERS)
-	{
-		_isDrifting = (xAmount > 0 && yAmount > 0);
-	}
 }
 
 void InputEngine::checkInput(GLfloat deltaTime)
