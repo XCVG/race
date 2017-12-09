@@ -108,11 +108,12 @@ void Transform::adjustDirections()
 * Please specify positive/negative when calling. e.g., rotate(&go, -1.2);
 * </summary>
 */
-Vector3 Transform::rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rotation) 
+void Transform::rotateAround(Vector3 distance, Vector3 objectPos, Quaternion rotation) 
 {
-	Vector3 newDistance = distance.matrixMulti(glm::eulerAngleXYZ(rotation.x, rotation.y, rotation.z));
-	this->_position = newDistance + objectPos;
-	return newDistance;
+	/*Vector3 newDistance = distance.matrixMulti(glm::eulerAngleXYZ(rotation.x, rotation.y, rotation.z));
+	this->_position = newDistance + objectPos;*/
+	(*this)._position = QVRotate(rotation, distance) + objectPos;
+	//return newDistance;
 };
 void Transform::rotate(Vector3 amount)
 {
