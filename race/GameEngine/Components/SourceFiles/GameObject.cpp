@@ -111,7 +111,7 @@ void GameObject::translate(Vector3 vec)
 		}
 		else 
 		{
-			this->updateChildPositions(i);
+			//this->updateChildPositions(i);
 		}
 		i++;
 	}
@@ -124,7 +124,10 @@ void GameObject::rotate(Vector3 vec)
 	{
 		Quaternion q;
 		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
-		this->rotateAroundParent(i);
+		if ((*i)->_name != "up" || (*i)->_name != "forward" || (*i)->_name != "right") 
+		{
+			this->rotateAroundParent(i);
+		}
 		i++;
 	}
 };
@@ -137,7 +140,10 @@ void GameObject::rotate(Vector3 vec, GLfloat angle)
 	{
 		Quaternion q;
 		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
-		this->rotateAroundParent(i);
+		if ((*i)->_name != "up" || (*i)->_name != "forward" || (*i)->_name != "right")
+		{
+			this->rotateAroundParent(i);
+		}
 		i++;
 	}
 };
@@ -153,13 +159,12 @@ void GameObject::updateDirectionPositions(std::vector<GameObject *>::iterator i)
 };
 
 void GameObject::rotateAroundParent(std::vector<GameObject*>::iterator i) 
-{																						// May also need a relative positions for the child
-		// TODO: forward direction of wheels not rotating?
-	(*i)->_transform._position = QVRotate(this->_transform._orientation, (*i)->_transform._distanceToParent) + this->_transform._position; // This should only be called ONCE
+{
+	(*i)->_transform._position = QVRotate(this->_transform._orientation, (*i)->_transform._distanceToParent) + this->_transform._position; 
 
 };
 
 void GameObject::updateChildPositions(std::vector<GameObject*>::iterator i) 
 {
-	(*i)->_transform._position = (*i)->_transform._distanceToParent + this->_transform._position;
+	//(*i)->_transform._position = (*i)->_transform._distanceToParent + this->_transform._position;
 };
