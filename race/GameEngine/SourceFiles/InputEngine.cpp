@@ -158,15 +158,18 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		_isDrifting = (X > 0 && Y > 0 && _turningDegree != 0);
 
 		/* Update camera turning. */
-		float localX = _turningDegree / -(PI / 4.0f);
-		float cameraTurnMult = 0.354;
-		if (_isDrifting)
+		if (!cameraIndependant)
 		{
-			cameraTurnMult *= 1.411;
+			float localX = _turningDegree / -(PI / 4.0f);
+			float cameraTurnMult = 0.354;
+			if (_isDrifting)
+			{
+				cameraTurnMult *= 1.411;
+			}
+			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, localX * _deltaTime * cameraTurnMult, 0.0f));
+			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 		}
-		_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, localX * _deltaTime * cameraTurnMult, 0.0f));
-		GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
-		_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 
 		/* Send physics message */
 		PhysicsAccelerateContent *content = new PhysicsAccelerateContent();
