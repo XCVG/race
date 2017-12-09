@@ -45,13 +45,13 @@ public:
 	////////////////////////////////
     Vector3 _position;
 	Vector3 _initialPosition;
+	Vector3 _distanceToParent;
     Vector3 _rotation;
     GLfloat _scale;
 	Vector3 _forward;
 	Vector3 _right;
 	Vector3 _up;
 	Quaternion _orientation;
-	Vector3 _distanceToParent;
 private:
 };
 inline bool Transform::operator==(const Transform& t)

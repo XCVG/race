@@ -73,7 +73,6 @@ RenderableScene* Scene::getRenderInformation()
 				ro.modelName = rc->getModelName();
 				ro.position = Vector3ToGLMVector(it->second->_transform.getPosition());
 				ro.rotation = Vector3ToGLMVector(it->second->_transform._orientation.MakeEulerAnglesFromQ());
-
 				ro.scale = FloatToGLMVector(it->second->_transform.getScale());
 				rs->objects.push_back(ro);
 			}
@@ -101,7 +100,7 @@ void Scene::setUpSceneOne() {
 	InputInitializeContent* content = new InputInitializeContent(); 
 	content->camera = go;
 
-	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f));
+	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f), "player");
 	go->addComponent(new RenderComponent("car2_body", "car2_base", "", 0.75f));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f, Vector3(1,1,2)));
 	GameObject *childWheelFL, *childWheelFR, *childWheelRL, *childWheelRR;
@@ -117,6 +116,7 @@ void Scene::setUpSceneOne() {
 	childWheelRR->addComponent(new RenderComponent("car2_wheel", "car2_wheel", "", 1.0f));
 	go->addChild(childWheelRL);
 	go->addChild(childWheelRR);
+
 	// Forward directions for object
 	GameObject *forward = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._forward), new Vector3(PI / 2, 0, 0), 0.25f), "forward");
 	GameObject *right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
@@ -127,7 +127,6 @@ void Scene::setUpSceneOne() {
 	go->addChild(forward);
 	go->addChild(up);
 	go->addChild(right);
-	go->_name = "player";
 	addGameObject("Player", go);  
 	addGameObject("Player.WheelFL", childWheelFL);
 	addGameObject("Player.WheelFR", childWheelFR);
