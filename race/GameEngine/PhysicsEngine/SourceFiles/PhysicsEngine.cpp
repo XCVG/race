@@ -153,18 +153,20 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			/* If we just started a drift or are in the middle of one, turn faster. */
 			if (isDrifting)
 			{
-				/* During a drift, you brake harder and turn faster for sharper cornering.
-				This slows you down, but you get a boost of speed coming out of the drift.
+				/* During a drift, your acceleration is stronger than your braking and you 
+					turn faster for sharper cornering. This works out to be slower than 
+					normal acceleration, but you get a boost of speed coming out of the drift.
 				*/
-				F_Long = go->_transform._forward * (forward * 500);
-				F_Long = -go->_transform._forward * (reverse * 600);
+				//F_Long = go->_transform._forward * (forward * 300);
+				//F_Long += -go->_transform._forward * (reverse * 100);
+				//rbc->setForce(F_Long);
 
 				rbc->setTurningDegree(turningDegree * 2.0); // Turning input from user
 			}
 			/* If we're exiting a drift, apply the speed boost. */
 			else
 			{
-
+				rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() * 2.0f);
 			}
 		}
 		/* If not drifting, steer normally. */
@@ -172,11 +174,11 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		{
 			if (forward != 0)
 			{
-				F_Long = go->_transform._forward * (forward * 500);
+				F_Long = go->_transform._forward * (forward * 1000);
 			}
 			if (reverse != 0)
 			{
-				F_Long = -go->_transform._forward * (reverse * 500);
+				F_Long = -go->_transform._forward * (reverse * 1000);
 			}
 			rbc->setForce(F_Long);
 			rbc->setTurningDegree(turningDegree); // Turning input from user
