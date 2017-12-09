@@ -1,9 +1,10 @@
 #pragma once
 #ifdef __APPLE__
-#include "MacTypes.h"p>
+#include <SDL2/SDL.h>
 #elif defined _WIN32 || defined _WIN64
 #include <SDL.h>
 #endif
+// TODO: These are relative with the build, the paths can be removed
 #include "../RenderEngine/HeaderFiles/RenderableTypes.h"
 #include "../Components/HeaderFiles/GameObject.h"
 #include "../Components/HeaderFiles/Transform.h"

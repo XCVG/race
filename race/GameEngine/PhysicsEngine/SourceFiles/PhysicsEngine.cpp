@@ -216,8 +216,8 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 			adjustForces(go, rbc);
 			applyAcceleration(go, rbc);
 			go->translate(rbc->getVelocity() * _deltaTime);
-			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
 			turnGameObject(go);
+			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
 		}
 	}
 };
@@ -292,22 +292,43 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
 	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity();
-	Vector3 thing = go->getChild(std::string("forward"))->_transform._position - go->_transform._position;
-	GLfloat L = (thing - (-thing)).magnitude();// Distance from front of object to rear of object
-	GLfloat theta = tireDegree;
-	if (L == 0 || theta == 0)
+
+	GameObject *wheelRL = go->getChild("wheelRL");
+	GameObject *wheelFL = go->getChild("wheelFL");
+	GameObject *wheelFR = go->getChild("wheelFR");
+
+	GLfloat L = (wheelFL->_transform._position - wheelRL->_transform._position).magnitude();
+
+	if (tireDegree == 0)
 	{
+		if (wheelFL->_transform._rotation.y < -0.0001)
+			wheelFL->_transform._rotation.y += (PI / 4.0f) * _deltaTime;
+		else if (wheelFL->_transform._rotation.y > 0.0001)
+			wheelFL->_transform._rotation.y -= (PI / 4.0f) * _deltaTime;
+		else
+			wheelFL->_transform._rotation.y = 0.0f;
+
+		if (wheelFR->_transform._rotation.y < -0.0001)
+			wheelFR->_transform._rotation.y += (PI / 4.0f) * _deltaTime;
+		else if (wheelFR->_transform._rotation.y > 0.0001)
+			wheelFR->_transform._rotation.y -= (PI / 4.0f) * _deltaTime;
+		else
+			wheelFR->_transform._rotation.y = 0.0f;
+
 		return Vector3(0, 0, 0);
 	}
-	GLfloat sinTheta = sin(theta);
+	GLfloat sinTheta = sin(tireDegree);
 	GLfloat denominator = (L / (sinTheta));
-	Vector3 omega = go->_transform._forward.crossProduct(go->_transform._right.normalize()) / denominator;
-
-	return omega;
+	Vector3 omega = objectVelocity / denominator;
+	wheelFL->_transform._rotation.y = tireDegree;
+	wheelFR->_transform._rotation.y = tireDegree;
+	
+	return omega.crossProduct(go->_transform._right.normalize());
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
-	//Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree()), 2.0 * _deltaTime); // angularVelocity * deltaTime = current angle
+	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree());
+	if (go->getComponent<RigidBodyComponent*>()->getVelocity().magnitude() > 0)
+		go->rotate(angularVelocity, 0.5 * _deltaTime); // angularVelocity * deltaTime = current angle
 };
