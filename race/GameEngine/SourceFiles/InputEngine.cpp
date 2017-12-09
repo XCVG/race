@@ -129,7 +129,26 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		else
 		{
 			//_player_p->_transform.rotateY(-X * _deltaTime);
-			_turningDegree = -X * (PI / 4.0f);
+			if (X != 0) {
+				_turningDegree += -X * (PI / 4.0f) * _deltaTime;
+				if (_turningDegree >= (PI / 4.0f))
+					_turningDegree = (PI / 4.0f);
+				else if (_turningDegree <= -(PI / 4.0f))
+					_turningDegree = -(PI / 4.0f);
+			}
+			else {
+				
+				if (_turningDegree > 0.0001) {
+					_turningDegree -= (PI / 4.0f) * _deltaTime;
+				}
+				else if (_turningDegree < -0.0001) {
+					_turningDegree += (PI / 4.0f) * _deltaTime;
+				}
+				else {
+					_turningDegree = 0.0f;
+				}
+			}
+			
 			//_turningDegree = PI / 4.0f;
 		}
 	}
