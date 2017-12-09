@@ -110,7 +110,7 @@ void Transform::adjustDirections()
 */
 Vector3 Transform::rotateAround(Vector3 distance, Vector3 objectPos, Vector3 rotation) 
 {
-	Vector3 newDistance = distance.matrixMulti(glm::eulerAngleXYZ(rotation.x, rotation.y, rotation.z)); // TODO: Debug this with John. I need it to rotate around and stay there. Something about math
+	Vector3 newDistance = distance.matrixMulti(glm::eulerAngleXYZ(rotation.x, rotation.y, rotation.z));
 	this->_position = newDistance + objectPos;
 	return newDistance;
 };

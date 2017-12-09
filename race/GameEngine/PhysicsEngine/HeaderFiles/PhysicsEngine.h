@@ -33,6 +33,7 @@
 #include <math.h>
 #include "MessageReceiver.h"
 #include "../../MessagingSystem/HeaderFiles/MessagingSystem.h"
+#include "MessageTypes.h"
 #include "GameObject.h"
 #include "../../HeaderFiles/InputTypes.h"
 #include "../../Components/HeaderFiles/ComponentHeaders.h"

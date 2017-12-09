@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include "MessagingSystem.h"
+#include "MessageTypes.h"
 #include "InputTypes.h"
 #include <memory>
 

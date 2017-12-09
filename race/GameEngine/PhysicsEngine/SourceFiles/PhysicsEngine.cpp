@@ -167,15 +167,15 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 				F_Long += -go->_transform._forward * (reverse * 50);
 				rbc->setForce(F_Long);
 
-				rbc->setTurningDegree(turningDegree * 2.0); // Turning input from user
+				rbc->setTurningDegree(turningDegree * 2.0f); // Turning input from user
 
 				_driftTimer += _deltaTime;
 			}
 			/* If we're exiting a drift, apply the speed boost. */
-			else if (_driftTimer > 2.0)
+			else if (_driftTimer > 2.0f)
 			{
 				/* THe drift boost multiplier is between 1.5 - 2.0 for drift times over 2.0 seconds. */
-				float driftMultiplier = 1.0 + (1.3 * fmin(_driftTimer, 4.0f) / 4.0f);
+				float driftMultiplier = 1.0f + (1.3f * fmin(_driftTimer, 4.0f) / 4.0f);
 
 				rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() * driftMultiplier);
 			}
@@ -236,14 +236,14 @@ void PhysicsEngine::adjustForces(GameObject *go, RigidBodyComponent *rc)
 {
 	Vector3 dragVector = -rc->getVelocity().normalize();
 	Vector3 newForce = rc->getForce() + (dragVector * (rc->getVelocity().magnitude() *
-		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
+		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2.0f) * (rc->_length / 2.0f)));
 	//newForce = QVRotate(go->_transform._orientation, newForce);
 
 	rc->setAccelerationVector(newForce / rc->getMass());
 
 	Vector3 angularDragVector = -rc->_angularVel.normalize();
 	rc->_angularMoment += (angularDragVector * (rc->_angularVel.magnitude() *
-		rc->_angularVel.magnitude()) * RHO * ANGULARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
+		rc->_angularVel.magnitude()) * RHO * ANGULARDRAGCOEF * ((rc->_length / 2.0f) * (rc->_length / 2.0f)));
 
 	glm::vec3 inertiaAngVel = rc->_mInertia * glm::vec3(rc->_angularVel.x, rc->_angularVel.y, rc->_angularVel.z);
 	Vector3 angMoments = rc->_angularMoment - rc->_angularVel.crossProduct(Vector3(inertiaAngVel.x, inertiaAngVel.y, inertiaAngVel.z));
