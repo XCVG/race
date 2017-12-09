@@ -150,6 +150,12 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		/* If drifting, DRIIIIIFFFFFFTTTT!. */
 		if (isDrifting || wasDrifting)
 		{
+			/* If we are entering a drift, reset the drift timer. */
+			if (!wasDrifting)
+			{
+				_driftTimer = 0;
+			}
+
 			/* If we just started a drift or are in the middle of one, turn faster. */
 			if (isDrifting)
 			{
@@ -158,15 +164,20 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 					normal acceleration, but you get a boost of speed coming out of the drift.
 				*/
 				//F_Long = go->_transform._forward * (forward * 300);
-				//F_Long += -go->_transform._forward * (reverse * 100);
-				//rbc->setForce(F_Long);
+				F_Long += -go->_transform._forward * (reverse * 50);
+				rbc->setForce(F_Long);
 
 				rbc->setTurningDegree(turningDegree * 2.0); // Turning input from user
+
+				_driftTimer += _deltaTime;
 			}
 			/* If we're exiting a drift, apply the speed boost. */
-			else
+			else if (_driftTimer > 2.0)
 			{
-				rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() * 2.0f);
+				/* THe drift boost multiplier is between 1.5 - 2.0 for drift times over 2.0 seconds. */
+				float driftMultiplier = 1.0 + (1.3 * fmin(_driftTimer, 4.0f) / 4.0f);
+
+				rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() * driftMultiplier);
 			}
 		}
 		/* If not drifting, steer normally. */
