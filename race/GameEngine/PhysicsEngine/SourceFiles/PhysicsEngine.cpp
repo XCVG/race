@@ -192,11 +192,11 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		{
 			if (forward != 0)
 			{
-				F_Long = go->_transform._forward * (forward * 500);
+				F_Long = go->_transform._forward * (forward * 2000);
 			}
 			if (reverse != 0)
 			{
-				F_Long = -go->_transform._forward * (reverse * 500);
+				F_Long = -go->_transform._forward * (reverse * 4000);
 			}
 			rbc->setForce(F_Long);
 			rbc->setTurningDegree(turningDegree); // Turning input from user
@@ -234,7 +234,7 @@ void PhysicsEngine::applyAcceleration(GameObject *go, RigidBodyComponent *rc)
 	if (rc->getVelocity().magnitude() < rc->getMaxVelocity()) 
 	{
 		linearAccelerate(go,rc);
-		//SDL_Log("SPEED: %f", rc->getVelocity().magnitude());
+		SDL_Log("SPEED: %f", rc->getVelocity().magnitude());
 	}
 	angularAccelerate(rc);
 };
