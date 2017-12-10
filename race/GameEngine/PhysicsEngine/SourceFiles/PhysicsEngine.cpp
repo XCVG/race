@@ -136,22 +136,65 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 	}
 	case MESSAGE_TYPE::PhysicsAccelerateCallType: 
 	{
+		/* Get player input data. */
 		PhysicsAccelerateContent* content = static_cast<PhysicsAccelerateContent*>(myMessage->getContent());
 		GameObject* go = content->object;
-		GLfloat amount = content->amountFast;
-		GLfloat amount2 = content->amountSlow;
+		GLfloat forward = content->amountFast;
+		GLfloat reverse = content->amountSlow;
 		RigidBodyComponent *rbc = go->getComponent<RigidBodyComponent*>();
 		Vector3 F_Long;
-		if (amount != 0)
+		GLfloat turningDegree = content->turningDegree;
+		bool isDrifting = content->_isDrifting;
+		bool wasDrifting = content->_wasDrifting;
+
+		/* If drifting, DRIIIIIFFFFFFTTTT!. */
+		if (isDrifting || wasDrifting)
 		{
-			F_Long = go->_transform._forward * (amount * 500);
+			/* If we are entering a drift, reset the drift timer. */
+			if (!wasDrifting)
+			{
+				_driftTimer = 0;
+			}
+
+			/* If we just started a drift or are in the middle of one, turn faster. */
+			if (isDrifting)
+			{
+				/* During a drift, your acceleration is stronger than your braking and you 
+					turn faster for sharper cornering. This works out to be slower than 
+					normal acceleration, but you get a boost of speed coming out of the drift.
+				*/
+				//F_Long = go->_transform._forward * (forward * 300);
+				F_Long += -go->_transform._forward * (reverse * 50);
+				rbc->setForce(F_Long);
+
+				rbc->setTurningDegree(turningDegree * 2.0f); // Turning input from user
+
+				_driftTimer += _deltaTime;
+			}
+			/* If we're exiting a drift, apply the speed boost. */
+			else if (_driftTimer > 2.0f)
+			{
+				/* THe drift boost multiplier is between 1.5 - 2.0 for drift times over 2.0 seconds. */
+				float driftMultiplier = 1.0f + (1.3f * fmin(_driftTimer, 4.0f) / 4.0f);
+
+				rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() * driftMultiplier);
+			}
 		}
-		if (amount2 != 0)
+		/* If not drifting, steer normally. */
+		else
 		{
-			F_Long = -go->_transform._forward * (amount2 * 500);
+			if (forward != 0)
+			{
+				F_Long = go->_transform._forward * (forward * 1000);
+			}
+			if (reverse != 0)
+			{
+				F_Long = -go->_transform._forward * (reverse * 1000);
+			}
+			rbc->setForce(F_Long);
+			rbc->setTurningDegree(turningDegree); // Turning input from user
 		}
-		rbc->setForce(F_Long);
-		rbc->setTurningDegree(content->turningDegree); // Turning input from user
+
 		break;
 	}
 	default:
@@ -173,8 +216,8 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 			adjustForces(go, rbc);
 			applyAcceleration(go, rbc);
 			go->translate(rbc->getVelocity() * _deltaTime);
-			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
 			turnGameObject(go);
+			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
 		}
 	}
 };
@@ -193,14 +236,14 @@ void PhysicsEngine::adjustForces(GameObject *go, RigidBodyComponent *rc)
 {
 	Vector3 dragVector = -rc->getVelocity().normalize();
 	Vector3 newForce = rc->getForce() + (dragVector * (rc->getVelocity().magnitude() *
-		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
+		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2.0f) * (rc->_length / 2.0f)));
 	//newForce = QVRotate(go->_transform._orientation, newForce);
 
 	rc->setAccelerationVector(newForce / rc->getMass());
 
 	Vector3 angularDragVector = -rc->_angularVel.normalize();
 	rc->_angularMoment += (angularDragVector * (rc->_angularVel.magnitude() *
-		rc->_angularVel.magnitude()) * RHO * ANGULARDRAGCOEF * ((rc->_length / 2) * (rc->_length / 2)));
+		rc->_angularVel.magnitude()) * RHO * ANGULARDRAGCOEF * ((rc->_length / 2.0f) * (rc->_length / 2.0f)));
 
 	glm::vec3 inertiaAngVel = rc->_mInertia * glm::vec3(rc->_angularVel.x, rc->_angularVel.y, rc->_angularVel.z);
 	Vector3 angMoments = rc->_angularMoment - rc->_angularVel.crossProduct(Vector3(inertiaAngVel.x, inertiaAngVel.y, inertiaAngVel.z));
@@ -249,22 +292,43 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
 	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity();
-	Vector3 thing = go->getChild(std::string("forward"))->_transform._position - go->_transform._position;
-	GLfloat L = (thing - (-thing)).magnitude();// Distance from front of object to rear of object
-	GLfloat theta = tireDegree;
-	if (L == 0 || theta == 0)
+
+	GameObject *wheelRL = go->getChild("wheelRL");
+	GameObject *wheelFL = go->getChild("wheelFL");
+	GameObject *wheelFR = go->getChild("wheelFR");
+
+	GLfloat L = (wheelFL->_transform._position - wheelRL->_transform._position).magnitude();
+
+	if (tireDegree == 0)
 	{
+		if (wheelFL->_transform._rotation.y < -0.0001)
+			wheelFL->_transform._rotation.y += (PI / 4.0f) * _deltaTime;
+		else if (wheelFL->_transform._rotation.y > 0.0001)
+			wheelFL->_transform._rotation.y -= (PI / 4.0f) * _deltaTime;
+		else
+			wheelFL->_transform._rotation.y = 0.0f;
+
+		if (wheelFR->_transform._rotation.y < -0.0001)
+			wheelFR->_transform._rotation.y += (PI / 4.0f) * _deltaTime;
+		else if (wheelFR->_transform._rotation.y > 0.0001)
+			wheelFR->_transform._rotation.y -= (PI / 4.0f) * _deltaTime;
+		else
+			wheelFR->_transform._rotation.y = 0.0f;
+
 		return Vector3(0, 0, 0);
 	}
-	GLfloat sinTheta = sin(theta);
+	GLfloat sinTheta = sin(tireDegree);
 	GLfloat denominator = (L / (sinTheta));
-	Vector3 omega = go->_transform._forward.crossProduct(go->_transform._right.normalize()) / denominator;
-
-	return omega;
+	Vector3 omega = objectVelocity / denominator;
+	wheelFL->_transform._rotation.y = tireDegree;
+	wheelFR->_transform._rotation.y = tireDegree;
+	
+	return omega.crossProduct(go->_transform._right.normalize());
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
-	//Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree()), 2.0 * _deltaTime); // angularVelocity * deltaTime = current angle
+	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree());
+	if (go->getComponent<RigidBodyComponent*>()->getVelocity().magnitude() > 0)
+		go->rotate(angularVelocity, 0.5 * _deltaTime); // angularVelocity * deltaTime = current angle
 };

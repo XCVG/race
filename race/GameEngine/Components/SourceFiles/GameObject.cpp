@@ -55,6 +55,7 @@ std::map<std::string, Component *> GameObject::getComponentList()
 };
 void GameObject::addChild(GameObject *child)
 {
+	child->_transform._distanceToParent = child->_transform._position - this->_transform._position;
 	this->_childObjects_p->push_back(child);
 };
 GameObject* GameObject::getChild(GameObject *child)
@@ -104,7 +105,14 @@ void GameObject::translate(Vector3 vec)
 	for (std::vector<GameObject *>::iterator i = this->_childObjects_p->begin();
 		i != this->_childObjects_p->end();)
 	{
-		this->updateChildPositions(i);
+		if ((*i)->_name == "up" || (*i)->_name == "forward" || (*i)->_name == "right") 
+		{
+			this->updateDirectionPositions(i);
+		}
+		else 
+		{
+			//this->updateChildPositions(i);
+		}
 		i++;
 	}
 };
@@ -116,7 +124,10 @@ void GameObject::rotate(Vector3 vec)
 	{
 		Quaternion q;
 		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
-		this->updateChildPositions(i);
+		if ((*i)->_name != "up" || (*i)->_name != "forward" || (*i)->_name != "right") 
+		{
+			this->rotateAroundParent(i);
+		}
 		i++;
 	}
 };
@@ -129,12 +140,15 @@ void GameObject::rotate(Vector3 vec, GLfloat angle)
 	{
 		Quaternion q;
 		(*i)->_transform._orientation = this->_transform._orientation * q.MakeQFromEulerAngles((*i)->_transform._rotation);
-		this->updateChildPositions(i);
+		if ((*i)->_name != "up" || (*i)->_name != "forward" || (*i)->_name != "right")
+		{
+			this->rotateAroundParent(i);
+		}
 		i++;
 	}
 };
 
-void GameObject::updateChildPositions(std::vector<GameObject *>::iterator i)
+void GameObject::updateDirectionPositions(std::vector<GameObject *>::iterator i)
 {
 	if ((*i)->_name == "up")
 		(*i)->_transform._position = this->_transform._position + this->_transform._up;
@@ -142,4 +156,14 @@ void GameObject::updateChildPositions(std::vector<GameObject *>::iterator i)
 		(*i)->_transform._position = this->_transform._position + this->_transform._forward;
 	else if ((*i)->_name == "right")
 		(*i)->_transform._position = this->_transform._position + this->_transform._right;
-}
+};
+
+void GameObject::rotateAroundParent(std::vector<GameObject*>::iterator i) 
+{
+	(*i)->_transform._position = QVRotate(this->_transform._orientation, (*i)->_transform._distanceToParent) + this->_transform._position;
+};
+
+void GameObject::updateChildPositions(std::vector<GameObject*>::iterator i) 
+{
+	//(*i)->_transform._position = (*i)->_transform._distanceToParent + this->_transform._position;
+};

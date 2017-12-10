@@ -1,9 +1,16 @@
 #pragma once
-#include "Message.h"
-#include "MessagingSystem.h"
-#include <memory>
+#ifdef __APPLE__
+#include <GL/glew.h>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#elif defined _WIN32 || defined _WIN64
+#include <glew.h>
 #include <SDL.h>
 #include <SDL_mixer.h>
+#endif
+#include <memory>
+#include "Message.h"
+#include "MessagingSystem.h"
 
 class SoundEngine : MessageReceiver {
 public:

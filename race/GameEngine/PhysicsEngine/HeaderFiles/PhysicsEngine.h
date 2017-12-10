@@ -33,6 +33,7 @@
 #include <math.h>
 #include "MessageReceiver.h"
 #include "../../MessagingSystem/HeaderFiles/MessagingSystem.h"
+#include "MessageTypes.h"
 #include "GameObject.h"
 #include "../../HeaderFiles/InputTypes.h"
 #include "../../Components/HeaderFiles/ComponentHeaders.h"
@@ -68,6 +69,7 @@ class PhysicsEngine : public MessageReceiver
 		const float MATH_PI = 3.14159f;
 		float count = 0;
 		float rotationAccel = 0;
+		float _driftTimer = 0;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors

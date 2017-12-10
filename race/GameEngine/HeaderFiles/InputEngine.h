@@ -2,6 +2,7 @@
 
 #include "Message.h"
 #include "MessagingSystem.h"
+#include "MessageTypes.h"
 #include "InputTypes.h"
 #include <memory>
 
@@ -41,5 +42,6 @@ private:
 	Vector3 _playerToCamera;
 	GLfloat _deltaTime;
 	GLfloat _turningDegree = 0;
-	
+	bool _isDrifting = false;
+	bool _wasDrifting = false;
 };

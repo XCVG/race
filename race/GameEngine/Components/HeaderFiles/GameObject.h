@@ -87,6 +87,8 @@ public:
 	void rotate(Vector3 vec);
 	// TODO: Rotate all child objects about this position
 	void rotate(Vector3 vec, GLfloat angle);
+	void updateDirectionPositions(std::vector<GameObject*>::iterator i);
+	void rotateAroundParent(std::vector<GameObject*>::iterator i);
 	void updateChildPositions(std::vector<GameObject*>::iterator i);
 	bool operator==(GameObject& go);
 private:

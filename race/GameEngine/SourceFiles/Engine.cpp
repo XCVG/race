@@ -68,21 +68,16 @@ std::thread* Engine::start() {
 
 	RenderLoadMessageContent *rlmc = new RenderLoadMessageContent();
 	RenderableSetupData rsd;
-	rsd.models.push_back("cube");
-	rsd.models.push_back("sphere");
-	rsd.models.push_back("road_floor");
 	rsd.models.push_back("carModel");
 	rsd.models.push_back("car2_body");
 	rsd.models.push_back("car2_wheel");
-	rsd.models.push_back("raceTrack");
 	rsd.models.push_back("cone");
-	rsd.textures.push_back("rainbow");
-	rsd.textures.push_back("test_normal");
-	rsd.textures.push_back("test_texture");
-	rsd.textures.push_back("test_texture2");
-	rsd.textures.push_back("test_texture3");
+	rsd.models.push_back("track1a");
+	rsd.models.push_back("track1b");
 	rsd.textures.push_back("car2_base");
 	rsd.textures.push_back("car2_wheel");
+	rsd.textures.push_back("grass");
+	rsd.textures.push_back("asphault");
 	rlmc->data = rsd;
 
 	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
