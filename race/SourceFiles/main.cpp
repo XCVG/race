@@ -48,6 +48,7 @@ std::thread* engineThread_p;
 				quit = true;
 				break;
 			case SDL_CONTROLLERBUTTONDOWN:
+			case SDL_CONTROLLERBUTTONUP:
 				InputButtonDownContent *content = new InputButtonDownContent();
 				content->ev = ev;
 				std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::InputButtonDownCallType));

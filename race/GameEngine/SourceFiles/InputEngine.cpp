@@ -71,12 +71,7 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 		case SDL_CONTROLLER_BUTTON_X :
 		{
 			/* Flip the camera rotation to toggle looking forwards/back. */
-			if (!cameraIndependant)
-			{
-				//_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, PI, 0.0f));
-				//GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
-				//_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
-			}
+			_lookBack = !_lookBack;
 
 			break;
 		}
@@ -111,9 +106,7 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			//_camera_p->_transform.rotate(Vector3(-Y, X, 0) * 2 * _deltaTime);
 			//_camera_p->_transform.rotateQuat(Vector3(-Y, -X, 0), _deltaTime);
 			if (X != 0 || Y != 0) {
-				Quaternion framePitch, frameYaw;
-				framePitch.MakeQFromEulerAngles(Vector3(Y, X, 0) * _deltaTime);
-				_camera_p->_transform._orientation = _camera_p->_transform._orientation * framePitch;
+				_camera_p->_transform._orientation = _camera_p->_transform._orientation * MakeQFromEulerAngles(Vector3(Y, X, 0) * _deltaTime);
 				_camera_p->_transform._orientation.Normalize();
 			}
 		}
@@ -179,10 +172,14 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		/* Update camera turning. */
 		if (!cameraIndependant)
 		{
-			float localX = _turningDegree / -(PI / 4.0f);
-			_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation);
+			if (_lookBack)
+				_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation * MakeQFromEulerAngles(Vector3(0.0f, PI, 0.0f)));
+			else 
+				_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation);
+
 			GLfloat angleY = atan2((_camera_p->_transform._position.z - _player_p->_transform._position.z), (_camera_p->_transform._position.x - _player_p->_transform._position.x));
-			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+			_camera_p->_transform._orientation = MakeQFromEulerAngles(Vector3(0.0f, angleY - PI / 2.0f, 0.0f));
+
 		}
 
 		/* Send physics message */

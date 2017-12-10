@@ -3,7 +3,7 @@ Transform::Transform()
 {
     this->_position = this->_initialPosition = new Vector3();
 	this->_rotation = new Vector3();
-	this->_orientation.MakeQFromEulerAngles(0, 0, 0);
+	this->_orientation = MakeQFromEulerAngles(Vector3(0, 0, 0));
     this->_scale = 1;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
@@ -15,7 +15,7 @@ Transform::Transform(Vector3 _position, Vector3 _rotation, GLfloat _scale)
 {
     this->_position = this->_initialPosition = _position;
 	this->_rotation = _rotation;
-	this->_orientation.MakeQFromEulerAngles(_rotation);
+	this->_orientation = MakeQFromEulerAngles(_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
@@ -27,7 +27,7 @@ Transform::Transform(Vector3 *_position, Vector3 *_rotation, GLfloat _scale)
 {
 	this->_position = this->_initialPosition = _position;
 	this->_rotation = *_rotation;
-	this->_orientation.MakeQFromEulerAngles(*_rotation);
+	this->_orientation = MakeQFromEulerAngles(*_rotation);
     this->_scale = _scale;
 	this->_forward = Vector3(0, 0, 1);
 	this->_right = Vector3(1, 0, 0);
@@ -117,15 +117,13 @@ void Transform::rotateAround(Vector3 distance, Vector3 objectPos, Quaternion rot
 };
 void Transform::rotate(Vector3 amount)
 {
-	Quaternion q;
-	this->_orientation += this->_orientation * q.MakeQFromEulerAngles(amount);
+	this->_orientation += this->_orientation * MakeQFromEulerAngles(amount);
 	this->_orientation.Normalize();
 	this->adjustDirections();
 };
 void Transform::rotateQuat(Vector3 axis, GLfloat amount) 
 {
-	Quaternion q;
-	this->_orientation += this->_orientation * q.MakeQFromEulerAngles(axis * amount);
+	this->_orientation += this->_orientation * MakeQFromEulerAngles(axis * amount);
 	this->_orientation.Normalize();
 	this->adjustDirections();
 };
