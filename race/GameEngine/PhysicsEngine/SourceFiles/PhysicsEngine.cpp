@@ -159,25 +159,32 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 			/* If we just started a drift or are in the middle of one, turn faster. */
 			if (isDrifting)
 			{
-				/* During a drift, your acceleration is stronger than your braking and you 
+				/* During a drift, your brake hard and slow down, and
 					turn faster for sharper cornering. This works out to be slower than 
 					normal acceleration, but you get a boost of speed coming out of the drift.
 				*/
 				//F_Long = go->_transform._forward * (forward * 300);
-				F_Long += -go->_transform._forward * (reverse * 50);
+				F_Long += -go->_transform._forward * (reverse * 500);
 				rbc->setForce(F_Long);
 
-				rbc->setTurningDegree(turningDegree * 2.0f); // Turning input from user
-
+				rbc->setTurningDegree(turningDegree * 1.1f); // Turning input from user
 				_driftTimer += _deltaTime;
 			}
 			/* If we're exiting a drift, apply the speed boost. */
-			else if (_driftTimer > 2.0f)
+			else if (_driftTimer > 1.5f)
 			{
-				/* THe drift boost multiplier is between 1.5 - 2.0 for drift times over 2.0 seconds. */
-				float driftMultiplier = 1.0f + (1.3f * fmin(_driftTimer, 4.0f) / 4.0f);
+				/* The drift boost multiplier is between 1.5 - 2.0 for drift times over 2.0 seconds. */
+				float driftMultiplier = 1.0f + (1.0f * fmin(_driftTimer, 4.0f) / 4.0f);
 
-				rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() * driftMultiplier);
+				/* Calculate the speed boost, but make sure the car doesn't exceed its max velocity. */
+				Vector3 candidateVelocity = go->_transform._forward * rbc->getVelocity().magnitude() * driftMultiplier;
+				if (candidateVelocity.magnitude() > rbc->getMaxVelocity() * 1.1f)
+				{
+					candidateVelocity = candidateVelocity.normalize() * rbc->getMaxVelocity() * 1.1f;
+				}
+
+				/* Update the velocity. */
+				rbc->setVelocity(candidateVelocity);
 			}
 		}
 		/* If not drifting, steer normally. */
@@ -185,11 +192,11 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		{
 			if (forward != 0)
 			{
-				F_Long = go->_transform._forward * (forward * 1000);
+				F_Long = go->_transform._forward * (forward * 500);
 			}
 			if (reverse != 0)
 			{
-				F_Long = -go->_transform._forward * (reverse * 1000);
+				F_Long = -go->_transform._forward * (reverse * 500);
 			}
 			rbc->setForce(F_Long);
 			rbc->setTurningDegree(turningDegree); // Turning input from user
