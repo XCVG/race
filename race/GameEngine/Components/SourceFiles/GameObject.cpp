@@ -160,8 +160,7 @@ void GameObject::updateDirectionPositions(std::vector<GameObject *>::iterator i)
 
 void GameObject::rotateAroundParent(std::vector<GameObject*>::iterator i) 
 {
-	(*i)->_transform._position = QVRotate(this->_transform._orientation, (*i)->_transform._distanceToParent) + this->_transform._position; 
-
+	(*i)->_transform._position = QVRotate(this->_transform._orientation, (*i)->_transform._distanceToParent) + this->_transform._position;
 };
 
 void GameObject::updateChildPositions(std::vector<GameObject*>::iterator i) 

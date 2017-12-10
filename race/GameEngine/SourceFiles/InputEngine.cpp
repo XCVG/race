@@ -73,9 +73,9 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 			/* Flip the camera rotation to toggle looking forwards/back. */
 			if (!cameraIndependant)
 			{
-				_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, PI, 0.0f));
-				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
-				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+				//_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, PI, 0.0f));
+				//GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+				//_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 			}
 
 			break;
@@ -180,13 +180,8 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		if (!cameraIndependant)
 		{
 			float localX = _turningDegree / -(PI / 4.0f);
-			float cameraTurnMult = 0.354;
-			if (_isDrifting)
-			{
-				cameraTurnMult *= 1.411;
-			}
-			_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, localX * _deltaTime * cameraTurnMult, 0.0f));
-			GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+			_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation);
+			GLfloat angleY = atan2((_camera_p->_transform._position.z - _player_p->_transform._position.z), (_camera_p->_transform._position.x - _player_p->_transform._position.x));
 			_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
 		}
 
