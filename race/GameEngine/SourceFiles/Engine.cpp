@@ -73,7 +73,7 @@ std::thread* Engine::start() {
 	rsd.models.push_back("car2_wheel");
 	rsd.models.push_back("cone");
 	rsd.models.push_back("track2a");
-	rsd.models.push_back("track2b");
+	rsd.models.push_back("track3b");
 	rsd.textures.push_back("car2_base");
 	rsd.textures.push_back("car2_wheel");
 	rsd.textures.push_back("grass");
