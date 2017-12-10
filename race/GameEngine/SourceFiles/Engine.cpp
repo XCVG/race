@@ -72,12 +72,12 @@ std::thread* Engine::start() {
 	rsd.models.push_back("car2_body");
 	rsd.models.push_back("car2_wheel");
 	rsd.models.push_back("cone");
-	rsd.models.push_back("track1a");
-	rsd.models.push_back("track1b");
+	rsd.models.push_back("track2a");
+	rsd.models.push_back("track2b");
 	rsd.textures.push_back("car2_base");
 	rsd.textures.push_back("car2_wheel");
 	rsd.textures.push_back("grass");
-	rsd.textures.push_back("asphault");
+	rsd.textures.push_back("asphalt");
 	rlmc->data = rsd;
 
 	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
