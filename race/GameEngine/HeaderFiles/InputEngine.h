@@ -44,4 +44,5 @@ private:
 	GLfloat _turningDegree = 0;
 	bool _isDrifting = false;
 	bool _wasDrifting = false;
+	bool _lookBack = false;
 };

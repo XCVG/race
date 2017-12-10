@@ -40,16 +40,15 @@ public:
 	GLfloat QGetAngle();
 	Vector3 QGetAxis();
 	Quaternion& MakeQFromEulerAngles(float x, float y, float z);
-	Quaternion & MakeQFromEulerAngles(Vector3 vec);
 	Vector3 MakeEulerAnglesFromQ();
 
 	Quaternion& CreateFromAxisAngle(Vector3 vec, GLfloat angle);
 
 	Quaternion & Normalize();
-
-private:
 	GLfloat _n;
 	Vector3 _v;
+private:
+
 };
 
 inline Quaternion::Quaternion()
@@ -228,8 +227,9 @@ inline Quaternion& Quaternion::MakeQFromEulerAngles(float x, float y, float z)
 	return this->Normalize();
 };
 
-inline Quaternion& Quaternion::MakeQFromEulerAngles(Vector3 vec)
+inline Quaternion& MakeQFromEulerAngles(Vector3 vec)
 {
+	Quaternion q;
 	double yaw = vec.y; // yaw = z
 	double pitch = vec.x; // pitch = y
 	double roll = vec.z; // roll = x
@@ -249,11 +249,11 @@ inline Quaternion& Quaternion::MakeQFromEulerAngles(Vector3 vec)
 	cyawspitch = cyaw * spitch;
 	syawcpitch = syaw * cpitch;
 
-	this->_n = (GLfloat)(cyawcpitch * croll + syawspitch * sroll);
-	this->_v.x = (GLfloat)(syawcpitch * sroll + cyawspitch * croll);
-	this->_v.y = (GLfloat)(syawcpitch * croll - cyawspitch * sroll);
-	this->_v.z = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
-	return this->Normalize();
+	q._n = (GLfloat)(cyawcpitch * croll + syawspitch * sroll);
+	q._v.x = (GLfloat)(syawcpitch * sroll + cyawspitch * croll);
+	q._v.y = (GLfloat)(syawcpitch * croll - cyawspitch * sroll);
+	q._v.z = (GLfloat)(cyawcpitch * sroll - syawspitch * croll);
+	return q.Normalize();
 };
 
 inline Vector3 Quaternion::MakeEulerAnglesFromQ() 
