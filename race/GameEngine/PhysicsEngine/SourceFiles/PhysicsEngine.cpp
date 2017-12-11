@@ -124,11 +124,6 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
-			
-			if (it->first.compare("Cube") == 0) {
-				it->second->rotate(Vector3(1.0f, 0.0f, 0.0f), PI * _deltaTime * 0.5f);
-				//it->second->_transform.translateForward(1.0f * _deltaTime);
-			}
 		}
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
 		MessagingSystem::instance().postMessage(myMessage);

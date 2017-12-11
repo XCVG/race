@@ -102,6 +102,7 @@ void Scene::setUpSceneOne() {
 
 	go = new GameObject(new Transform(new Vector3(0, 0.5f, 0), new Vector3(0, 0, 0), 1.0f), "player");
 	go->addComponent(new RenderComponent("car2_body", "car2_base", "", 0.75f));
+	go->addComponent(new BoxColliderComponent("car2_body"));
 	go->addComponent(new RigidBodyComponent(2.5f, 60.0f, 1850.0f, 0.0f, 0.0f, 0.0f, Vector3(1,1,2)));
 	GameObject *childWheelFL, *childWheelFR, *childWheelRL, *childWheelRR;
 	childWheelFL = new GameObject(new Transform(new Vector3(1.2f, 0.25f, 2.4f), new Vector3(0.0f, 0.0f, 0.0f), 1.0f), "wheelFL");
@@ -144,6 +145,11 @@ void Scene::setUpSceneOne() {
 	/*go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("raceTrack", "test_texture2", "", 0));
 	addGameObject("Road", go);*/
+
+	go = new GameObject(new Transform(new Vector3(-5, 0, 10), new Vector3(0, 0, 0), 3.0f));
+	go->addComponent(new RenderComponent("cube", "test_texture", "", 0));
+	go->addComponent(new BoxColliderComponent("cube"));
+	addGameObject("Cube", go);
 	
 	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
 	go->addComponent(new RenderComponent("track2a", "grass", "", 0));
