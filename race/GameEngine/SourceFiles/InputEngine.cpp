@@ -123,8 +123,22 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 				////GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
 				////angleY = PI - (angleY);
 				//_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+				if (!_lookBack) 
+				{
+					_lookAngle += -X * _deltaTime;
+					if (_lookAngle >= 2 * PI)
+						_lookAngle -= 2 * PI;
+				}
 			}
-			
+			else 
+			{
+				if (_lookAngle > 0.01f)
+					_lookAngle -= (PI / 4.0f) * _deltaTime;
+				else if (_lookAngle < -0.01f) 
+					_lookAngle += (PI / 4.0f) * _deltaTime;
+				else 
+					_lookAngle = 0.0f;
+			}
 		}
 		break;
 	}
@@ -148,18 +162,13 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			}
 			else {
 				
-				if (_turningDegree > 0.0001) {
+				if (_turningDegree > 0.0001)
 					_turningDegree -= (PI / 4.0f) * _deltaTime;
-				}
-				else if (_turningDegree < -0.0001) {
+				else if (_turningDegree < -0.0001)
 					_turningDegree += (PI / 4.0f) * _deltaTime;
-				}
-				else {
+				else
 					_turningDegree = 0.0f;
-				}
 			}
-			
-			//_turningDegree = PI / 4.0f;
 		}
 	}
 	break;
@@ -175,11 +184,10 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 			if (_lookBack)
 				_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation * MakeQFromEulerAngles(Vector3(0.0f, PI, 0.0f)));
 			else 
-				_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation);
+				_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation * MakeQFromEulerAngles(Vector3(0.0f, _lookAngle, 0.0f)));
 
 			GLfloat angleY = atan2((_camera_p->_transform._position.z - _player_p->_transform._position.z), (_camera_p->_transform._position.x - _player_p->_transform._position.x));
 			_camera_p->_transform._orientation = MakeQFromEulerAngles(Vector3(0.0f, angleY - PI / 2.0f, 0.0f));
-
 		}
 
 		/* Send physics message */

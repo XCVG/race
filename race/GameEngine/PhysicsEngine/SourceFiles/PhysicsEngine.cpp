@@ -234,7 +234,7 @@ void PhysicsEngine::applyAcceleration(GameObject *go, RigidBodyComponent *rc)
 	if (rc->getVelocity().magnitude() < rc->getMaxVelocity()) 
 	{
 		linearAccelerate(go,rc);
-		SDL_Log("SPEED: %f", rc->getVelocity().magnitude());
+		//SDL_Log("SPEED: %f", rc->getVelocity().magnitude());
 	}
 	angularAccelerate(rc);
 };
@@ -298,7 +298,7 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
-	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity();
+	GLfloat objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity().magnitude();
 
 	GameObject *wheelRL = go->getChild("wheelRL");
 	GameObject *wheelFL = go->getChild("wheelFL");
@@ -326,11 +326,11 @@ Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 	}
 	GLfloat sinTheta = sin(tireDegree);
 	GLfloat denominator = (L / (sinTheta));
-	Vector3 omega = objectVelocity / denominator;
+	GLfloat omega = objectVelocity / denominator;
 	wheelFL->_transform._rotation.y = tireDegree;
 	wheelFR->_transform._rotation.y = tireDegree;
 	
-	return omega.crossProduct(go->_transform._right.normalize());
+	return go->_transform._up * omega;
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
