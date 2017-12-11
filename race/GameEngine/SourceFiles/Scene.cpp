@@ -122,6 +122,7 @@ void Scene::setUpSceneOne() {
 	GameObject *right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
 	GameObject *up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
 	forward->addComponent(new RenderComponent("cone", "test_texture", "", 0.0f));
+	forward->addComponent(new LightComponent(1.5f, new Vector3(0.0f, 1.0f, 0.75f), 20.0f, 1.5f, RenderableLightType::POINT));
 	right->addComponent(new RenderComponent("cone", "test_texture2", "", 0.0f));
 	up->addComponent(new RenderComponent("cone", "rainbow", "", 0.0f));
 	go->addChild(forward);
@@ -154,12 +155,12 @@ void Scene::setUpSceneOne() {
 	addGameObject("Road", go);
 
 	go = new GameObject();
-	go->addComponent(new LightComponent(0.25f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
+	go->addComponent(new LightComponent(0.5f, new Vector3(1, 1, 1), 0.0f, 0.0f, RenderableLightType::AMBIENT));
 	addGameObject("LightAmb", go);
 
 	go = new GameObject(new Transform(new Vector3(0, 10.0f, 0), new Vector3(1.25f, 0, 0), 1.0f));
 	//go->addComponent(new RenderComponent("cube", "crate", "", 0)); 
-	go->addComponent(new LightComponent(0.5f, new Vector3(1.0f, 0.9f, 0.85f), 1000.0f, 0.0f, RenderableLightType::DIRECTIONAL)); 
+	go->addComponent(new LightComponent(0.75f, new Vector3(1.0f, 0.9f, 0.85f), 1000.0f, 0.0f, RenderableLightType::DIRECTIONAL)); 
 	addGameObject("LightDir", go);
 
 	go = new GameObject( new Transform(new Vector3(3.0f, 5.0f, 3.0f), new Vector3(0,0,0), 1.0f));

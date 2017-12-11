@@ -1683,7 +1683,8 @@ private:
 		//build base matrix
 		glm::mat4 projection = glm::ortho<float>(-GlobalPrefs::rShadowMapSide, GlobalPrefs::rShadowMapSide, -GlobalPrefs::rShadowMapSide, GlobalPrefs::rShadowMapSide, -GlobalPrefs::rShadowMapNear, GlobalPrefs::rShadowMapFar);
 		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
-		glm::mat4 translation = glm::translate(look, _mainDirectionalLight.position * -1.0f);
+		glm::vec3 correctedPosition = glm::vec3(scene->camera.position.x, _mainDirectionalLight.position.y, scene->camera.position.z);
+		glm::mat4 translation = glm::translate(look, correctedPosition); // * -1.0f 
 		glm::mat4 rotation = glm::mat4();
 		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
 		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
@@ -2078,7 +2079,7 @@ private:
 
 		glViewport(0, 0, _renderWidth, _renderHeight); 
 
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f); 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glUseProgram(_postCopyProgramID);
