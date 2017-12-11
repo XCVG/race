@@ -128,7 +128,7 @@ void main()
 	gl_FragColor.a = 1.0;
 	
 	//depth of field
-	float cDepth = texture(dBuffer, vec2(0.5, 0.5)).r;
+	float cDepth = texture(dBuffer, vec2(0.5, 0.25)).r;
 	float depthDiff = clamp(abs(depth - cDepth), 0, 1.0);
 	float biasedDepth = depthDiff * 10.0;
 	vec3 blurColor = blurSampleGaussian(biasedDepth * 0.1 * dofFactor, fBuffer);

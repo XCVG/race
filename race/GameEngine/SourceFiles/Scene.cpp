@@ -122,6 +122,7 @@ void Scene::setUpSceneOne() {
 	GameObject *right = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._right), new Vector3(0, 0, -PI / 2), 0.25f), "right");
 	GameObject *up = new GameObject(new Transform(new Vector3(go->_transform._position + go->_transform._up), new Vector3(0, 0, 0), 0.25f), "up");
 	forward->addComponent(new RenderComponent("cone", "test_texture", "", 0.0f));
+	forward->addComponent(new LightComponent(1.5f, new Vector3(0.0f, 1.0f, 0.75f), 20.0f, 1.5f, RenderableLightType::POINT));
 	right->addComponent(new RenderComponent("cone", "test_texture2", "", 0.0f));
 	up->addComponent(new RenderComponent("cone", "rainbow", "", 0.0f));
 	go->addChild(forward);
