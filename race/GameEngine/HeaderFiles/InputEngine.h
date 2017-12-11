@@ -41,8 +41,10 @@ private:
 	bool cameraIndependant;
 	Vector3 _playerToCamera;
 	GLfloat _deltaTime;
-	GLfloat _turningDegree = 0;
+	GLfloat _turningDegree = 0.0f;
+	GLfloat _lookAngle = 0.0f;
 	bool _isDrifting = false;
 	bool _wasDrifting = false;
 	bool _lookBack = false;
+
 };
