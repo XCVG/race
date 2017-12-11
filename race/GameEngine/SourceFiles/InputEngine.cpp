@@ -1,5 +1,4 @@
 #include "InputEngine.h"
-#define PI 3.14159265
 
 InputEngine::InputEngine() {
 	subscribe(MESSAGE_TYPE::InputInitializeCallType);
@@ -40,8 +39,7 @@ void InputEngine::setUpInput()
 				_playerToCamera = Vector3(_camera_p->_transform._position - _player_p->_transform._position);
 				_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
 				GLfloat angleY = (GLfloat)atan2(_playerToCamera.z, _playerToCamera.x);
-				Quaternion q;
-				_camera_p->_transform._orientation = q.MakeQFromEulerAngles(0, angleY - PI / 2.0f, 0);
+				_camera_p->_transform._orientation.MakeQFromEulerAngles(0, angleY - PI / 2.0f, 0);
 				_messageQueue.pop();
 				break;
 			}
@@ -68,6 +66,13 @@ void InputEngine::buttonEventHandler(SDL_Event ev)
 			std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::InputMessageType, false));
 			inputMessage->setContent(inputContent);
 			MessagingSystem::instance().postMessage(inputMessage);
+			break;
+		}
+		case SDL_CONTROLLER_BUTTON_X :
+		{
+			/* Flip the camera rotation to toggle looking forwards/back. */
+			_lookBack = !_lookBack;
+
 			break;
 		}
 		case SDL_CONTROLLER_BUTTON_BACK: 
@@ -98,21 +103,42 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		if (this->cameraIndependant)
 		{
 			//rotate(_camera_p, Vector3(content->lookY, content->lookX, 0) * 2 * _deltaTime);
-			_camera_p->_transform.rotate(Vector3(-Y, X, 0) * 2 * _deltaTime);
+			//_camera_p->_transform.rotate(Vector3(-Y, X, 0) * 2 * _deltaTime);
+			//_camera_p->_transform.rotateQuat(Vector3(-Y, -X, 0), _deltaTime);
+			if (X != 0 || Y != 0) {
+				_camera_p->_transform._orientation = _camera_p->_transform._orientation * MakeQFromEulerAngles(Vector3(Y, X, 0) * _deltaTime);
+				_camera_p->_transform._orientation.Normalize();
+			}
 		}
 		else
 		{
 			if (X != 0 || Y != 0)
 			{
-				_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
-				GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
-				//GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
-				if (angleY < 0)
-					angleY = PI - (angleY);
-				Quaternion q;
-				_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+				/* Commenting this code out so that the player can't turn the camera.
+					If you need to uncomment this, leave the double-commented lines commented.
+				*/
+
+				//_playerToCamera = _camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, Vector3(0.0f, -X * _deltaTime, 0.0f));
+				//GLfloat angleY = atan2(_playerToCamera.z, _playerToCamera.x);
+				////GLfloat angleX = atan2(sqrtf(powf(_playerToCamera.z, 2) + powf(_playerToCamera.x, 2)), _playerToCamera.y);
+				////angleY = PI - (angleY);
+				//_camera_p->_transform._orientation.MakeQFromEulerAngles(0.0f, angleY - PI / 2.0f, 0.0f);
+				if (!_lookBack) 
+				{
+					_lookAngle += -X * _deltaTime;
+					if (_lookAngle >= 2 * PI)
+						_lookAngle -= 2 * PI;
+				}
 			}
-			
+			else 
+			{
+				if (_lookAngle > 0.01f)
+					_lookAngle -= (PI / 4.0f) * _deltaTime;
+				else if (_lookAngle < -0.01f) 
+					_lookAngle += (PI / 4.0f) * _deltaTime;
+				else 
+					_lookAngle = 0.0f;
+			}
 		}
 		break;
 	}
@@ -125,17 +151,52 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		}
 		else
 		{
+			/* Turn the player car. */
 			//_player_p->_transform.rotateY(-X * _deltaTime);
-			_turningDegree = X * (PI / 4.0f);
+			if (X != 0) {
+				_turningDegree += -X * (PI / 4.0f) * _deltaTime;
+				if (_turningDegree >= (PI / 4.0f))
+					_turningDegree = (PI / 4.0f);
+				else if (_turningDegree <= -(PI / 4.0f))
+					_turningDegree = -(PI / 4.0f);
+			}
+			else {
+				
+				if (_turningDegree > 0.0001)
+					_turningDegree -= (PI / 4.0f) * _deltaTime;
+				else if (_turningDegree < -0.0001)
+					_turningDegree += (PI / 4.0f) * _deltaTime;
+				else
+					_turningDegree = 0.0f;
+			}
 		}
 	}
 	break;
 	case INPUT_TYPES::TRIGGERS:
 	{
+		/* Update whether the player is drifting. */
+		_wasDrifting = _isDrifting;
+		_isDrifting = (X > 0 && Y > 0 && _turningDegree != 0);
+
+		/* Update camera turning. */
+		if (!cameraIndependant)
+		{
+			if (_lookBack)
+				_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation * MakeQFromEulerAngles(Vector3(0.0f, PI, 0.0f)));
+			else 
+				_camera_p->_transform.rotateAround(_playerToCamera, _player_p->_transform._position, _player_p->_transform._orientation * MakeQFromEulerAngles(Vector3(0.0f, _lookAngle, 0.0f)));
+
+			GLfloat angleY = atan2((_camera_p->_transform._position.z - _player_p->_transform._position.z), (_camera_p->_transform._position.x - _player_p->_transform._position.x));
+			_camera_p->_transform._orientation = MakeQFromEulerAngles(Vector3(0.0f, angleY - PI / 2.0f, 0.0f));
+		}
+
+		/* Send physics message */
 		PhysicsAccelerateContent *content = new PhysicsAccelerateContent();
 		content->amountFast = Y;
 		content->amountSlow = X;
 		content->turningDegree = _turningDegree;
+		content->_isDrifting = _isDrifting;
+		content->_wasDrifting = _wasDrifting;
 		content->object = _player_p;
 		std::shared_ptr<Message> inputMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsAccelerateCallType, false));
 		inputMessage->setContent(content);
@@ -157,8 +218,10 @@ void InputEngine::checkAxis(SDL_GameControllerAxis x, SDL_GameControllerAxis y, 
 	if ((degreeY < CONTROLLER_DEADZONE && degreeY > -CONTROLLER_DEADZONE) && !(degreeY > CONTROLLER_DEADZONE || degreeY < -CONTROLLER_DEADZONE))
 		degreeY = 0;
 
-	axisEventHandler((float)degreeX / imax, (float)degreeY / imax, type);
-	
+	float xAmount = (float)degreeX / imax;
+	float yAmount = (float)degreeY / imax;
+
+	axisEventHandler(xAmount, yAmount, type);
 }
 
 void InputEngine::checkInput(GLfloat deltaTime)
@@ -183,7 +246,4 @@ void InputEngine::checkInput(GLfloat deltaTime)
         checkAxis(SDL_CONTROLLER_AXIS_LEFTX, SDL_CONTROLLER_AXIS_LEFTY, INPUT_TYPES::MOVE_AXIS);
         checkAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, INPUT_TYPES::TRIGGERS);
     }
-	if (!cameraIndependant) {
-		_camera_p->_transform._position = _playerToCamera + _player_p->_transform._position;
-	}
 }

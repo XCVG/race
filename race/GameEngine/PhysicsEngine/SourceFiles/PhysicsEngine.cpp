@@ -111,7 +111,7 @@ void PhysicsEngine::loop()
 	}
 	this->stop();
 	SDL_Log("Physics::Out of loop");
-}
+};
 
 void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage) 
 {
@@ -120,118 +120,171 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 	case MESSAGE_TYPE::PhysicsCallMessageType:
 	{
 		PhysicsCallMessageContent* content = static_cast<PhysicsCallMessageContent*>(myMessage->getContent());
-		
+		_deltaTime = content->deltaTime;
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
 			
-			if (it->first == "Sphere") {
-				it->second->_transform.rotate(Vector3(0.0f, MATH_PI / 2, 0.0f) * content->deltaTime);
-				//it->second->_transform._position += it->second->_transform._forward * content->deltaTime;
+			if (it->first.compare("Cube") == 0) {
+				it->second->rotate(Vector3(1.0f, 0.0f, 0.0f), PI * _deltaTime * 0.5f);
+				//it->second->_transform.translateForward(1.0f * _deltaTime);
 			}
 		}
-		_deltaTime = content->deltaTime;
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
 		MessagingSystem::instance().postMessage(myMessage);
 		break;
 	}
 	case MESSAGE_TYPE::PhysicsAccelerateCallType: 
 	{
+		/* Get player input data. */
 		PhysicsAccelerateContent* content = static_cast<PhysicsAccelerateContent*>(myMessage->getContent());
 		GameObject* go = content->object;
-		GLfloat amount = content->amountFast;
-		GLfloat amount2 = content->amountSlow;
+		GLfloat forward = content->amountFast;
+		GLfloat reverse = content->amountSlow;
 		RigidBodyComponent *rbc = go->getComponent<RigidBodyComponent*>();
 		Vector3 F_Long;
-		
-		if (amount != 0 || amount2 != 0) {
-			Vector3 F_Drag = Vector3(rbc->getVelocity() * rbc->getVelocity().magnitude()) * -0.4257;
-			Vector3 F_RollingRes = rbc->getVelocity() * 12.8;
-			Vector3 F_Long = F_Drag + F_RollingRes;
-			if (amount != 0)
-			{
-				F_Long += go->_transform._forward.normalize() * (amount * 5000);
-				rbc->setForce(F_Long);
-			}
-			if (amount2 != 0)
-			{
-				F_Long += Vector3(-go->_transform._forward.normalize()) * (amount2 * 6000);
-				rbc->setForce(F_Long); 
-			}
-			rbc->setAccelerationVector(rbc->getForce() / rbc->getWeight());
-		}
-		rbc->setTurningDegree(content->turningDegree); // Turning input from user
-		if (amount == 0 && amount2 == 0)
+		GLfloat turningDegree = content->turningDegree;
+		bool isDrifting = content->_isDrifting;
+		bool wasDrifting = content->_wasDrifting;
+
+		/* If drifting, DRIIIIIFFFFFFTTTT!. */
+		if (isDrifting || wasDrifting)
 		{
-			rbc->setAccelerationVector(Vector3(0, 0, 0));
-			// rbc->setTurningDegree(0);
+			/* If we are entering a drift, reset the drift timer. */
+			if (!wasDrifting)
+			{
+				_driftTimer = 0;
+			}
+
+			/* If we just started a drift or are in the middle of one, turn faster. */
+			if (isDrifting)
+			{
+				/* During a drift, your brake hard and slow down, and
+					turn faster for sharper cornering. This works out to be slower than 
+					normal acceleration, but you get a boost of speed coming out of the drift.
+				*/
+				//F_Long = go->_transform._forward * (forward * 300);
+				F_Long += -go->_transform._forward * (reverse * 500);
+				rbc->setForce(F_Long);
+
+				rbc->setTurningDegree(turningDegree * 1.1f); // Turning input from user
+				_driftTimer += _deltaTime;
+			}
+			/* If we're exiting a drift, apply the speed boost. */
+			else if (_driftTimer > 1.5f)
+			{
+				/* The drift boost multiplier is between 1.5 - 2.0 for drift times over 2.0 seconds. */
+				float driftMultiplier = 1.0f + (1.0f * fmin(_driftTimer, 4.0f) / 4.0f);
+
+				/* Calculate the speed boost, but make sure the car doesn't exceed its max velocity. */
+				Vector3 candidateVelocity = go->_transform._forward * rbc->getVelocity().magnitude() * driftMultiplier;
+				if (candidateVelocity.magnitude() > rbc->getMaxVelocity() * 1.1f)
+				{
+					candidateVelocity = candidateVelocity.normalize() * rbc->getMaxVelocity() * 1.1f;
+				}
+
+				/* Update the velocity. */
+				rbc->setVelocity(candidateVelocity);
+			}
 		}
+		/* If not drifting, steer normally. */
+		else
+		{
+			if (forward != 0)
+			{
+				F_Long = go->_transform._forward * (forward * 2000);
+			}
+			if (reverse != 0)
+			{
+				F_Long = -go->_transform._forward * (reverse * 4000);
+			}
+			rbc->setForce(F_Long);
+			rbc->setTurningDegree(turningDegree); // Turning input from user
+		}
+
 		break;
 	}
 	default:
 		break;
 	}
-}
+};
 
 void PhysicsEngine::generalPhysicsCall(GameObject* go) 
 {
 	if (go->hasComponent<RigidBodyComponent*>()) 
 	{
 		RigidBodyComponent* rbc = go->getComponent<RigidBodyComponent*>();
-		applyAcceleration(go);
-		applyTurning(go);
-		//SDL_Log("%f, %f, %f", go->_transform._position.x, go->_transform._position.y, go->_transform._position.z);
-		go->_transform.translate(Vector3(rbc->getVelocity()) * _deltaTime);
-		//go->_transform.rotateY((MATH_PI / 2) * _deltaTime);
-		//SDL_Log("Player Pos: %f", go->_transform._position.z);
+		if (go->_name.compare("sphere") == 0) {
+			rbc->setAngularAccel(Vector3(0, 0, PI) * 0.5 * _deltaTime);
+		}
+			
+		if (go->_name.compare("player") == 0 && rbc->getVelocity().magnitude() >= 0)
+		{
+			adjustForces(go, rbc);
+			applyAcceleration(go, rbc);
+			go->translate(rbc->getVelocity() * _deltaTime);
+			turnGameObject(go);
+			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
+		}
 	}
-}
+};
 
-void PhysicsEngine::applyAcceleration(GameObject* go) 
+void PhysicsEngine::applyAcceleration(GameObject *go, RigidBodyComponent *rc) 
 {
-	RigidBodyComponent* rc = go->getComponent<RigidBodyComponent*>();
-	if (!(rc->getVelocity().magnitude() > rc->getMaxVelocity()) || rc->getVelocity().dotProduct(go->_transform._forward) < 0) 
+	if (rc->getVelocity().magnitude() < rc->getMaxVelocity()) 
 	{
-		accelerate(go, rc);
+		linearAccelerate(go,rc);
+		//SDL_Log("SPEED: %f", rc->getVelocity().magnitude());
 	}
-}
+	angularAccelerate(rc);
+};
 
-void PhysicsEngine::applyTurning(GameObject* go)
+void PhysicsEngine::adjustForces(GameObject *go, RigidBodyComponent *rc) 
 {
-	turnGameObject(go);
-}
+	Vector3 dragVector = -rc->getVelocity().normalize();
+	Vector3 newForce = rc->getForce() + (dragVector * (rc->getVelocity().magnitude() *
+		rc->getVelocity().magnitude()) * RHO * LINEARDRAGCOEF * ((rc->_length / 2.0f) * (rc->_length / 2.0f)));
+	//newForce = QVRotate(go->_transform._orientation, newForce);
+
+	rc->setAccelerationVector(newForce / rc->getMass());
+
+	Vector3 angularDragVector = -rc->_angularVel.normalize();
+	rc->_angularMoment += (angularDragVector * (rc->_angularVel.magnitude() *
+		rc->_angularVel.magnitude()) * RHO * ANGULARDRAGCOEF * ((rc->_length / 2.0f) * (rc->_length / 2.0f)));
+
+	glm::vec3 inertiaAngVel = rc->_mInertia * glm::vec3(rc->_angularVel.x, rc->_angularVel.y, rc->_angularVel.z);
+	Vector3 angMoments = rc->_angularMoment - rc->_angularVel.crossProduct(Vector3(inertiaAngVel.x, inertiaAngVel.y, inertiaAngVel.z));
+	glm::vec3 something = rc->_mInertiaInverse * glm::vec3(angMoments.x, angMoments.y, angMoments.z);
+	rc->setAngularAccel(rc->getAngularAccel() + Vector3(something.x, something.y, something.z));
+};
 
 /**
  *	Stops the physics engine.
  */
-void PhysicsEngine::stop()
-{
-
-	//SDL_Log("Physics::Stop");
-}
+void PhysicsEngine::stop() {};
 
 void PhysicsEngine::flagLoop() 
 {
 	_running = false;
-}
+};
 
 /**
  *  <summary>
  *  Accelerate the game object. The amount should be modified by the delta time.
  *  </summary>
  */
-void PhysicsEngine::accelerate(GameObject *go, RigidBodyComponent* rbc)
+void PhysicsEngine::linearAccelerate(GameObject* go, RigidBodyComponent* rbc)
 {
-	if (rbc->getVelocity().dotProduct(go->_transform._forward) >= 0) 
-	{
-		rbc->setVelocity(rbc->getVelocity() + (Vector3(rbc->getAccelerationVector()) * _deltaTime));
-	}
-	else 
-	{
-		rbc->setVelocity(Vector3(0.0f, 0.0f, 0.0f));
-		rbc->setForce(Vector3(0.0f, 0.0f, 0.0f));
-	}
+	rbc->setVelocity(go->_transform._forward * rbc->getVelocity().magnitude() + rbc->getAccelerationVector() * _deltaTime);
 };
+
+
+void PhysicsEngine::angularAccelerate(RigidBodyComponent* rbc) 
+{
+	//rbc->setAngularAccel();
+	rbc->_angularVel += rbc->getAngularAccel() * _deltaTime;
+};
+
 /**
  * <summary>
  * Accelerate the game object. Each axis should be modified by the delta time.
@@ -243,31 +296,46 @@ void PhysicsEngine::accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
 	//go->getComponent<RigidBodyComponent*>()->setSpeed(go->getComponent<RigidBodyComponent*>()->getAccNumber() * _deltaTime);
 };
 
-void PhysicsEngine::decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z)
-{
-	go->getComponent<RigidBodyComponent*>()->getVelocity() -= Vector3(x, y, z) * _deltaTime;
-};
-
 Vector3 PhysicsEngine::getAngleFromTurn(GameObject *go, GLfloat tireDegree)
 {
-	if (tireDegree >= PI/4.0f || tireDegree != 0)
-		SDL_Log("Joystick X");
-	Vector3 objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity(); 
-	GLfloat L = (go->getChild(std::string("front"))->_transform._position 
-		- go->getChild(std::string("rear"))->_transform._position).magnitude(); // Distance from front of object to rear of object
-	GLfloat theta = tireDegree;
-	if (L == 0 || theta == 0)
+	GLfloat objectVelocity = go->getComponent<RigidBodyComponent*>()->getVelocity().magnitude();
+
+	GameObject *wheelRL = go->getChild("wheelRL");
+	GameObject *wheelFL = go->getChild("wheelFL");
+	GameObject *wheelFR = go->getChild("wheelFR");
+
+	GLfloat L = (wheelFL->_transform._position - wheelRL->_transform._position).magnitude();
+
+	if (tireDegree == 0)
 	{
-		return Vector3();
+		if (wheelFL->_transform._rotation.y < -0.0001)
+			wheelFL->_transform._rotation.y += (PI / 4.0f) * _deltaTime;
+		else if (wheelFL->_transform._rotation.y > 0.0001)
+			wheelFL->_transform._rotation.y -= (PI / 4.0f) * _deltaTime;
+		else
+			wheelFL->_transform._rotation.y = 0.0f;
+
+		if (wheelFR->_transform._rotation.y < -0.0001)
+			wheelFR->_transform._rotation.y += (PI / 4.0f) * _deltaTime;
+		else if (wheelFR->_transform._rotation.y > 0.0001)
+			wheelFR->_transform._rotation.y -= (PI / 4.0f) * _deltaTime;
+		else
+			wheelFR->_transform._rotation.y = 0.0f;
+
+		return Vector3(0, 0, 0);
 	}
-	GLfloat sinTheta = sin(theta);
-	GLfloat denominator = (L / (sinTheta * 0.4));
-	GLfloat omega = objectVelocity.magnitude() / denominator;
-	return Vector3(0, omega, 0);
+	GLfloat sinTheta = sin(tireDegree);
+	GLfloat denominator = (L / (sinTheta));
+	GLfloat omega = objectVelocity / denominator;
+	wheelFL->_transform._rotation.y = tireDegree;
+	wheelFR->_transform._rotation.y = tireDegree;
+	
+	return go->_transform._up * omega;
 };
 
 void PhysicsEngine::turnGameObject(GameObject *go)
 {
-	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent *>()->getTurningDegree());
-	go->rotate(angularVelocity * (_deltaTime * 10)); // angularVelocity * deltaTime = current angle
+	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree());
+	if (go->getComponent<RigidBodyComponent*>()->getVelocity().magnitude() > 0)
+		go->rotate(angularVelocity, 0.5 * _deltaTime); // angularVelocity * deltaTime = current angle
 };

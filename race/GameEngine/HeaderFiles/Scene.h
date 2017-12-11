@@ -1,13 +1,18 @@
 #pragma once
-#include <vector>
-#include <mutex>
+#ifdef __APPLE__
+#include <SDL2/SDL.h>
+#elif defined _WIN32 || defined _WIN64
+#include <SDL.h>
+#endif
+// TODO: These are relative with the build, the paths can be removed
 #include "../RenderEngine/HeaderFiles/RenderableTypes.h"
 #include "../Components/HeaderFiles/GameObject.h"
 #include "../Components/HeaderFiles/Transform.h"
 #include "../MessagingSystem/HeaderFiles/MessageReceiver.h"
 #include "../../HeaderFiles/InputTypes.h"
 #include "../MessagingSystem/HeaderFiles/MessagingSystem.h"
-
+#include <vector>
+#include <mutex>
 
 class Scene
 {
