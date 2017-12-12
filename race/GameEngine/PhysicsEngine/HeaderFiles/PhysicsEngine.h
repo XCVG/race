@@ -113,4 +113,6 @@ class PhysicsEngine : public MessageReceiver
 		void adjustForces(GameObject * go, RigidBodyComponent * rc);
 		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
 		void turnGameObject(GameObject *go);
+		void collisionDetection(std::map<std::string, GameObject*> worldObj, GameObject *go);
+		bool checkForCollision(GameObject *coll1, GameObject *coll2);
 };

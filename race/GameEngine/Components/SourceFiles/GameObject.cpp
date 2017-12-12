@@ -109,10 +109,6 @@ void GameObject::translate(Vector3 vec)
 		{
 			this->updateDirectionPositions(i);
 		}
-		else 
-		{
-			//this->updateChildPositions(i);
-		}
 		i++;
 	}
 };
