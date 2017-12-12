@@ -146,7 +146,7 @@ void Scene::setUpSceneOne() {
 	go->addComponent(new RenderComponent("raceTrack", "test_texture2", "", 0));
 	addGameObject("Road", go);*/
 
-	go = new GameObject(new Transform(new Vector3(-5, 0, 10), new Vector3(0, 0, 0), 3.0f));
+	go = new GameObject(new Transform(new Vector3(-5, 2, 10), new Vector3(0, 0, 0), 1.0f), "Cube");
 	go->addComponent(new RenderComponent("cube", "test_texture", "", 0));
 	go->addComponent(new BoxColliderComponent("cube"));
 	addGameObject("Cube", go);

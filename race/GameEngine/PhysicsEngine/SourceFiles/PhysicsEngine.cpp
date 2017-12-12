@@ -335,18 +335,43 @@ void PhysicsEngine::turnGameObject(GameObject *go)
 	if (go->getComponent<RigidBodyComponent*>()->getVelocity().magnitude() > 0)
 		go->rotate(angularVelocity, 0.5 * _deltaTime); // angularVelocity * deltaTime = current angle
 }
+
 void PhysicsEngine::collisionDetection(std::map<std::string, GameObject*> worldObj, GameObject * go)
 {
 	if (go->hasComponent<BoxColliderComponent*>()) 
 	{
-		BoxColliderComponent *boxColl = go->getComponent<BoxColliderComponent*>();
 		for (std::map<std::string, GameObject*>::iterator it = worldObj.begin(); it != worldObj.end(); ++it) 
 		{
-			if (it->second->hasComponent<BoxColliderComponent*>())
+			if (it->second->hasComponent<BoxColliderComponent*>() && it->second != go)
 			{
-
+				if (checkForCollision(go, it->second)) 
+				{
+					if (it->second->hasComponent<RigidBodyComponent*>()) 
+					{
+						it->second->getComponent<RigidBodyComponent*>()->setForce(Vector3(1.0f, 1.0f, 0.0f));
+					}
+					if (go->hasComponent<RigidBodyComponent*>())
+					{
+						//go->getComponent<RigidBodyComponent*>()->setVelocity();
+						SDL_Log("Collision on Car");
+					}
+				}
 			}
-			if (it->second->hasComponent<>())
 		}
 	}
+};
+
+bool PhysicsEngine::checkForCollision(GameObject *coll1, GameObject *coll2) 
+{
+	BoxColliderComponent *boxColl = coll1->getComponent<BoxColliderComponent*>();
+	BoxColliderComponent *boxColl2 = coll2->getComponent<BoxColliderComponent*>();
+	Vector3 obj1Pos = coll1->_transform._position;
+	Vector3 obj2Pos = coll2->_transform._position;
+
+	return (obj1Pos.x + boxColl->getMaxX() > obj2Pos.x + boxColl2->getMinX() &&
+		obj1Pos.x + boxColl->getMinX() < obj2Pos.x + boxColl2->getMaxX() &&
+		obj1Pos.y + boxColl->getMaxY() > obj2Pos.y + boxColl2->getMinY() &&
+		obj1Pos.y + boxColl->getMinY() < obj2Pos.y + boxColl2->getMaxY() &&
+		obj1Pos.z + boxColl->getMaxZ() > obj2Pos.z + boxColl2->getMinZ() &&
+		obj1Pos.z + boxColl->getMinZ() < obj2Pos.z + boxColl2->getMaxZ());
 };
