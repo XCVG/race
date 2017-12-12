@@ -77,6 +77,8 @@ std::thread* Engine::start() {
 	rsd.textures.push_back("car2_base");
 	rsd.textures.push_back("car2_wheel");
 	rsd.textures.push_back("grass");
+	rsd.textures.push_back("grass2_d");
+	rsd.textures.push_back("grass2_n");
 	rsd.textures.push_back("asphalt");
 	rlmc->data = rsd;
 

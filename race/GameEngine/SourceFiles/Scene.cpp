@@ -147,11 +147,11 @@ void Scene::setUpSceneOne() {
 	addGameObject("Road", go);*/
 	
 	go = new GameObject(new Transform(new Vector3(0, 0, 0), new Vector3(0, 0, 0), 3.0f));
-	go->addComponent(new RenderComponent("track2a", "grass", "", 0));
+	go->addComponent(new RenderComponent("track2a", "grass2_d", "grass2_n", 0.5f));
 	addGameObject("Ground", go);
 
 	go = new GameObject(new Transform(new Vector3(0, -2.9f, 0), new Vector3(0, 0, 0), 3.0f));
-	go->addComponent(new RenderComponent("track3b", "asphalt", "", 0));
+	go->addComponent(new RenderComponent("track3b", "asphalt", "", 0.25f));
 	addGameObject("Road", go);
 
 	go = new GameObject();
