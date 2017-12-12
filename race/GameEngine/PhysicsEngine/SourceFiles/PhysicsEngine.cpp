@@ -214,13 +214,12 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 			rbc->setAngularAccel(Vector3(0, 0, PI) * 0.5 * _deltaTime);
 		}
 		
-		if (go->_name.compare("player") == 0 && rbc->getVelocity().magnitude() >= 0)
-		{
-			adjustForces(go, rbc);
-			applyAcceleration(go, rbc);
-			go->translate(rbc->getVelocity() * _deltaTime);
+		adjustForces(go, rbc);
+		applyAcceleration(go, rbc);
+		go->translate(rbc->getVelocity() * _deltaTime);
+		go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
+		if (go->_name.compare("player") == 0 && rbc->getVelocity().magnitude() >= 0) {
 			turnGameObject(go);
-			go->rotate(rbc->_angularVel * 0.5 * _deltaTime);
 		}
 	}
 };
@@ -348,7 +347,7 @@ void PhysicsEngine::collisionDetection(std::map<std::string, GameObject*> worldO
 				{
 					if (it->second->hasComponent<RigidBodyComponent*>()) 
 					{
-						it->second->getComponent<RigidBodyComponent*>()->setForce(Vector3(1.0f, 1.0f, 0.0f));
+						it->second->getComponent<RigidBodyComponent*>()->setForce(Vector3(1.0f, 1.0f, 0.0f) * _deltaTime);
 					}
 					if (go->hasComponent<RigidBodyComponent*>())
 					{

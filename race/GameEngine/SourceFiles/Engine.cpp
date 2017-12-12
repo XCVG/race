@@ -81,7 +81,7 @@ std::thread* Engine::start() {
 	rsd.textures.push_back("grass2_d");
 	rsd.textures.push_back("grass2_n");
 	rsd.textures.push_back("asphalt");
-	rsd.textures.push_back("test_texture");
+	rsd.textures.push_back("test_texture3");
 	rlmc->data = rsd;
 
 	std::shared_ptr<Message> msg = std::make_shared<Message>(MESSAGE_TYPE::RenderLoadMessageType, false);
