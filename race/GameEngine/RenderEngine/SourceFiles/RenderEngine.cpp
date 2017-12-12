@@ -40,10 +40,6 @@
 //CONSTANTS: will change at least some to config options
 
 const int_least64_t IDLE_DELAY_CONST = 10;
-const std::string MODEL_BASEPATH_CONST = "ResourceFiles/Models/";
-const std::string TEXTURE_BASEPATH_CONST = "ResourceFiles/Textures/";
-const std::string MODEL_EXTENSION_CONST = ".obj";
-const std::string TEXTURE_EXTENSION_CONST = ".png";
 
 /// <summary>
 /// Actual RenderEngine implementation, using PIMPL pattern for a modicum of isolation
@@ -200,8 +196,11 @@ private:
 	GLuint _framebufferDrawTex2ID = 0;
 	GLuint _framebufferDrawTex3ID = 0;
 	GLuint _framebufferDrawTexSID = 0;
+	GLuint _framebufferDrawColorID = 0;
 	GLuint _framebufferDrawAmbientID = 0;
-	GLuint _framebufferDrawDirectionalID = 0;
+	GLuint _framebufferDrawDirColorID = 0;
+	GLuint _framebufferDrawDirFacingID = 0;
+	GLuint _framebufferDrawCameraPosID = 0;
 	GLuint _framebufferDrawBiasID = 0;
 
 	//shadow pass program and uniforms, texture ID
@@ -236,6 +235,27 @@ private:
 	GLuint _slightPassLightColorID = 0;
 	GLuint _slightPassLightRangeID = 0;
 	GLuint _slightPassLightAngleID = 0;
+
+	//postprocessing program and buffers
+	GLuint _postProgramID = 0;
+	GLuint _postProgramTexID = 0;
+	GLuint _postProgramSmearTexID = 0;
+	GLuint _postProgramDepthTexID = 0;
+	GLuint _postProgramBlurAmountID = 0;
+	GLuint _postProgramDofAmountID = 0;
+	GLuint _postProgramDofFactorID = 0;
+	GLuint _postProgramFogAmountID = 0;
+	GLuint _postProgramFogFactorID = 0;
+	GLuint _postProgramFogColorID = 0;
+	GLuint _postFramebufferID = 0;
+	GLuint _postFramebufferTexID = 0;
+	GLuint _postSmearbufferID = 0;
+	GLuint _postSmearbufferTexID = 0;
+	GLuint _postCopyProgramID = 0;
+	GLuint _postCopyProgramFactorID = 0;
+	GLuint _postCopyProgramBlurAmountID = 0;
+	GLuint _postCopyProgramLastTexID = 0;
+	GLuint _postCopyProgramSmearTexID = 0;
 
 	//the texture of shame
 	GLuint _fallbackTextureID = 0;
@@ -369,6 +389,7 @@ private:
 		setupFramebuffers();
 		setupFramebufferDraw();
 		setupShadowMapping();
+		setupPostProcessing();
 		setupFallbacks();
 	}
 
@@ -382,6 +403,7 @@ private:
 		cleanupFramebuffers();
 		cleanupFramebufferDraw();
 		cleanupShadowMapping();
+		cleanupPostProcessing();
 		cleanupFallbacks();
 	}
 
@@ -601,8 +623,11 @@ private:
 		_framebufferDrawTex2ID = glGetUniformLocation(_framebufferDrawProgramID, "fNormal");
 		_framebufferDrawTex3ID = glGetUniformLocation(_framebufferDrawProgramID, "fDepth");
 		_framebufferDrawTexSID = glGetUniformLocation(_framebufferDrawProgramID, "sDepth");
+		_framebufferDrawColorID = glGetUniformLocation(_framebufferDrawProgramID, "clearColor");
 		_framebufferDrawAmbientID = glGetUniformLocation(_framebufferDrawProgramID, "ambientLight");
-		_framebufferDrawDirectionalID = glGetUniformLocation(_framebufferDrawProgramID, "directionalLight");
+		_framebufferDrawDirColorID = glGetUniformLocation(_framebufferDrawProgramID, "dLightColor");
+		_framebufferDrawDirFacingID = glGetUniformLocation(_framebufferDrawProgramID, "dLightFacing");;
+		_framebufferDrawCameraPosID = glGetUniformLocation(_framebufferDrawProgramID, "cameraPos");;
 		_framebufferDrawBiasID = glGetUniformLocation(_framebufferDrawProgramID, "biasMVP");
 
 		//setup point pass shader
@@ -633,6 +658,22 @@ private:
 	}
 
 	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes shaders
+	/// </summary>
+	void cleanupFramebufferDraw()
+	{
+		// delete VBOs/VAOs
+		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
+		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
+
+		//delete programs
+		glDeleteProgram(_framebufferDrawProgramID);
+		glDeleteProgram(_plightPassProgramID);
+		glDeleteProgram(_slightPassProgramID);
+	}
+
+	/// <summary>
 	/// Helper method initial setup
 	/// Sets up geometry, buffers, and shaders for shadow mapping
 	/// </summary>
@@ -650,7 +691,7 @@ private:
 		/* Generate the shadow depth buffer. */
 		glGenTextures(1, &_shadowFramebufferDepthID);
 		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0); //TODO CONST
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, GlobalPrefs::rShadowMapSize, GlobalPrefs::rShadowMapSize, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0); //TODO CONST
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -665,22 +706,6 @@ private:
 
 	/// <summary>
 	/// Helper method for final cleanup
-	/// Deletes shaders
-	/// </summary>
-	void cleanupFramebufferDraw()
-	{
-		// delete VBOs/VAOs
-		glDeleteBuffers(1, &_framebufferDrawVertexBufferID);
-		glDeleteVertexArrays(1, &_framebufferDrawVertexArrayID);
-
-		//delete programs
-		glDeleteProgram(_framebufferDrawProgramID);
-		glDeleteProgram(_plightPassProgramID);
-		glDeleteProgram(_slightPassProgramID);
-	}
-
-	/// <summary>
-	/// Helper method for final cleanup
 	/// Deletes shadow mapping buffers, programs, and geometry
 	/// </summary>
 	void cleanupShadowMapping()
@@ -688,6 +713,75 @@ private:
 		glDeleteTextures(1, &_shadowFramebufferDepthID);
 		glDeleteFramebuffers(1, &_shadowFramebufferID);
 		glDeleteProgram(_shadowPassProgramID);
+	}
+
+	/// <summary>
+	/// Helper method initial setup
+	/// Sets up program and buffers for postprocessing
+	/// </summary>
+	void setupPostProcessing()
+	{
+		//load shader
+		_postProgramID = Shaders::LoadShadersPostProcessing();
+		_postProgramTexID = glGetUniformLocation(_postProgramID, "fBuffer");
+		_postProgramSmearTexID = glGetUniformLocation(_postProgramID, "sBuffer");
+		_postProgramDepthTexID = glGetUniformLocation(_postProgramID, "dBuffer");
+		_postProgramBlurAmountID = glGetUniformLocation(_postProgramID, "blurAmount");
+		_postProgramDofAmountID = glGetUniformLocation(_postProgramID, "dofAmount");
+		_postProgramDofFactorID = glGetUniformLocation(_postProgramID, "dofFactor");
+		_postProgramFogAmountID = glGetUniformLocation(_postProgramID, "fogAmount");
+		_postProgramFogFactorID = glGetUniformLocation(_postProgramID, "fogFactor");
+		_postProgramFogColorID = glGetUniformLocation(_postProgramID, "fogColor");
+		
+		//load smearbuffer copy shader
+		_postCopyProgramID = Shaders::LoadShadersSBCopy();
+		_postCopyProgramFactorID = glGetUniformLocation(_postCopyProgramID, "factor");
+		_postCopyProgramBlurAmountID = glGetUniformLocation(_postCopyProgramID, "blurAmount");
+		_postCopyProgramLastTexID = glGetUniformLocation(_postCopyProgramID, "lBuffer");
+		_postCopyProgramSmearTexID = glGetUniformLocation(_postCopyProgramID, "sBuffer");
+
+		//generate base framebuffer FBO and texture
+		glGenFramebuffers(1, &_postFramebufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postFramebufferID);
+		glGenTextures(1, &_postFramebufferTexID);
+		glBindTexture(GL_TEXTURE_2D, _postFramebufferTexID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _renderWidth, _renderHeight, 0, GL_RGBA, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _postFramebufferTexID, 0);
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//generate smearbuffer FBO and texture
+		glGenFramebuffers(1, &_postSmearbufferID);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postSmearbufferID);
+		glGenTextures(1, &_postSmearbufferTexID);
+		glBindTexture(GL_TEXTURE_2D, _postSmearbufferTexID);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _renderWidth, _renderHeight, 0, GL_RGBA, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, _postSmearbufferTexID, 0);
+		glDrawBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		
+	}
+
+	/// <summary>
+	/// Helper method for final cleanup
+	/// Deletes postprocessing buffers and program
+	/// </summary>
+	void cleanupPostProcessing()
+	{
+		glDeleteTextures(1, &_postFramebufferTexID);
+		glDeleteFramebuffers(1, &_postFramebufferTexID);
+		glDeleteTextures(1, &_postSmearbufferID);
+		glDeleteFramebuffers(1, &_postSmearbufferTexID);
+
+		glDeleteProgram(_postProgramID);
 	}
 
 	/// <summary>
@@ -1338,6 +1432,7 @@ private:
 			drawObjects(_lastScene_p); //do the geometry pass
 			drawShadows(_lastScene_p); //do the shadow map
 			drawLighting(_lastScene_p); //do the lighting pass
+			drawPostProcessing(_lastScene_p); //do the postprocessing
 		}
 
 		if (_lastOverlay_p == nullptr)
@@ -1411,8 +1506,7 @@ private:
 
 		glEnable(GL_CULL_FACE);
 
-		glm::vec3 clearColor = scene->camera.clearColor;
-		glClearColor(clearColor.r, clearColor.g, clearColor.b, 0.0f);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//draw objects 
@@ -1566,27 +1660,31 @@ private:
 	{
 
 		//grab the main light
+		bool foundMainDirectionalLight = false;
 		for (int eachLight = 0; eachLight < scene->lights.size(); eachLight++)
 		{
 			if (scene->lights[eachLight].type == RenderableLightType::DIRECTIONAL)
 			{
 				_mainDirectionalLight = (scene->lights[eachLight]);
 				//SDL_Log("Found a directional light!");
+				foundMainDirectionalLight = true;
 				break;
 			}
 		}
 
-		//get direction
-		//glm::mat4 rotMatrix = glm::mat4();
-		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
-		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
-		//rotMatrix = glm::rotate(rotMatrix, mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
-		//glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		//fallback: black directional light
+		if (!foundMainDirectionalLight)
+		{
+			RenderableLight mdl;
+			mdl.intensity = 0.0f;
+			_mainDirectionalLight = mdl;
+		}
 
 		//build base matrix
-		glm::mat4 projection = glm::ortho<float>(-10, 10, -10, 10, -10, 20);
+		glm::mat4 projection = glm::ortho<float>(-GlobalPrefs::rShadowMapSide, GlobalPrefs::rShadowMapSide, -GlobalPrefs::rShadowMapSide, GlobalPrefs::rShadowMapSide, -GlobalPrefs::rShadowMapNear, GlobalPrefs::rShadowMapFar);
 		glm::mat4 look = glm::lookAt(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
-		glm::mat4 translation = glm::translate(look, _mainDirectionalLight.position * -1.0f);
+		glm::vec3 correctedPosition = glm::vec3(scene->camera.position.x, _mainDirectionalLight.position.y, scene->camera.position.z);
+		glm::mat4 translation = glm::translate(look, correctedPosition * -1.0f); //  
 		glm::mat4 rotation = glm::mat4();
 		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
 		rotation = glm::rotate(rotation, _mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
@@ -1598,7 +1696,7 @@ private:
 		//bind framebuffer and program
 		glUseProgram(_shadowPassProgramID);
 		glBindFramebuffer(GL_FRAMEBUFFER, _shadowFramebufferID);
-		glViewport(0, 0, 1024, 1024);
+		glViewport(0, 0, GlobalPrefs::rShadowMapSize, GlobalPrefs::rShadowMapSize);
 
 		//glEnable(GL_DEPTH_TEST);
 		//glDepthFunc(GL_LESS);
@@ -1668,30 +1766,24 @@ private:
 	/// </summary>
 	void drawLighting(RenderableScene *scene)
 	{
-		//precalc ambient
-		glm::vec3 ambient = computeAmbientLight(scene);
-
+		
 		//setup framebuffer
 		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _framebufferID);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postFramebufferID);
 
-		int w, h;
-		SDL_GL_GetDrawableSize(_window_p, &w, &h);
-		glViewport(0, 0, w, h);
-
-		//TODO draw background as a fullscreen quad because glClearColor isn't working (or just fix glClearColor)
-
-		glClearColor(0, 0, 0, 1.0f);
+		glViewport(0, 0, _renderWidth, _renderHeight);
+		
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//I think I need this
+		//enable blending for lights
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_FUNC_ADD);
 		glBlendFunc(GL_ONE, GL_ONE);
 		glDepthMask(GL_FALSE);
 
 		//draw main scene/lighting pass (ambient and main directional)
-		drawLightingMainPass(ambient);
+		drawLightingMainPass(scene);			
 
 		for (auto it = scene->lights.begin(); it < scene->lights.end(); it++)
 		{
@@ -1702,24 +1794,23 @@ private:
 				break;
 			case RenderableLightType::SPOT:
 				drawLightingSpotLight(*it, scene);
-				break;
+				break; 
 			}
 		}
 
 		glDisable(GL_BLEND);
 
 		glDepthMask(GL_TRUE); 
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	}
+	} 
 
 	/// <summary>
 	/// Draws the main lighting pass
 	/// Includes ambient component and main directional light, with shadows
 	/// </summary>
-	void drawLightingMainPass(glm::vec3 ambient) //will need more args
+	void drawLightingMainPass(RenderableScene *scene) //will need more args
 	{
-		//TODO shadow setup
-
 		//bind shader
 		glUseProgram(_framebufferDrawProgramID);
 
@@ -1743,7 +1834,7 @@ private:
 
 		//bind shadow mapping buffer
 		glActiveTexture(GL_TEXTURE4);
-		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID);
+		glBindTexture(GL_TEXTURE_2D, _shadowFramebufferDepthID); 
 		glUniform1i(_framebufferDrawTexSID, 4);
 
 		//calculate and bind shadow bias matrix
@@ -1757,12 +1848,29 @@ private:
 		//glm::mat4 depthBiasMVP = glm::inverse(_depthModelViewProjectionMatrix);
 		glUniformMatrix4fv(_framebufferDrawBiasID, 1, GL_FALSE, &depthBiasMVP[0][0]);
 
+		//bind clear color		
+		glm::vec3 clear = scene->camera.clearColor;
+		glUniform3f(_framebufferDrawColorID, clear.r, clear.g, clear.b);
+
 		//bind ambient light
+		glm::vec3 ambient = computeAmbientLight(scene);
 		glUniform3f(_framebufferDrawAmbientID, ambient.r, ambient.g, ambient.b);
 
-		//bind directional light
+		//bind directional light color
 		glm::vec3 directional = _mainDirectionalLight.color * _mainDirectionalLight.intensity;
-		glUniform3f(_framebufferDrawDirectionalID, directional.r, directional.g, directional.b);
+		glUniform3f(_framebufferDrawDirColorID, directional.r, directional.g, directional.b);
+
+		//bind directional light facing
+		glm::mat4 rotMatrix = glm::mat4();
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.y, glm::vec3(0, 1, 0));
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.x, glm::vec3(1, 0, 0));
+		rotMatrix = glm::rotate(rotMatrix, _mainDirectionalLight.rotation.z, glm::vec3(0, 0, 1));
+		glm::vec3 lightFacing = rotMatrix * glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+		glUniform3f(_framebufferDrawDirFacingID, lightFacing.x, lightFacing.y, lightFacing.z); 
+
+		//bind camera position
+		glm::vec3 cPos = scene->camera.position;
+		glUniform3f(_framebufferDrawCameraPosID, cPos.x, cPos.y, cPos.z);
 
 		//setup vertices
 		glBindVertexArray(_framebufferDrawVertexArrayID);
@@ -1894,6 +2002,107 @@ private:
 		}
 
 		return totalAmbientLight;
+	}
+
+	/// <summary>
+	/// Applies postprocessing and blits buffers
+	/// May be broken up with helper methods later
+	/// </summary>
+	void drawPostProcessing(RenderableScene *scene)
+	{
+		//left it like this because we may want to override later
+		const float blurFactor = GlobalPrefs::rBlurFactor;
+		const float blurAmount = GlobalPrefs::rBlurAmount;
+		const float dofFactor = GlobalPrefs::rDofFactor;
+		const float dofAmount = GlobalPrefs::rDofAmount;		
+		const float fogFactor = GlobalPrefs::rFogFactor;
+		const float fogAmount = GlobalPrefs::rFogAmount;
+		const glm::vec3 fogColor = glm::vec3(1.0f, 1.0f, 1.0f);
+
+		//draw postprocessing
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0); 
+		//glBindFramebuffer(GL_READ_FRAMEBUFFER, _postFramebufferID);
+
+		int w, h;
+		SDL_GL_GetDrawableSize(_window_p, &w, &h); 
+		glViewport(0, 0, w, h);
+
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(_postProgramID);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _postFramebufferTexID);
+		glUniform1i(_postProgramTexID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, _postSmearbufferTexID);
+		glUniform1i(_postProgramSmearTexID, 1);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, _framebufferDepthID);
+		glUniform1i(_postProgramDepthTexID, 2);
+		   
+		glUniform1f(_postProgramBlurAmountID, blurAmount);
+		glUniform1f(_postProgramDofAmountID, dofAmount);
+		glUniform1f(_postProgramDofFactorID, dofFactor);
+		glUniform1f(_postProgramFogAmountID, fogAmount);
+		glUniform1f(_postProgramFogFactorID, fogFactor);
+		glUniform3f(_postProgramFogColorID, fogColor.r, fogColor.g, fogColor.b); 
+		 
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindVertexArray(0);
+
+		drawPostProcessingCopySmearbuffer(blurFactor, blurAmount); 
+
+	}
+
+	void drawPostProcessingCopySmearbuffer(float blurFactor, float blurAmount)
+	{
+		//copy smearbuffer into (temporary) texture
+		GLuint sBufferTexture = 0;
+		glGenTextures(1, &sBufferTexture);
+		glBindTexture(GL_TEXTURE_2D, sBufferTexture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, _renderWidth, _renderHeight, 0, GL_RGBA, GL_FLOAT, 0);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, _postSmearbufferID);
+		glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 0, 0, _renderWidth, _renderHeight, 0);
+
+		//blend into smearbuffer with shader
+		//glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, _postSmearbufferID);
+		//glBlitFramebuffer(0, 0, _renderWidth, _renderHeight, 0, 0, _renderWidth, _renderHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+		glViewport(0, 0, _renderWidth, _renderHeight); 
+
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f); 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(_postCopyProgramID);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, _postFramebufferTexID);
+		glUniform1i(_postCopyProgramLastTexID, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, sBufferTexture);
+		glUniform1i(_postCopyProgramSmearTexID, 1);
+
+		glUniform1f(_postCopyProgramFactorID, blurFactor);
+		glUniform1f(_postCopyProgramBlurAmountID, blurAmount);
+		
+		glBindVertexArray(_framebufferDrawVertexArrayID);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glBindVertexArray(0);	
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//delete temporary texture
+		glDeleteTextures(1, &sBufferTexture);
 	}
 
 	/// <summary>

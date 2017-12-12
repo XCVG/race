@@ -33,10 +33,16 @@
 #include <math.h>
 #include "MessageReceiver.h"
 #include "../../MessagingSystem/HeaderFiles/MessagingSystem.h"
+#include "MessageTypes.h"
 #include "GameObject.h"
 #include "../../HeaderFiles/InputTypes.h"
 #include "../../Components/HeaderFiles/ComponentHeaders.h"
-#define PI 3.14159265
+
+#define RHO 1.225
+#define LINEARDRAGCOEF 0.5
+#define ANGULARDRAGCOEF 0.05
+#define GRAVITY -9.81
+
 
 /*========================================================================================
 	Dependencies
@@ -63,6 +69,7 @@ class PhysicsEngine : public MessageReceiver
 		const float MATH_PI = 3.14159f;
 		float count = 0;
 		float rotationAccel = 0;
+		float _driftTimer = 0;
 
     /*------------------------------------------------------------------------------------
 		Constructors and Destructors
@@ -93,17 +100,19 @@ class PhysicsEngine : public MessageReceiver
 			void flagLoop();
 			// TODO: Physics function calls
 	#pragma region Physics Calculation Methods
-			void accelerate(GameObject *go, RigidBodyComponent* rbc);
+			void linearAccelerate(GameObject * obj, RigidBodyComponent * rbc);
+			void angularAccelerate(RigidBodyComponent * rbc);
 			void accelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
-			void decelerate(GameObject *go, GLfloat x, GLfloat y, GLfloat z);
 	#pragma endregion
 
     private:
 		void loop();
 		void checkMessage(std::shared_ptr<Message>);
-		void applyAcceleration(GameObject*);
-		void applyTurning(GameObject* go);
 		void generalPhysicsCall(GameObject*);
+		void applyAcceleration(GameObject * go, RigidBodyComponent * rc);
+		void adjustForces(GameObject * go, RigidBodyComponent * rc);
 		Vector3 getAngleFromTurn(GameObject *go, GLfloat tireDegree);
 		void turnGameObject(GameObject *go);
+		void collisionDetection(std::map<std::string, GameObject*> worldObj, GameObject *go);
+		bool checkForCollision(GameObject *coll1, GameObject *coll2);
 };

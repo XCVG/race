@@ -144,6 +144,8 @@ class PhysicsAccelerateContent : public BaseMessageContent
 public:
 	GameObject *object;
 	GLfloat amountFast, amountSlow, turningDegree;
+	bool _isDrifting;
+	bool _wasDrifting;
 };
 
 class InputInitializeContent : public BaseMessageContent
