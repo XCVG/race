@@ -124,6 +124,7 @@ void PhysicsEngine::checkMessage(std::shared_ptr<Message> myMessage)
 		for (std::map<std::string, GameObject*>::iterator it = content->worldObjects.begin(); it != content->worldObjects.end(); ++it) {
 			GameObject* go = it->second;
 			generalPhysicsCall(go);
+			collisionDetection(content->worldObjects, go);
 		}
 		std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::PhysicsReturnCall));
 		MessagingSystem::instance().postMessage(myMessage);
@@ -212,7 +213,7 @@ void PhysicsEngine::generalPhysicsCall(GameObject* go)
 		if (go->_name.compare("sphere") == 0) {
 			rbc->setAngularAccel(Vector3(0, 0, PI) * 0.5 * _deltaTime);
 		}
-			
+		
 		if (go->_name.compare("player") == 0 && rbc->getVelocity().magnitude() >= 0)
 		{
 			adjustForces(go, rbc);
@@ -333,4 +334,19 @@ void PhysicsEngine::turnGameObject(GameObject *go)
 	Vector3 angularVelocity = getAngleFromTurn(go, go->getComponent<RigidBodyComponent*>()->getTurningDegree());
 	if (go->getComponent<RigidBodyComponent*>()->getVelocity().magnitude() > 0)
 		go->rotate(angularVelocity, 0.5 * _deltaTime); // angularVelocity * deltaTime = current angle
+}
+void PhysicsEngine::collisionDetection(std::map<std::string, GameObject*> worldObj, GameObject * go)
+{
+	if (go->hasComponent<BoxColliderComponent*>()) 
+	{
+		BoxColliderComponent *boxColl = go->getComponent<BoxColliderComponent*>();
+		for (std::map<std::string, GameObject*>::iterator it = worldObj.begin(); it != worldObj.end(); ++it) 
+		{
+			if (it->second->hasComponent<BoxColliderComponent*>())
+			{
+
+			}
+			if (it->second->hasComponent<>())
+		}
+	}
 };
