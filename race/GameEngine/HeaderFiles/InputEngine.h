@@ -5,6 +5,7 @@
 #include "MessageTypes.h"
 #include "InputTypes.h"
 #include <memory>
+#include "SoundEngine.h"
 
 #ifdef __APPLE__
 #include "MacTypes.h"

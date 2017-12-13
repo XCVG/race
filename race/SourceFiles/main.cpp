@@ -31,6 +31,13 @@ std::thread* engineThread_p;
 	Engine *e = new Engine();
 	engineThread_p = e->start();
 
+	SoundMessageContent *content = new SoundMessageContent;
+	content->name = "Music02";
+	content->subType = S_TYPE::playMusic;
+	std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
+	myMessage->setContent(content);
+	MessagingSystem::instance().postMessage(myMessage);
+
 	//*****temporary loop stolen from racerender
 
 	bool quit = false;
@@ -57,18 +64,13 @@ std::thread* engineThread_p;
 				break;
 		}
 
-		if (ev.type == SDL_KEYDOWN)
+		/*if (ev.type == SDL_KEYDOWN)
 		{
 			switch (ev.key.keysym.sym)
 			{
 				case SDLK_0:
 				{
-					SoundMessageContent *content = new SoundMessageContent;
-					content->name = "Music02";
-					content->subType = S_TYPE::playMusic;
-					std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
-					myMessage->setContent(content);
-					MessagingSystem::instance().postMessage(myMessage);
+					
 				}
 				break;
 
@@ -84,16 +86,11 @@ std::thread* engineThread_p;
 
 				case SDLK_2:
 				{
-					SoundMessageContent *content = new SoundMessageContent;
-					content->name = "SFX06";
-					content->subType = S_TYPE::playSound;
-					std::shared_ptr<Message> myMessage = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
-					myMessage->setContent(content);
-					MessagingSystem::instance().postMessage(myMessage);
+					
 				}
 					break;
 			}
-		}
+		}*/
 
 		//run the renderer every tick
 		/*uint32_t ticksSinceLast = SDL_GetTicks() - ticksAtLast;
