@@ -26,7 +26,7 @@ SoundEngine::SoundEngine()
 	gameSoundEffects.emplace("SFX01", Mix_LoadWAV((basePath + "MenuMove.wav").c_str())); // Menu Move
 	gameSoundEffects.emplace("SFX02", Mix_LoadWAV((basePath + "MenuSelect.wav").c_str())); // Menu Select
 	gameSoundEffects.emplace("SFX03", Mix_LoadWAV((basePath + "VehicleMoving01.wav").c_str())); // Vehicle Moving 01
-	gameSoundEffects.emplace("SFX04", Mix_LoadWAV((basePath + "VehicleMoving01.wav").c_str())); // Vehicle Moving 02 
+	gameSoundEffects.emplace("SFX04", Mix_LoadWAV((basePath + "VehicleMoving02.wav").c_str())); // Vehicle Moving 02 
 	gameSoundEffects.emplace("SFX05", Mix_LoadWAV((basePath + "VehicleCollide.wav").c_str())); // Vehicle Colliding
 	gameSoundEffects.emplace("SFX06", Mix_LoadWAV((basePath + "VehicleDestroyed.wav").c_str())); // Vehicle Destroyed
 }
@@ -47,7 +47,6 @@ SoundEngine::~SoundEngine()
 	Mix_FreeChunk(gameSoundEffects.at("SFX04"));
 	Mix_FreeChunk(gameSoundEffects.at("SFX05"));
 	Mix_FreeChunk(gameSoundEffects.at("SFX06"));
-	
 
 	Mix_Quit();
 	//SDL_Quit();
@@ -116,9 +115,13 @@ void SoundEngine::SoundMessage(SoundMessageContent inMessageContent)
 
 		case S_TYPE::playSound:
 		{
-			if (gameSoundEffects.count(inMessageContent.name) > 0)
-				Mix_PlayChannel(-1, gameSoundEffects.at(inMessageContent.name), 0);
-			break;
+			if (!Mix_Playing(-1))
+			{
+				//if (gameSoundEffects.count(inMessageContent.name) > 0)
+					//Mix_PlayChannel(-1, gameSoundEffects.at(inMessageContent.name), 0);
+					//Mix_PlayChannelTimed(-1, gameSoundEffects.at(inMessageContent.name), 0, 10);
+				//break;
+			}
 		}
 	}
 }

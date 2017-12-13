@@ -178,6 +178,28 @@ void InputEngine::axisEventHandler(GLfloat X, GLfloat Y, INPUT_TYPES type)
 		_wasDrifting = _isDrifting;
 		_isDrifting = (X > 0 && Y > 0 && _turningDegree != 0);
 
+		/*if (X != 0)
+		{
+			
+		}*/
+
+		if (Y != 0)
+		{
+			/*SoundMessageContent *content1 = new SoundMessageContent;
+			content1->name = "SFX03";
+			content1->subType = S_TYPE::playSound;
+			std::shared_ptr<Message> myMessage1 = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
+			myMessage1->setContent(content1);
+			MessagingSystem::instance().postMessage(myMessage1);*/
+
+			SoundMessageContent *content2 = new SoundMessageContent;
+			content2->name = "SFX04";
+			content2->subType = S_TYPE::playSound;
+			std::shared_ptr<Message> myMessage2 = std::make_shared<Message>(Message(MESSAGE_TYPE::SoundMessageType));
+			myMessage2->setContent(content2);
+			MessagingSystem::instance().postMessage(myMessage2);
+		}
+
 		/* Update camera turning. */
 		if (!cameraIndependant)
 		{
