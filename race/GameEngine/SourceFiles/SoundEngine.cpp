@@ -117,8 +117,8 @@ void SoundEngine::SoundMessage(SoundMessageContent inMessageContent)
 		{
 			if (!Mix_Playing(-1))
 			{
-				if (gameSoundEffects.count(inMessageContent.name) > 0)
-					Mix_PlayChannel(-1, gameSoundEffects.at(inMessageContent.name), 0);
+				//if (gameSoundEffects.count(inMessageContent.name) > 0)
+					//Mix_PlayChannel(-1, gameSoundEffects.at(inMessageContent.name), 0);
 					//Mix_PlayChannelTimed(-1, gameSoundEffects.at(inMessageContent.name), 0, 10);
 				//break;
 			}
